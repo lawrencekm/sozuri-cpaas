@@ -6,8 +6,9 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Check } from "lucide-react"
+import { ArrowRight, Check, Rocket } from "lucide-react"
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
 
 // Animation variants
 const fadeIn = {
@@ -41,6 +43,7 @@ const stepVariants = {
 export default function OnboardingPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
+  const [selectedChannels, setSelectedChannels] = useState<string[]>([])
   const [formData, setFormData] = useState({
     businessName: "",
     industry: "",
@@ -74,6 +77,20 @@ export default function OnboardingPage() {
     router.push("/dashboard")
   }
 
+  // Add validation states to inputs
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+
+  // Add this handler
+  const toggleChannel = (channelName: string) => {
+    setSelectedChannels(prev => 
+      prev.includes(channelName)
+        ? prev.filter(name => name !== channelName)
+        : [...prev, channelName]
+    )
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <header className="sticky top-0 z-40 border-b bg-white">
@@ -105,6 +122,38 @@ export default function OnboardingPage() {
               setup to unlock powerful messaging capabilities.
             </p>
           </motion.div>
+
+          <div className="w-full mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Step {currentStep} of 3</span>
+              <span className="text-sm text-muted-foreground">{Math.round((currentStep/3)*100)}% Complete</span>
+            </div>
+            <Progress value={(currentStep/3)*100} className="h-2" />
+          </div>
+
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`h-2 w-2 rounded-full ${currentStep >= 1 ? 'bg-primary' : 'bg-muted'}`} />
+                <h3 className="text-sm font-medium">Company Setup</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">Basic business information</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`h-2 w-2 rounded-full ${currentStep >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+                <h3 className="text-sm font-medium">Admin Account</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">Create administrator credentials</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`h-2 w-2 rounded-full ${currentStep >= 3 ? 'bg-primary' : 'bg-muted'}`} />
+                <h3 className="text-sm font-medium">Configuration</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">Select communication channels</p>
+            </div>
+          </div>
 
           <motion.div className="mb-8 flex w-full max-w-md justify-between" variants={staggerContainer}>
             {[1, 2, 3].map((step) => (
@@ -229,7 +278,13 @@ export default function OnboardingPage() {
                           placeholder="your.name@company.com"
                           value={formData.email}
                           onChange={handleInputChange}
+                          className={cn(
+                            formData.email && !isValidEmail(formData.email) && "border-destructive"
+                          )}
                         />
+                        {formData.email && !isValidEmail(formData.email) && (
+                          <p className="text-xs text-destructive mt-1">Please enter a valid email address</p>
+                        )}
                       </motion.div>
                       <motion.div className="grid gap-2" variants={fadeIn}>
                         <Label htmlFor="password">Create password</Label>
@@ -290,14 +345,25 @@ export default function OnboardingPage() {
                             ].map((channel) => (
                               <motion.div
                                 key={channel.name}
-                                className="flex items-start space-x-3 rounded-md border p-3 hover:bg-accent cursor-pointer"
+                                className={`flex items-start space-x-3 rounded-md border p-3 cursor-pointer ${
+                                  selectedChannels.includes(channel.name)
+                                    ? "border-primary bg-primary/5"
+                                    : "hover:bg-accent"
+                                }`}
                                 variants={fadeIn}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => toggleChannel(channel.name)}
                               >
                                 <div className="flex-shrink-0">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-                                    <Check className="h-4 w-4" />
+                                  <div className={`flex h-8 w-8 items-center justify-center rounded-md ${
+                                    selectedChannels.includes(channel.name)
+                                      ? "bg-primary text-white"
+                                      : "bg-primary/10 text-primary"
+                                  }`}>
+                                    {selectedChannels.includes(channel.name) && (
+                                      <Check className="h-4 w-4" />
+                                    )}
                                   </div>
                                 </div>
                                 <div>
@@ -325,14 +391,25 @@ export default function OnboardingPage() {
                             ].map((service) => (
                               <motion.div
                                 key={service.name}
-                                className="flex items-start space-x-3 rounded-md border p-3 hover:bg-accent cursor-pointer"
+                                className={`flex items-start space-x-3 rounded-md border p-3 cursor-pointer ${
+                                  selectedChannels.includes(service.name)
+                                    ? "border-primary bg-primary/5"
+                                    : "hover:bg-accent"
+                                }`}
                                 variants={fadeIn}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => toggleChannel(service.name)}
                               >
                                 <div className="flex-shrink-0">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-                                    <Check className="h-4 w-4" />
+                                  <div className={`flex h-8 w-8 items-center justify-center rounded-md ${
+                                    selectedChannels.includes(service.name)
+                                      ? "bg-primary text-white"
+                                      : "bg-primary/10 text-primary"
+                                  }`}>
+                                    {selectedChannels.includes(service.name) && (
+                                      <Check className="h-4 w-4" />
+                                    )}
                                   </div>
                                 </div>
                                 <div>
@@ -360,14 +437,25 @@ export default function OnboardingPage() {
                             ].map((service) => (
                               <motion.div
                                 key={service.name}
-                                className="flex items-start space-x-3 rounded-md border p-3 hover:bg-accent cursor-pointer"
+                                className={`flex items-start space-x-3 rounded-md border p-3 cursor-pointer ${
+                                  selectedChannels.includes(service.name)
+                                    ? "border-primary bg-primary/5"
+                                    : "hover:bg-accent"
+                                }`}
                                 variants={fadeIn}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => toggleChannel(service.name)}
                               >
                                 <div className="flex-shrink-0">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-                                    <Check className="h-4 w-4" />
+                                  <div className={`flex h-8 w-8 items-center justify-center rounded-md ${
+                                    selectedChannels.includes(service.name)
+                                      ? "bg-primary text-white"
+                                      : "bg-primary/10 text-primary"
+                                  }`}>
+                                    {selectedChannels.includes(service.name) && (
+                                      <Check className="h-4 w-4" />
+                                    )}
                                   </div>
                                 </div>
                                 <div>
@@ -389,6 +477,33 @@ export default function OnboardingPage() {
                       Complete Setup <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardFooter>
+                </Card>
+              </motion.div>
+            )}
+
+            {currentStep === 4 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>🎉 Setup Complete!</CardTitle>
+                    <CardDescription>You're ready to start using SOZURI Connect</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div className="flex items-center gap-4 p-4 border rounded-lg">
+                        <Rocket className="h-6 w-6 text-primary" />
+                        <div>
+                          <h4 className="font-medium">Next Steps</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Create your first API key and explore documentation
+                          </p>
+                        </div>
+                      </div>
+                      <Button className="w-full" onClick={() => router.push('/dashboard')}>
+                        Go to Dashboard
+                      </Button>
+                    </div>
+                  </CardContent>
                 </Card>
               </motion.div>
             )}
