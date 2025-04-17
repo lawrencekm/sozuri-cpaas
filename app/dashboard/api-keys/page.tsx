@@ -26,6 +26,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 interface ApiKey {
   id: string
@@ -331,16 +340,50 @@ export default function ApiKeysPage() {
                     ))}
                   </div>
                 ) : apiKeys?.length > 0 ? (
-                  <div className="space-y-4">
-                    {apiKeys.map((apiKey: ApiKey) => (
-                      <ApiKeyItem
-                        key={apiKey.id}
-                        apiKey={apiKey}
-                        onDelete={() => handleDeleteKey(apiKey.id)}
-                        onRegen={() => handleRegenerateKey(apiKey.id)}
-                      />
-                    ))}
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Key Preview</TableHead>
+                        <TableHead>Permissions</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {apiKeys.map((apiKey: ApiKey) => (
+                        <TableRow key={apiKey.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-medium">{apiKey.name}</TableCell>
+                          <TableCell>
+                            <span className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                              {apiKey.key.substring(0, 8)}...{apiKey.key.slice(-4)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={apiKey.permissions === 'admin' ? 'destructive' : 'outline'}>
+                              {apiKey.permissions}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className={`h-2 w-2 rounded-full ${apiKey.active ? 'bg-green-500' : 'bg-red-500'}`} />
+                              {apiKey.active ? 'Active' : 'Inactive'}
+                            </div>
+                          </TableCell>
+                          <TableCell>{apiKey.expires || 'Never'}</TableCell>
+                          <TableCell className="flex gap-2">
+                            <Button variant="ghost" size="sm">
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <RefreshCw className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 ) : (
                   <div className="flex h-[200px] items-center justify-center">
                     <div className="flex flex-col items-center justify-center text-center">

@@ -39,11 +39,26 @@ import {
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
 
-const mainNavItems = [
+// Add this type definition for Lucide icons
+interface LucideProps extends React.SVGProps<SVGSVGElement> {
+  className?: string
+}
+
+interface NavItem {
+  title: string
+  href: string
+  icon?: React.ComponentType<LucideProps>
+  subItems?: NavItem[]
+  channels?: Array<{ name: string; color: string }>
+  badge?: string
+}
+
+const mainNavItems: NavItem[] = [
   {
     title: "Overview",
     href: "/dashboard",
     icon: Home,
+    badge: "New",
   },
   {
     title: "Projects",
@@ -54,24 +69,11 @@ const mainNavItems = [
     title: "Messaging",
     href: "/dashboard/messaging",
     icon: MessagesSquare,
-    subItems: [
-      {
-        title: "SMS",
-        href: "/dashboard/messaging/sms",
-      },
-      {
-        title: "WhatsApp",
-        href: "/dashboard/messaging/whatsapp",
-      },
-      {
-        title: "Viber",
-        href: "/dashboard/messaging/viber",
-      },
-      {
-        title: "RCS",
-        href: "/dashboard/messaging/rcs",
-      },
-    ],
+    channels: [
+      { name: "SMS", color: "bg-green-500" },
+      { name: "WhatsApp", color: "bg-green-500" },
+      { name: "Viber", color: "bg-purple-500" },
+    ]
   },
   {
     title: "Voice",
@@ -139,10 +141,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isActive = (href: string) => pathname === href
 
-  const isMenuActive = (item: any) => {
+  const isMenuActive = (item: NavItem) => {
     if (isActive(item.href)) return true
     if (item.subItems) {
-      return item.subItems.some((subItem: any) => isActive(subItem.href))
+      return item.subItems.some((subItem: NavItem) => isActive(subItem.href))
     }
     return false
   }
@@ -179,6 +181,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <div className="flex items-center gap-2">
                               {item.icon && <item.icon className="h-4 w-4" />}
                               <span>{item.title}</span>
+                              {item.channels && (
+                                <div className="flex space-x-1 ml-auto">
+                                  {item.channels.map((channel) => (
+                                    <div 
+                                      key={channel.name}
+                                      className={`h-2 w-2 rounded-full ${channel.color}`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <ChevronDown
                               className={`h-4 w-4 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
@@ -207,6 +219,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           <Link href={item.href} className="flex items-center gap-2">
                             {item.icon && <item.icon className="h-4 w-4" />}
                             <span>{item.title}</span>
+                            {item.channels && (
+                              <div className="flex space-x-1 ml-auto">
+                                {item.channels.map((channel) => (
+                                  <div 
+                                    key={channel.name}
+                                    className={`h-2 w-2 rounded-full ${channel.color}`}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </Link>
                         </SidebarMenuButton>
                       )}

@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, TrendingDown, TrendingUp, Users, BarChart, Clock, Mail, ArrowUp } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import { Progress } from "@/components/ui/progress"
 
 // Define the DashboardCard component
 function DashboardCard({
@@ -311,47 +312,33 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Monitor your communication performance and manage projects</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <DashboardCard
-            title="Messages"
-            value={metrics.messages.value}
-            change={metrics.messages.change}
-            trend={metrics.messages.trend}
-            description="Total messages sent"
-            icon={<MessageCircle className="h-5 w-5" />}
-            color="bg-primary"
-            isLoading={isLoading}
-          />
-          <DashboardCard
-            title="Voice Calls"
-            value={metrics.calls.value}
-            change={metrics.calls.change}
-            trend={metrics.calls.trend}
-            description="Total calls made"
-            icon={<Phone className="h-5 w-5" />}
-            color="bg-primary/80"
-            isLoading={isLoading}
-          />
-          <DashboardCard
-            title="Delivery Rate"
-            value={metrics.deliveryRate.value}
-            change={metrics.deliveryRate.change}
-            trend={metrics.deliveryRate.trend}
-            description="Overall success rate"
-            icon={<Activity className="h-5 w-5" />}
-            color="bg-primary/60"
-            isLoading={isLoading}
-          />
-          <DashboardCard
-            title="Contacts"
-            value={metrics.contacts.value}
-            change={metrics.contacts.change}
-            trend={metrics.contacts.trend}
-            description="Total audience size"
-            icon={<Users className="h-5 w-5" />}
-            color="bg-primary/40"
-            isLoading={isLoading}
-          />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">24,234</div>
+              <div className="flex items-center text-xs text-muted-foreground mt-2">
+                <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                12.3% from last month
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Services</CardTitle>
+              <BarChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">5/8</div>
+              <div className="mt-2">
+                <Progress value={62} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="projects" className="w-full">
