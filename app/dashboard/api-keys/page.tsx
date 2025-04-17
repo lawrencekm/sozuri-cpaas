@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { useWalkthrough } from "@/components/onboarding/tooltip-walkthrough"
 
 interface ApiKey {
   id: string
@@ -264,6 +265,7 @@ function ApiKeyItem({ apiKey, onDelete, onRegen }: { apiKey: ApiKey; onDelete: (
 export default function ApiKeysPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { endWalkthrough } = useWalkthrough()
   
   const { data: apiKeys, isLoading, isError, error } = useQuery({
     queryKey: ['apiKeys'],
@@ -306,6 +308,11 @@ export default function ApiKeysPage() {
     } catch (error) {
       console.error("Error regenerating API key:", error)
     }
+  }
+
+  // When API key is created
+  const handleCreateSuccess = () => {
+    endWalkthrough()
   }
 
   return (

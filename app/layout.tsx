@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import './globals.css'
 import { ReactQueryProvider } from "@/components/providers"
+import { WalkthroughProvider } from "@/components/onboarding/tooltip-walkthrough"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -14,9 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReactQueryProvider>
-          {children}
-        </ReactQueryProvider>
+        <WalkthroughProvider>
+          <ReactQueryProvider>
+            {children}
+          </ReactQueryProvider>
+        </WalkthroughProvider>
       </body>
     </html>
   )

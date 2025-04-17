@@ -38,6 +38,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
+import { GuidedTour } from "@/components/onboarding/guided-tour"
 
 // Add this type definition for Lucide icons
 interface LucideProps extends React.SVGProps<SVGSVGElement> {
@@ -309,6 +310,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </SidebarProvider>
+      <GuidedTour />
     </ErrorBoundary>
   )
 }

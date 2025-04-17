@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
+import { DashboardEmptyState } from "@/components/onboarding/empty-state"
 
 // Define the DashboardCard component
 function DashboardCard({
@@ -303,109 +304,112 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <NewProjectDialog />
-          </div>
-          <p className="text-muted-foreground">Monitor your communication performance and manage projects</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24,234</div>
-              <div className="flex items-center text-xs text-muted-foreground mt-2">
-                <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
-                12.3% from last month
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Services</CardTitle>
-              <BarChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5/8</div>
-              <div className="mt-2">
-                <Progress value={62} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="projects" className="w-full">
-          <TabsList>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-          <TabsContent value="projects" className="space-y-4 pt-4">
+      <div className="space-y-8">
+        <DashboardEmptyState />
+        <div className="flex flex-col space-y-6">
+          <div className="flex flex-col space-y-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Your Projects</h2>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/projects">View All Projects</Link>
-              </Button>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <NewProjectDialog />
             </div>
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <ProjectCard key={i} project={{}} onSelect={() => {}} isLoading={true} />
-                ))}
+            <p className="text-muted-foreground">Monitor your communication performance and manage projects</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
+                <Mail className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">24,234</div>
+                <div className="flex items-center text-xs text-muted-foreground mt-2">
+                  <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                  12.3% from last month
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Services</CardTitle>
+                <BarChart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">5/8</div>
+                <div className="mt-2">
+                  <Progress value={62} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="projects" className="w-full">
+            <TabsList>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            </TabsList>
+            <TabsContent value="projects" className="space-y-4 pt-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Your Projects</h2>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard/projects">View All Projects</Link>
+                </Button>
               </div>
-            ) : projects.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
-                ))}
-              </div>
-            ) : (
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3].map((i) => (
+                    <ProjectCard key={i} project={{}} onSelect={() => {}} isLoading={true} />
+                  ))}
+                </div>
+              ) : projects.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {projects.map((project) => (
+                    <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <Layers className="h-10 w-10 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-lg font-medium">No Projects Yet</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">Create your first project to get started</p>
+                    <div className="mt-4">
+                      <NewProjectDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="campaigns" className="pt-4">
               <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
                 <div className="flex flex-col items-center justify-center text-center">
                   <Layers className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Projects Yet</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first project to get started</p>
-                  <div className="mt-4">
-                    <NewProjectDialog />
-                  </div>
+                  <h3 className="mt-4 text-lg font-medium">Campaign Management</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">Create and manage your communication campaigns</p>
+                  <Button className="mt-4" asChild>
+                    <Link href="/dashboard/campaigns">Manage Campaigns</Link>
+                  </Button>
                 </div>
               </div>
-            )}
-          </TabsContent>
-          <TabsContent value="campaigns" className="pt-4">
-            <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-              <div className="flex flex-col items-center justify-center text-center">
-                <Layers className="h-10 w-10 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-medium">Campaign Management</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Create and manage your communication campaigns</p>
-                <Button className="mt-4" asChild>
-                  <Link href="/dashboard/campaigns">Manage Campaigns</Link>
-                </Button>
+            </TabsContent>
+            <TabsContent value="analytics" className="pt-4">
+              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
+                  <h3 className="mt-4 text-lg font-medium">Performance Analytics</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    View detailed metrics and insights for your communications
+                  </p>
+                  <Button className="mt-4" asChild>
+                    <Link href="/dashboard/analytics">View Analytics</Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="analytics" className="pt-4">
-            <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-              <div className="flex flex-col items-center justify-center text-center">
-                <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-medium">Performance Analytics</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  View detailed metrics and insights for your communications
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href="/dashboard/analytics">View Analytics</Link>
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </DashboardLayout>
   )
