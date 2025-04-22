@@ -92,3 +92,22 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .text-lg {
+    font-size: 1.25rem;
+  }
+}
+
+.button {
+  transition: background-color 0.3s ease;
+}
+.button:hover {
+  background-color: #f0f0f0;
+}
+.button:active {
+  background-color: #e0e0e0;
+}

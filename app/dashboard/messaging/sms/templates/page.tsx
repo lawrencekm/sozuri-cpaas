@@ -75,6 +75,10 @@ function NewTemplateDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.name) {
+      console.error('Name is not defined')
+      return
+    }
     // In a real app, you would save this to your backend
     console.log("Creating template:", formData)
     setOpen(false)
@@ -94,11 +98,11 @@ function NewTemplateDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Create New Template</DialogTitle>
+          <DialogDescription>Create a reusable SMS template for your campaigns</DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Create New Template</DialogTitle>
-            <DialogDescription>Create a reusable SMS template for your campaigns</DialogDescription>
-          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Template Name</Label>
@@ -126,7 +130,7 @@ function NewTemplateDialog() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Use variables like {{ name }}, {{ date }}, or {{ company }} for personalization.
+                Use variables like {'{{ name }}'}, {'{{ date }}'}, or {'{{ company }}'} for personalization.
               </p>
             </div>
             <div className="grid gap-2">
