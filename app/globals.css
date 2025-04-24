@@ -4,55 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 262 83% 58%; /* Purple */
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%; /* Enterprise Blue */
     --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 262 83% 96%; /* Light Purple */
-    --secondary-foreground: 262 83% 58%; /* Purple */
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 262 83% 96%; /* Light Purple */
-    --accent-foreground: 262 83% 58%; /* Purple */
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 215 25% 27%; /* Dark Navy */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 25% 40%;
+    --accent: 217 92% 76%; /* Light Blue */
+    --accent-foreground: 215 25% 27%; /* Dark Navy */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 262 83% 58%; /* Purple */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%; /* Enterprise Blue */
     --radius: 0.5rem;
 
-    /* Chart colors */
-    --chart-1: 262 83% 58%; /* Purple */
-    --chart-2: 262 59% 45%; /* Darker Purple */
-    --chart-3: 262 100% 77%; /* Lighter Purple */
-    --chart-4: 230 83% 65%; /* Complementary Blue */
-    --chart-5: 320 83% 65%; /* Complementary Pink */
+    /* Chart colors - Enterprise palette */
+    --chart-1: 221 83% 53%; /* Enterprise Blue */
+    --chart-2: 215 25% 27%; /* Dark Navy */
+    --chart-3: 217 92% 76%; /* Light Blue */
+    --chart-4: 200 65% 55%; /* Teal */
+    --chart-5: 150 60% 45%; /* Green */
+    --chart-6: 240 60% 65%; /* Indigo */
+    --chart-7: 180 75% 45%; /* Cyan */
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 262 83% 58%; /* Purple */
-    --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 262 83% 58%; /* Purple */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%; 
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 92% 76%; /* Light Blue */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 224 76% 48%;
   }
 }
 

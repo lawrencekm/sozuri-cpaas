@@ -54,52 +54,84 @@ interface NavItem {
   badge?: string
 }
 
-const mainNavItems: NavItem[] = [
+// Navigation with logical grouping for better organization
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
-    title: "Overview",
-    href: "/dashboard",
-    icon: Home,
-    badge: "New",
+    title: "OVERVIEW",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/dashboard",
+        icon: Home,
+        badge: "New",
+      },
+      {
+        title: "Projects",
+        href: "/dashboard/projects",
+        icon: LayoutDashboard,
+      },
+    ],
   },
   {
-    title: "Projects",
-    href: "/dashboard/projects",
-    icon: LayoutDashboard,
+    title: "COMMUNICATIONS",
+    items: [
+      {
+        title: "Messaging",
+        href: "/dashboard/messaging",
+        icon: MessagesSquare,
+        channels: [
+          { name: "SMS", color: "bg-primary" },
+          { name: "WhatsApp", color: "bg-green-500" },
+          { name: "Viber", color: "bg-purple-500" },
+        ],
+        subItems: [
+          { title: "SMS", href: "/dashboard/messaging/sms" },
+          { title: "WhatsApp", href: "/dashboard/messaging/whatsapp" },
+          { title: "Viber", href: "/dashboard/messaging/viber" },
+          { title: "Templates", href: "/dashboard/messaging/templates" },
+        ],
+      },
+      {
+        title: "Voice",
+        href: "/dashboard/voice",
+        icon: Phone,
+      },
+      {
+        title: "Chat Apps",
+        href: "/dashboard/chat",
+        icon: MessageCircle,
+      },
+    ],
   },
   {
-    title: "Messaging",
-    href: "/dashboard/messaging",
-    icon: MessagesSquare,
-    channels: [
-      { name: "SMS", color: "bg-green-500" },
-      { name: "WhatsApp", color: "bg-green-500" },
-      { name: "Viber", color: "bg-purple-500" },
-    ]
+    title: "DATA & INSIGHTS",
+    items: [
+      {
+        title: "Analytics",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+      },
+      {
+        title: "Contacts",
+        href: "/dashboard/contacts",
+        icon: Users,
+      },
+    ],
   },
   {
-    title: "Voice",
-    href: "/dashboard/voice",
-    icon: Phone,
-  },
-  {
-    title: "Chat Apps",
-    href: "/dashboard/chat",
-    icon: MessageCircle,
-  },
-  {
-    title: "Webhooks",
-    href: "/dashboard/webhooks",
-    icon: Webhook,
-  },
-  {
-    title: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Contacts",
-    href: "/dashboard/contacts",
-    icon: Users,
+    title: "PLATFORM",
+    items: [
+      {
+        title: "Webhooks",
+        href: "/dashboard/webhooks",
+        icon: Webhook,
+      },
+    ],
   },
 ]
 
@@ -168,76 +200,81 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </SidebarHeader>
             <SidebarContent>
-              <SidebarGroup>
-                <SidebarMenu>
-                  {mainNavItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      {item.subItems ? (
-                        <div className="flex flex-col">
-                          <SidebarMenuButton
-                            isActive={isMenuActive(item)}
-                            onClick={() => toggleMenu(item.title)}
-                            className="flex justify-between"
-                          >
-                            <div className="flex items-center gap-2">
-                              {item.icon && <item.icon className="h-4 w-4" />}
-                              <span>{item.title}</span>
-                              {item.channels && (
-                                <div className="flex space-x-1 ml-auto">
-                                  {item.channels.map((channel) => (
-                                    <div 
-                                      key={channel.name}
-                                      className={`h-2 w-2 rounded-full ${channel.color}`}
-                                    />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <ChevronDown
-                              className={`h-4 w-4 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
-                            />
-                          </SidebarMenuButton>
-                          {openMenus[item.title] && (
-                            <div className="ml-8 mt-1 flex flex-col space-y-1">
-                              {item.subItems.map((subItem) => (
-                                <Link
-                                  key={subItem.title}
-                                  href={subItem.href}
-                                  className={`rounded-md px-2 py-1.5 text-sm ${
-                                    isActive(subItem.href)
-                                      ? "bg-primary/10 font-medium text-primary"
-                                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                                  }`}
-                                >
-                                  {subItem.title}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                          <Link href={item.href} className="flex items-center gap-2">
-                            {item.icon && <item.icon className="h-4 w-4" />}
-                            <span>{item.title}</span>
-                            {item.channels && (
-                              <div className="flex space-x-1 ml-auto">
-                                {item.channels.map((channel) => (
-                                  <div 
-                                    key={channel.name}
-                                    className={`h-2 w-2 rounded-full ${channel.color}`}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      )}
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroup>
-            </SidebarContent>
+  {navGroups.map((group) => (
+    <SidebarGroup key={group.title}>
+      <div className="px-4 pt-4 pb-1 text-xs font-bold text-muted-foreground tracking-widest uppercase">
+        {group.title}
+      </div>
+      <SidebarMenu>
+        {group.items.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            {item.subItems ? (
+              <div className="flex flex-col">
+                <SidebarMenuButton
+                  isActive={isMenuActive(item)}
+                  onClick={() => toggleMenu(item.title)}
+                  className="flex justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {item.icon && <item.icon className="h-4 w-4" />}
+                    <span>{item.title}</span>
+                    {item.channels && (
+                      <div className="flex space-x-1 ml-auto">
+                        {item.channels.map((channel) => (
+                          <div 
+                            key={channel.name}
+                            className={`h-2 w-2 rounded-full ${channel.color}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
+                  />
+                </SidebarMenuButton>
+                {openMenus[item.title] && (
+                  <div className="ml-8 mt-1 flex flex-col space-y-1">
+                    {item.subItems.map((subItem) => (
+                      <Link
+                        key={subItem.title}
+                        href={subItem.href}
+                        className={`rounded-md px-2 py-1.5 text-sm ${
+                          isActive(subItem.href)
+                            ? "bg-primary/10 font-medium text-primary"
+                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        }`}
+                      >
+                        {subItem.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <SidebarMenuButton asChild isActive={isActive(item.href)}>
+                <Link href={item.href} className="flex items-center gap-2">
+                  {item.icon && <item.icon className="h-4 w-4" />}
+                  <span>{item.title}</span>
+                  {item.channels && (
+                    <div className="flex space-x-1 ml-auto">
+                      {item.channels.map((channel) => (
+                        <div 
+                          key={channel.name}
+                          className={`h-2 w-2 rounded-full ${channel.color}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </Link>
+              </SidebarMenuButton>
+            )}
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  ))}
+</SidebarContent>
             <SidebarFooter className="border-t">
               <SidebarMenu>
                 {bottomNavItems.map((item) => (
@@ -306,7 +343,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </DropdownMenu>
               </div>
             </header>
-            <main className="flex-1 p-6">{children}</main>
+            {/* Breadcrumbs Bar */}
+<div className="bg-muted px-6 py-2 text-xs text-muted-foreground">
+  {pathname.split("/").filter(Boolean).map((segment, idx, arr) => (
+    <span key={idx}>
+      {idx > 0 && <span className="mx-1">/</span>}
+      <span className={idx === arr.length - 1 ? "font-bold text-primary" : ""}>
+        {segment.charAt(0).toUpperCase() + segment.slice(1)}
+      </span>
+    </span>
+  ))}
+</div>
+<main className="flex-1 p-6">{children}</main>
           </div>
         </div>
       </SidebarProvider>

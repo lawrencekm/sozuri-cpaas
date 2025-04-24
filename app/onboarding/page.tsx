@@ -92,70 +92,73 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <header className="sticky top-0 z-40 border-b bg-white">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur-lg shadow-sm">
+        <div className="container flex h-20 items-center justify-between py-4">
+          <div className="flex items-center gap-4">
+            <Image src="/images/logo.png" alt="SOZURI Logo" width={160} height={50} priority className="h-auto drop-shadow-lg" />
+            <span className="ml-2 text-lg font-bold text-blue-700 tracking-tight hidden md:inline">SOZURI Connect</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/" className="text-sm text-blue-700/70 hover:text-blue-900 transition-colors font-semibold">
               Sign in
             </Link>
-            <Button size="sm" asChild>
+            <Button size="sm" variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-50 font-semibold shadow-sm" asChild>
               <Link href="/">Contact Sales</Link>
             </Button>
           </div>
         </div>
       </header>
-      <main className="container flex-1 py-10">
+      <main className="container flex-1 py-10 flex flex-col items-center justify-center">
         <motion.div
           className="mx-auto flex max-w-[1100px] flex-col items-center justify-center"
           initial="hidden"
           animate="visible"
           variants={fadeIn}
         >
-          <motion.div className="mb-8 text-center" variants={fadeIn}>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Welcome to SOZURI Connect</h1>
-            <p className="mt-4 max-w-3xl text-muted-foreground">
-              The intelligent communications platform that transforms how you engage with customers. Complete this quick
-              setup to unlock powerful messaging capabilities.
-            </p>
+          <motion.div className="mb-10 text-center" variants={fadeIn}>
+            <div className="flex flex-col items-center gap-2">
+              <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-4 py-1 text-blue-700 font-semibold text-xs shadow-md mb-4 animate-fade-in">AI-FIRST ONBOARDING</span>
+              <Rocket className="h-10 w-10 text-blue-500 drop-shadow-lg animate-bounce-slow mb-2" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400 bg-clip-text text-transparent mb-3">Welcome to SOZURI Connect</h1>
+            <p className="mt-2 max-w-2xl mx-auto text-lg md:text-xl text-blue-900/80 font-medium mb-1">The intelligent communications platform that transforms how you engage with customers.</p>
+            <p className="max-w-2xl mx-auto text-base text-blue-900/60">Complete this quick setup to unlock powerful AI-driven messaging capabilities and join the future of customer engagement.</p>
           </motion.div>
 
           <div className="w-full mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Step {currentStep} of 3</span>
-              <span className="text-sm text-muted-foreground">{Math.round((currentStep/3)*100)}% Complete</span>
+              <span className="text-sm font-semibold text-blue-700">Step {currentStep} of 3</span>
+              <span className="text-sm text-blue-700/80">{Math.round((currentStep/3)*100)}% Complete</span>
             </div>
-            <Progress value={(currentStep/3)*100} className="h-2" />
+            <Progress value={(currentStep/3)*100} className="h-2 bg-blue-100" />
           </div>
 
           <div className="mb-8 grid gap-4 md:grid-cols-3">
-            <div className="p-4 border rounded-lg">
+            <div className={`p-6 rounded-2xl shadow-lg bg-white/80 border-2 transition-all ${currentStep === 1 ? 'border-blue-500 scale-105' : 'border-transparent'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`h-2 w-2 rounded-full ${currentStep >= 1 ? 'bg-primary' : 'bg-muted'}`} />
-                <h3 className="text-sm font-medium">Company Setup</h3>
+                <Check className={`h-5 w-5 ${currentStep >= 1 ? 'text-blue-500' : 'text-gray-300'}`} />
+                <h3 className="text-base font-semibold">Company Setup</h3>
               </div>
-              <p className="text-xs text-muted-foreground">Basic business information</p>
+              <p className="text-xs text-blue-800/80">Basic business information</p>
             </div>
-            <div className="p-4 border rounded-lg">
+            <div className={`p-6 rounded-2xl shadow-lg bg-white/80 border-2 transition-all ${currentStep === 2 ? 'border-blue-500 scale-105' : 'border-transparent'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`h-2 w-2 rounded-full ${currentStep >= 2 ? 'bg-primary' : 'bg-muted'}`} />
-                <h3 className="text-sm font-medium">Admin Account</h3>
+                <Check className={`h-5 w-5 ${currentStep >= 2 ? 'text-blue-500' : 'text-gray-300'}`} />
+                <h3 className="text-base font-semibold">Admin Account</h3>
               </div>
-              <p className="text-xs text-muted-foreground">Create administrator credentials</p>
+              <p className="text-xs text-blue-800/80">Create administrator credentials</p>
             </div>
-            <div className="p-4 border rounded-lg">
+            <div className={`p-6 rounded-2xl shadow-lg bg-white/80 border-2 transition-all ${currentStep === 3 ? 'border-blue-500 scale-105' : 'border-transparent'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`h-2 w-2 rounded-full ${currentStep >= 3 ? 'bg-primary' : 'bg-muted'}`} />
-                <h3 className="text-sm font-medium">Configuration</h3>
+                <Check className={`h-5 w-5 ${currentStep >= 3 ? 'text-blue-500' : 'text-gray-300'}`} />
+                <h3 className="text-base font-semibold">Configuration</h3>
               </div>
-              <p className="text-xs text-muted-foreground">Select communication channels</p>
+              <p className="text-xs text-blue-800/80">Select communication channels</p>
             </div>
           </div>
 
-          <motion.div className="mb-8 flex w-full max-w-md justify-between" variants={staggerContainer}>
+          <motion.div className="mb-10 flex w-full max-w-md justify-between" variants={staggerContainer}>
             {[1, 2, 3].map((step) => (
               <motion.div
                 key={step}
@@ -164,20 +167,20 @@ export default function OnboardingPage() {
                 animate={step < currentStep ? "completed" : step === currentStep ? "active" : "inactive"}
               >
                 <motion.div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                  className={`flex h-12 w-12 items-center justify-center rounded-full border-4 shadow-lg bg-white/90 transition-all duration-300 ${
                     step < currentStep
-                      ? "border-primary bg-primary text-primary-foreground"
+                      ? "border-blue-400 bg-blue-100 text-blue-700"
                       : step === currentStep
-                        ? "border-primary text-primary"
-                        : "border-muted-foreground/30 text-muted-foreground/30"
+                        ? "border-blue-600 text-blue-700 scale-110 animate-bounce-slow"
+                        : "border-blue-100 text-blue-300"
                   }`}
                   variants={stepVariants}
                 >
-                  {step < currentStep ? <Check className="h-5 w-5" /> : step}
+                  {step < currentStep ? <Check className="h-6 w-6" /> : step}
                 </motion.div>
                 <span
-                  className={`mt-2 text-xs font-medium ${
-                    step <= currentStep ? "text-foreground" : "text-muted-foreground/30"
+                  className={`mt-3 text-sm font-semibold ${
+                    step <= currentStep ? "text-blue-900" : "text-blue-300"
                   }`}
                 >
                   {step === 1 ? "Company Details" : step === 2 ? "Your Profile" : "Communication Needs"}
@@ -189,36 +192,38 @@ export default function OnboardingPage() {
           <motion.div className="w-full max-w-md" variants={fadeIn}>
             {currentStep === 1 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-                <Card>
+                <Card className="rounded-2xl shadow-xl bg-white/80 backdrop-blur-lg border-0">
                   <CardHeader>
-                    <CardTitle>Tell us about your company</CardTitle>
-                    <CardDescription>Help us tailor SOZURI Connect to your specific business needs</CardDescription>
+                    <CardTitle className="text-blue-700 text-xl font-bold">Tell us about your company</CardTitle>
+                    <CardDescription className="text-blue-900/70">Help us tailor SOZURI Connect to your specific business needs</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <motion.div className="grid gap-4" variants={staggerContainer} initial="hidden" animate="visible">
                       <motion.div className="grid gap-2" variants={fadeIn}>
-                        <Label htmlFor="businessName">Company name</Label>
+                        <Label htmlFor="businessName" className="font-semibold text-blue-900">Company name</Label>
                         <Input
                           id="businessName"
                           name="businessName"
                           placeholder="Enter your company name"
                           value={formData.businessName}
                           onChange={handleInputChange}
+                          className="rounded-lg border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
                         />
                       </motion.div>
                       <motion.div className="grid gap-2" variants={fadeIn}>
-                        <Label htmlFor="industry">Industry</Label>
+                        <Label htmlFor="industry" className="font-semibold text-blue-900">Industry</Label>
                         <Input
                           id="industry"
                           name="industry"
                           placeholder="e.g., Retail, Healthcare, Finance"
                           value={formData.industry}
                           onChange={handleInputChange}
+                          className="rounded-lg border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
                         />
                       </motion.div>
                       <motion.div className="grid gap-2" variants={fadeIn}>
-                        <Label>Company size</Label>
-                        <RadioGroup value={formData.size} onValueChange={handleSizeChange}>
+                        <Label className="font-semibold text-blue-900">Company size</Label>
+                        <RadioGroup value={formData.size} onValueChange={handleSizeChange} className="space-y-2">
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="small" id="small" />
                             <Label htmlFor="small">Small (1-50 employees)</Label>
@@ -237,7 +242,7 @@ export default function OnboardingPage() {
                   </CardContent>
                   <CardFooter>
                     <Button
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all"
                       onClick={() => setCurrentStep(2)}
                       disabled={!formData.businessName || !formData.industry}
                     >
