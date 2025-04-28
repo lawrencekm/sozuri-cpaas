@@ -18,6 +18,7 @@ import {
   MessagesSquare,
   Phone,
   Settings,
+  Sparkles,
   Users,
   Webhook,
 } from "lucide-react"
@@ -38,7 +39,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
-import { GuidedTour } from "@/components/onboarding/guided-tour"
+import { EnterpriseGuidedTour } from "@/components/onboarding/enterprise-guided-tour"
+import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
+import { MobileNav } from "@/components/navigation/mobile-nav"
+import { ProductTour } from "@/components/onboarding/product-tour"
 
 // Add this type definition for Lucide icons
 interface LucideProps extends React.SVGProps<SVGSVGElement> {
@@ -115,6 +119,12 @@ const navGroups: NavGroup[] = [
         title: "Analytics",
         href: "/dashboard/analytics",
         icon: BarChart3,
+      },
+      {
+        title: "AI Suggestions",
+        href: "/dashboard/ai-suggestions",
+        icon: Sparkles,
+        badge: "New",
       },
       {
         title: "Contacts",
@@ -221,7 +231,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {item.channels && (
                       <div className="flex space-x-1 ml-auto">
                         {item.channels.map((channel) => (
-                          <div 
+                          <div
                             key={channel.name}
                             className={`h-2 w-2 rounded-full ${channel.color}`}
                           />
@@ -259,7 +269,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {item.channels && (
                     <div className="flex space-x-1 ml-auto">
                       {item.channels.map((channel) => (
-                        <div 
+                        <div
                           key={channel.name}
                           className={`h-2 w-2 rounded-full ${channel.color}`}
                         />
@@ -294,7 +304,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex w-full flex-1 flex-col">
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-6">
               <div className="flex items-center gap-2">
-                <SidebarTrigger />
+                <div className="md:hidden">
+                  <MobileNav />
+                </div>
+                <div className="hidden md:block">
+                  <SidebarTrigger />
+                </div>
                 <h1 className="hidden text-xl font-semibold sm:block">SOZURI Connect</h1>
               </div>
               <div className="flex items-center gap-4">
@@ -343,22 +358,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </DropdownMenu>
               </div>
             </header>
-            {/* Breadcrumbs Bar */}
-<div className="bg-muted px-6 py-2 text-xs text-muted-foreground">
-  {pathname.split("/").filter(Boolean).map((segment, idx, arr) => (
-    <span key={idx}>
-      {idx > 0 && <span className="mx-1">/</span>}
-      <span className={idx === arr.length - 1 ? "font-bold text-primary" : ""}>
-        {segment.charAt(0).toUpperCase() + segment.slice(1)}
-      </span>
-    </span>
-  ))}
-</div>
+            {/* Enhanced Breadcrumbs */}
+<EnhancedBreadcrumb />
 <main className="flex-1 p-6">{children}</main>
           </div>
         </div>
       </SidebarProvider>
-      <GuidedTour />
+      <EnterpriseGuidedTour />
+      <ProductTour />
     </ErrorBoundary>
   )
 }

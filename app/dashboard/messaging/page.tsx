@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import { ContextualNav } from "@/components/navigation/contextual-nav"
 
 export default function MessagingPage() {
   const channels = [
@@ -207,6 +208,9 @@ export default function MessagingPage() {
             </Card>
           ))}
         </div>
+
+        {/* Contextual Navigation */}
+        <ContextualNav />
       </div>
     </DashboardLayout>
   )

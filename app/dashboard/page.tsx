@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp } from "lucide-react"
+import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,8 +23,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
-import { DashboardEmptyState } from "@/components/onboarding/empty-state"
+import { EnhancedEmptyState } from "@/components/onboarding/enhanced-empty-state"
+import { WelcomeDashboard } from "@/components/onboarding/welcome-dashboard"
 import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PageHierarchy } from "@/components/navigation/page-hierarchy";
+import {
+  DeliveryRateMetricCard,
+  LatencyMetricCard,
+  ErrorRateMetricCard,
+  ThroughputMetricCard
+} from "@/components/metrics/advanced-metric-card";
+import { AISuggestionsCard } from "@/components/dashboard/ai-suggestions-card";
 
 // Define the DashboardCard component
 function DashboardCard({
@@ -254,106 +263,90 @@ function NewProjectDialog() {
   )
 }
 
-function AISuggestionsCard() {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch('/app/api-ai-suggestions')
-      .then((res) => res.json())
-      .then((data) => {
-        setSuggestions(data.suggestions || []);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError('Could not load AI suggestions.');
-        setLoading(false);
-      });
-  }, []);
-
+function AIMetricsCard({
+  title,
+  metrics,
+  isLoading = false
+}: {
+  title: string;
+  metrics: {
+    accuracy: number;
+    predictions: number;
+    optimizations: number;
+  };
+  isLoading?: boolean;
+}) {
   return (
-    <div
-      className="relative overflow-hidden border border-blue-100 rounded-2xl shadow-md p-6 flex flex-col justify-between min-h-[220px] group focus-within:ring-2 focus-within:ring-blue-400 transition-all"
-      tabIndex={0}
-      aria-label="AI Suggestions"
-    >
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-blue-100 to-white animate-gradient-move opacity-80 pointer-events-none" />
-      <div className="relative z-10 flex items-center gap-2 mb-3">
-        <BarChartIcon className="h-6 w-6 text-blue-600 animate-bounce-slow" aria-label="AI Suggestions Icon" />
-        <span className="font-semibold text-blue-700 text-lg">AI Suggestions</span>
-        <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">AI</span>
-      </div>
-      {loading && <div className="text-blue-400 animate-pulse relative z-10">Analyzing your data…</div>}
-      {error && <div className="text-red-500 relative z-10">{error}</div>}
-      {!loading && !error && suggestions.length === 0 && (
-        <div className="text-blue-800 relative z-10">No suggestions at this time. Try launching a new campaign!</div>
-      )}
-      {!loading && !error && suggestions.map((s) => (
-        <div
-          key={s.id}
-          className="mb-4 relative z-10 bg-white/80 rounded-lg p-3 shadow-sm flex items-start gap-3 group-hover:scale-[1.02] transition-transform"
-        >
-          {/* Icon per suggestion type */}
-          <div className="flex-shrink-0">
-            {s.title === 'Best Send Time' && <Clock className="h-5 w-5 text-blue-500" aria-label="Best Time" />}
-            {s.title === 'Inactive Audience' && <Users className="h-5 w-5 text-blue-400" aria-label="Audience" />}
-            {/* Add more icons for other types as needed */}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Activity className="h-4 w-4 text-blue-500" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Prediction Accuracy</span>
+            <span className="text-sm font-medium">{metrics.accuracy}%</span>
           </div>
-          <div className="flex-1">
-            <div className="font-medium text-blue-900 mb-1 text-base">
-              {s.message}{' '}
-              <span
-                className="text-blue-600 underline cursor-pointer hover:text-blue-800 transition-colors focus-visible:outline-none"
-                tabIndex={0}
-                title={s.action}
-                aria-label={s.action}
-              >
-                {s.action}
-              </span>
-            </div>
-            <div className="flex gap-2 text-xs text-blue-700/80 mt-1">
-              {s.tags?.map((tag: string) => (
-                <span key={tag} className="bg-blue-100 px-2 py-0.5 rounded" title={tag}>{tag}</span>
-              ))}
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">AI Predictions</span>
+            <span className="text-sm font-medium">{metrics.predictions}</span>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Optimizations</span>
+            <span className="text-sm font-medium">{metrics.optimizations}</span>
+          </div>
+          <Progress value={metrics.accuracy} className="h-1" />
         </div>
-      ))}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
-/* Add animation for gradient background */
-const style = document.createElement('style');
-style.innerHTML = `
-@keyframes gradient-move {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.animate-gradient-move {
-  background-size: 200% 200%;
-  animation: gradient-move 8s ease-in-out infinite;
-}
-.animate-bounce-slow {
-  animation: bounce 2.5s infinite;
-}
-`;
-document.head.appendChild(style);
+// This function is now imported from components/dashboard/ai-suggestions-card.tsx
+
+// Animation styles are now defined in global CSS
 
 
 export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [projects, setProjects] = useState<any[]>([])
+  const [isNewUser, setIsNewUser] = useState(false) // Set to true to show the enhanced empty state
+
+  // Check if this is a new user with no data
+  if (isNewUser) {
+    return (
+      <DashboardLayout>
+        <EnhancedEmptyState />
+      </DashboardLayout>
+    )
+  }
+
+  // Check if this is a returning user who needs the welcome dashboard
+  const showWelcomeDashboard = false; // Set to true to show the welcome dashboard
+  if (showWelcomeDashboard) {
+    return (
+      <DashboardLayout>
+        <WelcomeDashboard
+          userName="John Doe"
+          companyName="Acme Corporation"
+          userRole="Platform Administrator"
+        />
+      </DashboardLayout>
+    )
+  }
+
   const [metrics, setMetrics] = useState({
     messages: { value: "0", change: "0%", trend: "up" as const },
     calls: { value: "0", change: "0%", trend: "up" as const },
     deliveryRate: { value: "0%", change: "0%", trend: "up" as const },
     contacts: { value: "0", change: "0%", trend: "up" as const },
+    ai: {                                                    // Add the ai metrics object
+      accuracy: 95,
+      predictions: 1234,
+      optimizations: 156
+    }
   })
 
   useEffect(() => {
@@ -379,6 +372,11 @@ export default function Dashboard() {
           calls: { value: "0", change: "0%", trend: "up" },
           deliveryRate: { value: "0%", change: "0%", trend: "up" },
           contacts: { value: "0", change: "0%", trend: "up" },
+          ai: {                                                    // Add the ai metrics object
+            accuracy: 95,
+            predictions: 1234,
+            optimizations: 156
+          }
         })
       } catch (error) {
         console.error("Error fetching dashboard data:", error)
@@ -402,13 +400,18 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center">
               Welcome back, <span className="ml-2 text-blue-100">Enterprise User</span>
-              <span className="ml-3 bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white/20 ml-4">AI FIRST</span>
+              <span className="ml-4 bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white/20">AI FIRST</span>
             </h1>
             <p className="text-blue-100 text-lg font-medium mb-4">Powering intelligent SMS communications with automation and insight</p>
             <div className="flex gap-3 mt-2">
               <Button size="lg" className="bg-white text-blue-700 font-semibold shadow-md hover:bg-blue-50">Send SMS</Button>
               <Button size="lg" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/10">New Campaign</Button>
-              <Button size="lg" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/10">Import Contacts</Button>
+              <Button size="lg" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/10" asChild>
+                <Link href="/dashboard/ai-suggestions">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  AI Suggestions
+                </Link>
+              </Button>
             </div>
           </div>
           <div className="hidden md:flex flex-col items-center">
@@ -418,17 +421,54 @@ export default function Dashboard() {
           <div className="absolute right-0 top-0 w-40 h-40 bg-white/10 rounded-full blur-2xl opacity-60 pointer-events-none" />
         </div>
 
-        {/* AI Suggestions */}
+        {/* Key Performance Metrics */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Key Performance Metrics</h2>
+          <p className="text-muted-foreground mb-4">Real-time communication performance indicators</p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <DeliveryRateMetricCard
+              value="98.7"
+              change="+1.2%"
+              trend="up"
+              detailsLink="/dashboard/analytics?metric=delivery-rate"
+              isLoading={isLoading}
+            />
+            <LatencyMetricCard
+              value="87"
+              change="-5ms"
+              trend="down"
+              detailsLink="/dashboard/analytics?metric=latency"
+              isLoading={isLoading}
+            />
+            <ErrorRateMetricCard
+              value="0.8"
+              change="-0.3%"
+              trend="down"
+              detailsLink="/dashboard/analytics?metric=error-rate"
+              isLoading={isLoading}
+            />
+            <ThroughputMetricCard
+              value="156"
+              change="+12/sec"
+              trend="up"
+              detailsLink="/dashboard/analytics?metric=throughput"
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
+
+        {/* AI Insights */}
         <div className="grid md:grid-cols-3 gap-6 mb-4">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" aria-label="Total Messages" title="Total Messages" />
+              <Mail className="h-4 w-4 text-muted-foreground" aria-label="Total Messages" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">24,234</div>
               <div className="flex items-center text-xs text-muted-foreground mt-2">
-                <ArrowUp className="h-3 w-3 text-green-500 mr-1" aria-label="Upward Trend" title="Upward Trend" />
+                <ArrowUp className="h-3 w-3 text-green-500 mr-1" aria-label="Upward Trend" />
                 12.3% from last month
               </div>
             </CardContent>
@@ -436,7 +476,7 @@ export default function Dashboard() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Services</CardTitle>
-              <BarChartIcon className="h-4 w-4 text-muted-foreground" aria-label="Active Services" title="Active Services" />
+              <BarChartIcon className="h-4 w-4 text-muted-foreground" aria-label="Active Services" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">5/8</div>
@@ -445,8 +485,21 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          {/* Add more metric cards as needed here */}
-          <AISuggestionsCard />
+          <AIMetricsCard
+            title="AI Performance"
+            metrics={metrics.ai}
+            isLoading={isLoading}
+          />
+        </div>
+
+        {/* AI Suggestions */}
+        <AISuggestionsCard />
+
+        {/* Navigation Hierarchy */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Quick Navigation</h2>
+          <p className="text-muted-foreground mb-4">Access key platform features</p>
+          <PageHierarchy />
         </div>
 
         {/* Analytics Chart Section */}
@@ -473,7 +526,30 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload?.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{data.messages}</span>
+                            <span className="text-xs text-muted-foreground">Messages</span>
+                          </div>
+                          {data.aiInsight && (
+                            <div className="flex flex-col">
+                              <span className="text-xs text-blue-500">AI Insight:</span>
+                              <span className="text-xs">{data.aiInsight}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
               <Bar dataKey="messages" fill="#2563eb" radius={[8, 8, 0, 0]} />
             </ReBarChart>
           </ResponsiveContainer>
@@ -539,7 +615,7 @@ export default function Dashboard() {
                       View detailed metrics and insights for your communications
                     </p>
                     <Button className="mt-4 bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700" asChild>
-                      <Link href="/dashboard/analytics">View Analytics</Link>
+                      <Link href="/dashboard/analytics?tab=real-time">View Analytics</Link>
                     </Button>
                   </div>
                 </div>

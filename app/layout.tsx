@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import './globals.css'
 import { ReactQueryProvider } from "@/components/providers"
 import { WalkthroughProvider } from "@/components/onboarding/tooltip-walkthrough"
+import { MetricsProvider } from "@/components/metrics/metrics-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <WalkthroughProvider>
           <ReactQueryProvider>
-            {children}
+            <MetricsProvider>
+              {children}
+            </MetricsProvider>
           </ReactQueryProvider>
         </WalkthroughProvider>
       </body>
