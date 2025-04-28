@@ -1,7 +1,6 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -20,38 +19,17 @@
 - [Contributing](#contributing)
 - [License](#license)
 - [Recent Improvements & Best Practices](#recent-improvements-best-practices)
-  - [Frontend Architecture Updates](#frontend-architecture-updates)
   - [Updated Development Guidelines](#updated-development-guidelines)
   - [Updated Environment Variables](#updated-environment-variables)
   - [Updated Installation Steps](#updated-installation-steps)
   - [Monitoring & Observability](#monitoring-observability)
 
 ## Overview
-
-SOZURI CPaaS (Communications Platform as a Service) is an enterprise-grade Next.js application that provides a comprehensive solution for managing omnichannel communications. The platform enables businesses to engage with customers through SMS, WhatsApp, Viber, RCS messaging, voice calls, and chat applications, all from a unified dashboard.
-
-Built with a focus on enterprise needs, SOZURI CPaaS offers industry-specific solutions, AI-powered recommendations, advanced analytics, and robust security features. The platform's intuitive interface, combined with powerful developer tools, makes it suitable for businesses of all sizes looking to enhance their customer communications strategy.
-
 Key differentiators:
 - **AI-First Approach**: Intelligent recommendations and optimizations based on communication patterns
 - **Industry-Specific Solutions**: Tailored features for Retail, Healthcare, Financial Services, and Education
 - **Enterprise-Grade Security**: Compliance with industry standards and robust security measures
 - **Developer-Friendly**: Comprehensive API documentation, SDKs, and webhooks for seamless integration
-
-## Features
-
-- **Multi-channel Messaging**: SMS, WhatsApp, Viber, and RCS messaging from a unified platform
-- **Voice Services**: Voice calls, IVR systems, and AI-powered voice bots
-- **Chat Applications**: Live chat, chatbots, and omnichannel inbox
-- **Project Management**: Organize communications by projects with team collaboration
-- **Campaign Management**: Create, schedule, and manage messaging campaigns
-- **Advanced Analytics**: Real-time tracking and analysis of communication performance
-- **Template Management**: Create, test, and reuse message templates with personalization
-- **Contact Management**: Manage audience and contact lists with segmentation
-- **AI Suggestions**: Intelligent recommendations to optimize messaging strategy
-- **Industry Solutions**: Tailored features for Retail, Healthcare, Financial Services, and Education
-- **Enterprise Security**: Role-based access control, audit logs, and compliance features
-- **Developer Tools**: Comprehensive API documentation, SDKs, and webhooks
 
 ## Getting Started
 
@@ -391,13 +369,6 @@ interface Analytics {
 
 ## Development
 
-### Code Structure
-
-- `app/`: Next.js App Router pages and layouts
-- `components/`: Reusable React components
-- `lib/`: Utility functions and helpers
-- `public/`: Static assets
-- `styles/`: Global styles
 
 ### API Integration
 
@@ -430,33 +401,6 @@ docker build -t sozuri-cpaas .
 docker run -p 3000:3000 sozuri-cpaas
 \`\`\`
 
-## Recent Improvements & Best Practices
-
-### Platform Enhancements
-
-#### 1. Professional Overview Page
-- Created an enterprise-grade landing page with industry-specific use cases
-- Implemented a clean, modern design with proper navigation and call-to-action elements
-- Added dedicated sections for key industries (Retail, Healthcare, Financial Services, Education)
-- Included metrics, testimonials, and tailored recommendations for each industry
-
-#### 2. Enhanced Onboarding Experience
-- Developed a personalized welcome dashboard for returning users
-- Created an industry-specific empty state component for new users
-- Implemented a guided tour with step-by-step instructions
-- Added progress tracking and personalized recommendations
-
-#### 3. AI Suggestions System
-- Built an intelligent recommendation engine that provides actionable insights
-- Created a dedicated AI suggestions page with filtering and implementation tracking
-- Implemented impact metrics to show potential improvements
-- Added scheduled analysis and suggestion generation
-
-#### 4. Improved Navigation and Hierarchy
-- Enhanced the navigation structure for better usability
-- Implemented breadcrumbs and contextual navigation
-- Created a page hierarchy component for easy access to related sections
-- Added clear visual indicators for the current location
 
 ### Frontend Architecture Updates
 **1. React Query Integration**
@@ -561,30 +505,6 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
 - Created dedicated provider components
 - Implemented atomic design pattern for UI components
 
-### Updated Development Guidelines
-
-#### 1. Code Quality & Structure
-- Implemented React Error Boundary for robust error handling
-- Added Suspense boundaries for client-side components
-- Created unified error logging system
-- Organized components using a feature-based structure
-- Implemented strict TypeScript typing across the application
-
-#### 2. Performance Best Practices
-- Implemented request deduplication to reduce API calls
-- Added request throttling for high-volume operations
-- Created loading skeletons for all async components
-- Optimized API cache strategies with React Query
-- Implemented code splitting for improved load times
-- Added proper handling of server-side vs. client-side code
-
-#### 3. UI/UX Improvements
-- Implemented a consistent design system with shadcn/ui
-- Created responsive layouts for all screen sizes
-- Added animations and transitions for a polished user experience
-- Implemented dark mode support
-- Enhanced accessibility with proper ARIA attributes and keyboard navigation
-
 ### Updated Environment Variables
 ```env
 # React Query
@@ -643,40 +563,3 @@ export async function healthCheck() {
 - Added predictive analytics for campaign performance
 - Implemented anomaly detection for early issue identification
 - Created personalized recommendations based on usage patterns
-
-### Component Directory Structure
-
-```
-components/
-├── analytics/           # Analytics components
-├── campaigns/           # Campaign management components
-├── contacts/            # Contact management components
-├── layout/              # Layout components (header, sidebar, etc.)
-├── messaging/           # Messaging components for different channels
-├── metrics/             # Metrics and KPI components
-├── navigation/          # Navigation components
-├── onboarding/          # Onboarding and welcome components
-├── providers/           # Context providers
-├── ui/                  # UI components (buttons, cards, etc.)
-└── voice/               # Voice service components
-```
-
-### Page Structure
-
-```
-app/
-├── dashboard/           # Main dashboard
-│   ├── ai-suggestions/  # AI suggestions page
-│   ├── analytics/       # Analytics pages
-│   ├── campaigns/       # Campaign management
-│   ├── contacts/        # Contact management
-│   ├── developers/      # Developer resources
-│   ├── messaging/       # Messaging channels
-│   ├── projects/        # Project management
-│   ├── settings/        # User and account settings
-│   ├── support/         # Support resources
-│   └── voice/           # Voice services
-├── onboarding/          # Onboarding flow
-├── overview/            # Platform overview
-└── auth/                # Authentication pages
-```
