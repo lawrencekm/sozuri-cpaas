@@ -253,12 +253,12 @@ The portal is designed to work with any database system. Here's a recommended sc
 The portal is designed to integrate with various messaging service providers. Configure your backend to handle the following integrations:
 
 #### SMS
-- Provider options: Twilio, MessageBird, Vonage, etc.
+- Provider options: Sozuri, etc.
 - Required configuration: API key, sender ID
 - Endpoint: `/api/messaging/sms/send`
 
 #### WhatsApp
-- Provider options: WhatsApp Business API, Twilio, MessageBird, etc.
+- Provider options: WhatsApp Business API, etc.
 - Required configuration: API key, business account ID
 - Endpoint: `/api/messaging/whatsapp/send`
 
