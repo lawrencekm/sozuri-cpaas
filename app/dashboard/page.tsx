@@ -4,7 +4,9 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp } from "lucide-react"
+import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp, AlertTriangle, RefreshCw } from "lucide-react"
+import { handleError, ErrorType } from "@/lib/error-handler"
+import { ErrorBoundary } from "@/components/error-handling/error-boundary"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -187,8 +189,11 @@ function NewProjectDialog() {
       //   },
       //   body: JSON.stringify(formData),
       // });
-
-      // if (!response.ok) throw new Error('Failed to create project');
+      //
+      // if (!response.ok) {
+      //   const errorData = await response.json().catch(() => ({}));
+      //   throw new Error(errorData.message || 'Failed to create project');
+      // }
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -196,7 +201,14 @@ function NewProjectDialog() {
       setOpen(false)
       router.refresh()
     } catch (error) {
-      console.error("Error creating project:", error)
+      // Use centralized error handler
+      handleError(error, ErrorType.API, {
+        toastMessage: "Failed to create project. Please try again.",
+        context: {
+          formData,
+          source: 'NewProjectDialog.handleSubmit'
+        }
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -349,6 +361,8 @@ export default function Dashboard() {
     }
   })
 
+  const [error, setError] = useState<Error | null>(null)
+
   useEffect(() => {
     // Fetch dashboard data
     const fetchDashboardData = async () => {
@@ -356,9 +370,17 @@ export default function Dashboard() {
         // Replace with actual API calls
         // const projectsResponse = await fetch('/api/projects');
         // const metricsResponse = await fetch('/api/metrics');
-
-        // if (!projectsResponse.ok || !metricsResponse.ok) throw new Error('Failed to fetch data');
-
+        //
+        // if (!projectsResponse.ok) {
+        //   const errorData = await projectsResponse.json().catch(() => ({}));
+        //   throw new Error(errorData.message || 'Failed to fetch projects');
+        // }
+        //
+        // if (!metricsResponse.ok) {
+        //   const errorData = await metricsResponse.json().catch(() => ({}));
+        //   throw new Error(errorData.message || 'Failed to fetch metrics');
+        // }
+        //
         // const projectsData = await projectsResponse.json();
         // const metricsData = await metricsResponse.json();
 
@@ -378,8 +400,15 @@ export default function Dashboard() {
             optimizations: 156
           }
         })
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error)
+        setError(null)
+      } catch (error: any) {
+        setError(error instanceof Error ? error : new Error('An unexpected error occurred'))
+
+        // Use centralized error handler
+        handleError(error, ErrorType.API, {
+          toastMessage: "Failed to load dashboard data",
+          context: { source: 'Dashboard.fetchDashboardData' }
+        })
       } finally {
         setIsLoading(false)
       }
@@ -392,9 +421,34 @@ export default function Dashboard() {
     router.push(`/dashboard/projects/${project.id}`)
   }
 
+  // Show error UI if there was a problem loading dashboard data
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
+            <AlertTriangle className="h-10 w-10 text-red-600" />
+          </div>
+          <h2 className="mt-6 text-xl font-semibold">Failed to load dashboard data</h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            {error.message || 'An unexpected error occurred'}
+          </p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="mt-6"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <ErrorBoundary>
+        <div className="space-y-8">
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-400/80 p-8 shadow-lg flex flex-col md:flex-row items-center justify-between mb-4">
           <div>
@@ -622,6 +676,7 @@ export default function Dashboard() {
               </TabsContent>
             </Tabs>
           </div>
+        </ErrorBoundary>
         </DashboardLayout>
     );
   }

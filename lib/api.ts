@@ -1,8 +1,9 @@
-import axios from "axios"
-import logger from './logger'
+import axios, { AxiosError } from "axios"
+import { handleError, ErrorType } from './error-handler'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  timeout: 15000, // 15 seconds timeout
 })
 
 // Add request interceptor for authentication
@@ -17,6 +18,10 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
+    handleError(error, ErrorType.NETWORK, {
+      toastMessage: "Request configuration error",
+      context: { source: 'request_interceptor' }
+    })
     return Promise.reject(error)
   },
 )
@@ -24,54 +29,206 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    logger.error({ 
-      message: 'API Error',
-      error: error.response?.data || error.message,
-      status: error.response?.status,
-      url: error.config?.url
-    })
-    
+  (error: AxiosError) => {
+    // Get request context for better error reporting
+    const requestUrl = error.config?.url || 'unknown endpoint'
+    const method = error.config?.method?.toUpperCase() || 'unknown method'
+
+    // Handle authentication errors
     if (error.response?.status === 401) {
+      handleError(error, ErrorType.AUTHENTICATION, {
+        toastMessage: "Your session has expired. Please sign in again.",
+        context: { requestUrl, method }
+      })
+
+      // Clear auth token and redirect to login
       localStorage.removeItem("token")
       window.location.href = "/onboarding"
+      return Promise.reject(error)
     }
-    
+
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      handleError(error, ErrorType.API, {
+        toastMessage: "Rate limit exceeded. Please try again later.",
+        context: { requestUrl, method }
+      })
+      return Promise.reject(error)
+    }
+
+    // Handle network errors
+    if (error.code === 'ECONNABORTED' || !error.response) {
+      handleError(error, ErrorType.NETWORK, {
+        toastMessage: "Network error. Please check your connection and try again.",
+        context: { requestUrl, method, timeout: error.code === 'ECONNABORTED' }
+      })
+      return Promise.reject(error)
+    }
+
+    // Handle all other API errors
+    handleError(error, ErrorType.API, {
+      context: {
+        requestUrl,
+        method,
+        status: error.response?.status,
+        data: error.response?.data
+      }
+    })
+
     return Promise.reject(error)
   }
 )
 
-// Auth API
+// Type definitions for API responses and requests
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  campaigns?: number;
+  messages?: number;
+  engagement?: number;
+  created: string;
+  updated: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
+  projectId: string;
+  created: string;
+  updated: string;
+}
+
+export interface MessagePayload {
+  to: string | string[];
+  message: string;
+  from?: string;
+  mediaUrl?: string;
+  scheduledAt?: string;
+  callbackUrl?: string;
+}
+
+// Auth API with error handling
 export const authAPI = {
-  login: (credentials: { email: string; password: string }) => api.post("/auth/login", credentials),
-  register: (userData: { name: string; email: string; password: string }) => api.post("/auth/register", userData),
-  logout: () => api.post("/auth/logout"),
-  getProfile: () => api.get("/auth/me"),
+  login: withErrorHandling(
+    (credentials: { email: string; password: string }): Promise<AuthResponse> =>
+      api.post("/auth/login", credentials).then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
+
+  register: withErrorHandling(
+    (userData: { name: string; email: string; password: string }): Promise<AuthResponse> =>
+      api.post("/auth/register", userData).then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
+
+  logout: withErrorHandling(
+    (): Promise<void> => api.post("/auth/logout").then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
+
+  getProfile: withErrorHandling(
+    (): Promise<User> => api.get("/auth/me").then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
 }
 
-// Projects API
+// Projects API with error handling
 export const projectsAPI = {
-  getAll: () => api.get("/projects"),
-  getById: (id: string) => api.get(`/projects/${id}`),
-  create: (project: any) => api.post("/projects", project),
-  update: (id: string, project: any) => api.put(`/projects/${id}`, project),
-  delete: (id: string) => api.delete(`/projects/${id}`),
+  getAll: withErrorHandling(
+    (): Promise<Project[]> => api.get("/projects").then(res => res.data),
+    ErrorType.API
+  ),
+
+  getById: withErrorHandling(
+    (id: string): Promise<Project> => api.get(`/projects/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  create: withErrorHandling(
+    (project: Omit<Project, 'id' | 'created' | 'updated'>): Promise<Project> =>
+      api.post("/projects", project).then(res => res.data),
+    ErrorType.API
+  ),
+
+  update: withErrorHandling(
+    (id: string, project: Partial<Omit<Project, 'id' | 'created' | 'updated'>>): Promise<Project> =>
+      api.put(`/projects/${id}`, project).then(res => res.data),
+    ErrorType.API
+  ),
+
+  delete: withErrorHandling(
+    (id: string): Promise<void> => api.delete(`/projects/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
 }
 
-// Campaigns API
+// Campaigns API with error handling
 export const campaignsAPI = {
-  getAll: () => api.get("/campaigns"),
-  getById: (id: string) => api.get(`/campaigns/${id}`),
-  create: (campaign: any) => api.post("/campaigns", campaign),
-  update: (id: string, campaign: any) => api.put(`/campaigns/${id}`, campaign),
-  delete: (id: string) => api.delete(`/campaigns/${id}`),
+  getAll: withErrorHandling(
+    (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
+    ErrorType.API
+  ),
+
+  getById: withErrorHandling(
+    (id: string): Promise<Campaign> => api.get(`/campaigns/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  create: withErrorHandling(
+    (campaign: Omit<Campaign, 'id' | 'created' | 'updated'>): Promise<Campaign> =>
+      api.post("/campaigns", campaign).then(res => res.data),
+    ErrorType.API
+  ),
+
+  update: withErrorHandling(
+    (id: string, campaign: Partial<Omit<Campaign, 'id' | 'created' | 'updated'>>): Promise<Campaign> =>
+      api.put(`/campaigns/${id}`, campaign).then(res => res.data),
+    ErrorType.API
+  ),
+
+  delete: withErrorHandling(
+    (id: string): Promise<void> => api.delete(`/campaigns/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
 }
 
-// Messaging API
+// Messaging API with error handling
 export const messagingAPI = {
   // SMS
-  getSMS: (params?: any) => api.get("/messaging/sms", { params }),
-  getSMSById: (id: string) => api.get(`/messaging/sms/${id}`),
-  sendSMS: (data: any) => api.post("/messaging/sms/send", data),
-  sendBulkSMS: (data: any) => api.post("/messaging/sms/bulk", data),
+  getSMS: withErrorHandling(
+    (params?: Record<string, any>) => api.get("/messaging/sms", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getSMSById: withErrorHandling(
+    (id: string) => api.get(`/messaging/sms/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  sendSMS: withErrorHandling(
+    (data: MessagePayload) => api.post("/messaging/sms/send", data).then(res => res.data),
+    ErrorType.API,
+    { toastMessage: "Failed to send SMS message. Please try again." }
+  ),
+
+  sendBulkSMS: withErrorHandling(
+    (data: { messages: MessagePayload[] }) => api.post("/messaging/sms/bulk", data).then(res => res.data),
+    ErrorType.API,
+    { toastMessage: "Failed to send bulk SMS messages. Please try again." }
+  ),
 }

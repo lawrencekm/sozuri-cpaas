@@ -8,6 +8,9 @@ import { Check, Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2 } from "lucide-r
 import { randomBytes } from "crypto"
 import { toast } from "react-hot-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { handleError, ErrorType } from "@/lib/error-handler"
+import { useApi } from "@/hooks/use-api"
+import { ErrorBoundary, ComponentErrorBoundary } from "@/components/error-handling/error-boundary"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,30 +60,42 @@ function NewApiKeyDialog() {
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      // Replace with actual API call
+  const createApiKey = useApi(
+    async (keyData: { name: string; permissions: string; expiresIn: string }) => {
+      // Replace with actual API call in production
       // const response = await fetch('/api/api-keys', {
       //   method: 'POST',
       //   headers: {
       //     'Content-Type': 'application/json',
       //   },
-      //   body: JSON.stringify({ name, permissions, expiresIn }),
+      //   body: JSON.stringify(keyData),
       // });
       // if (!response.ok) throw new Error('Failed to create API key');
-      // const data = await response.json();
+      // return await response.json();
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       // Simulate generated API key
-      const newKey = randomBytes(32).toString('hex')
-      setNewKey(newKey)
+      return { key: randomBytes(32).toString('hex') }
+    },
+    {
+      errorType: ErrorType.API,
+      successMessage: "API key created successfully",
+      errorMessage: "Failed to create API key. Please try again."
+    }
+  )
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const result = await createApiKey.execute({ name, permissions, expiresIn })
+      setNewKey(result.key)
+      toast.success("API key created successfully")
     } catch (error) {
-      console.error("Error creating API key:", error)
+      // Error is already handled by useApi hook
     } finally {
       setIsSubmitting(false)
     }
@@ -266,34 +281,113 @@ export default function ApiKeysPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { endWalkthrough } = useWalkthrough()
-  
+
+  // Use React Query with proper error handling
   const { data: apiKeys, isLoading, isError, error } = useQuery({
     queryKey: ['apiKeys'],
     queryFn: async () => {
-      const response = await fetch('/api/api-keys')
-      if (!response.ok) throw new Error('Failed to fetch API keys')
-      return response.json()
+      try {
+        const response = await fetch('/api/api-keys')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Failed to fetch API keys')
+        }
+        return response.json()
+      } catch (error: any) {
+        // Use our centralized error handler
+        handleError(error, ErrorType.API, {
+          toastMessage: "Failed to load API keys",
+          context: { source: 'ApiKeysPage.fetchApiKeys' }
+        })
+        throw error
+      }
     },
     retry: 2
   })
 
+  // Delete API key mutation with error handling
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`/api/api-keys/${id}`, { method: 'DELETE' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+    mutationFn: async (id: string) => {
+      try {
+        const response = await fetch(`/api/api-keys/${id}`, { method: 'DELETE' })
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Failed to delete API key')
+        }
+        return response.json()
+      } catch (error: any) {
+        handleError(error, ErrorType.API, {
+          toastMessage: "Failed to delete API key",
+          context: { keyId: id, source: 'ApiKeysPage.deleteMutation' }
+        })
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+      toast.success("API key deleted successfully")
+    },
+    onError: () => {
+      // Error already handled in mutationFn
+    }
   })
 
+  // Regenerate API key mutation with error handling
   const regenerateMutation = useMutation({
-    mutationFn: (id: string) => fetch(`/api/api-keys/${id}/regenerate`, { method: 'POST' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+    mutationFn: async (id: string) => {
+      try {
+        const response = await fetch(`/api/api-keys/${id}/regenerate`, { method: 'POST' })
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Failed to regenerate API key')
+        }
+        return response.json()
+      } catch (error: any) {
+        handleError(error, ErrorType.API, {
+          toastMessage: "Failed to regenerate API key",
+          context: { keyId: id, source: 'ApiKeysPage.regenerateMutation' }
+        })
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+      toast.success("API key regenerated successfully")
+    },
+    onError: () => {
+      // Error already handled in mutationFn
+    }
   })
 
-  if (isError) return <div>Error: {error.message}</div>
+  // Custom error UI for the entire page
+  if (isError) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
+            <AlertTriangle className="h-10 w-10 text-red-600" />
+          </div>
+          <h2 className="mt-6 text-xl font-semibold">Failed to load API keys</h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : 'An unexpected error occurred'}
+          </p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['apiKeys'] })}
+            className="mt-6"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   const handleDeleteKey = async (id: string) => {
     try {
       await deleteMutation.mutateAsync(id)
     } catch (error) {
-      console.error("Error deleting API key:", error)
+      // Error already handled in mutation
     }
   }
 
@@ -301,12 +395,16 @@ export default function ApiKeysPage() {
     try {
       const isRateLimited = await rateLimitExceeded()
       if (isRateLimited) {
-        toast.error("Too many requests - try again later")
+        handleError(
+          new Error("Rate limit exceeded"),
+          ErrorType.API,
+          { toastMessage: "Too many requests - try again later" }
+        )
         return
       }
       await regenerateMutation.mutateAsync(id)
     } catch (error) {
-      console.error("Error regenerating API key:", error)
+      // Error already handled in mutation
     }
   }
 
@@ -317,21 +415,22 @@ export default function ApiKeysPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
-            <p className="text-muted-foreground">Manage API keys for your applications</p>
+      <ErrorBoundary>
+        <div className="flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
+              <p className="text-muted-foreground">Manage API keys for your applications</p>
+            </div>
+            <NewApiKeyDialog />
           </div>
-          <NewApiKeyDialog />
-        </div>
 
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList>
-            <TabsTrigger value="active">Active Keys</TabsTrigger>
-            <TabsTrigger value="expired">Expired Keys</TabsTrigger>
-            <TabsTrigger value="usage">API Usage</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList>
+              <TabsTrigger value="active">Active Keys</TabsTrigger>
+              <TabsTrigger value="expired">Expired Keys</TabsTrigger>
+              <TabsTrigger value="usage">API Usage</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="active" className="space-y-4 pt-4">
             <Card>
@@ -542,6 +641,7 @@ export default function ApiKeysPage() {
           </CardFooter>
         </Card>
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   )
 }

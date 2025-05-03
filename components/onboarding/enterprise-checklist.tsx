@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ProgressChecklist } from "./progress-checklist"
 
 interface ChecklistItem {
   id: string
@@ -229,6 +230,17 @@ export function EnterpriseChecklist() {
             <span className="text-xs text-muted-foreground">{completionPercentage}% Complete</span>
           </div>
           <Progress value={completionPercentage} className="h-2" />
+          
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2">Quick Status</h4>
+            <ProgressChecklist 
+              items={items.map(item => ({
+                id: item.id,
+                label: item.title,
+                completed: item.completed
+              }))}
+            />
+          </div>
         </div>
         
         <div className="flex items-center justify-between mb-4">

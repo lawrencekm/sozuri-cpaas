@@ -6,9 +6,12 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Check, Rocket } from "lucide-react"
+import { ArrowRight, Check, Rocket, AlertTriangle, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { handleError, ErrorType } from "@/lib/error-handler"
+import { ErrorBoundary } from "@/components/error-handling/error-boundary"
+import { toast } from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -70,11 +73,67 @@ export default function OnboardingPage() {
     }))
   }
 
+  // State for tracking submission status and errors
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
   // Complete onboarding and redirect to dashboard
-  const handleComplete = (e: React.FormEvent) => {
+  const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would save this data to your backend
-    router.push("/dashboard")
+    setIsSubmitting(true)
+
+    try {
+      // In a real app, you would save this data to your backend
+      // Example API call:
+      // const response = await fetch('/api/onboarding', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     company: {
+      //       name: formData.businessName,
+      //       industry: formData.industry,
+      //       size: formData.size
+      //     },
+      //     user: {
+      //       name: formData.name,
+      //       email: formData.email,
+      //       password: formData.password
+      //     },
+      //     channels: selectedChannels
+      //   }),
+      // });
+      //
+      // if (!response.ok) {
+      //   const errorData = await response.json().catch(() => ({}));
+      //   throw new Error(errorData.message || 'Failed to complete onboarding');
+      // }
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Success message
+      toast.success("Onboarding completed successfully!")
+
+      // Redirect to dashboard
+      router.push("/dashboard")
+    } catch (error: any) {
+      // Set error state
+      setError(error instanceof Error ? error : new Error('An unexpected error occurred'))
+
+      // Use centralized error handler
+      handleError(error, ErrorType.API, {
+        toastMessage: "Failed to complete onboarding. Please try again.",
+        context: {
+          formData,
+          selectedChannels,
+          source: 'OnboardingPage.handleComplete'
+        }
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Add validation states to inputs
@@ -84,15 +143,50 @@ export default function OnboardingPage() {
 
   // Add this handler
   const toggleChannel = (channelName: string) => {
-    setSelectedChannels(prev => 
+    setSelectedChannels(prev =>
       prev.includes(channelName)
         ? prev.filter(name => name !== channelName)
         : [...prev, channelName]
     )
   }
 
+  // Show error UI if there was a problem during onboarding
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100">
+        <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur-lg shadow-sm">
+          <div className="container flex h-20 items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <Image src="/images/logo.png" alt="SOZURI Logo" width={160} height={50} priority className="h-auto drop-shadow-lg" />
+              <span className="ml-2 text-lg font-bold text-blue-700 tracking-tight hidden md:inline">SOZURI Connect</span>
+            </div>
+          </div>
+        </header>
+        <main className="container flex-1 py-10 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
+              <AlertTriangle className="h-10 w-10 text-red-600" />
+            </div>
+            <h2 className="mt-6 text-xl font-semibold">Onboarding Error</h2>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground text-center">
+              {error.message || 'An unexpected error occurred during onboarding. Please try again.'}
+            </p>
+            <Button
+              onClick={() => setError(null)}
+              className="mt-6"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <ErrorBoundary>
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur-lg shadow-sm">
         <div className="container flex h-20 items-center justify-between py-4">
           <div className="flex items-center gap-4">
@@ -475,11 +569,19 @@ export default function OnboardingPage() {
                     </Tabs>
                   </CardContent>
                   <CardFooter className="flex justify-between">
-                    <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                    <Button variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting}>
                       Back
                     </Button>
-                    <Button onClick={handleComplete} className="bg-primary hover:bg-primary/90">
-                      Complete Setup <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button
+                      onClick={handleComplete}
+                      className="bg-primary hover:bg-primary/90"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>Processing <RefreshCw className="ml-2 h-4 w-4 animate-spin" /></>
+                      ) : (
+                        <>Complete Setup <ArrowRight className="ml-2 h-4 w-4" /></>
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -534,5 +636,6 @@ export default function OnboardingPage() {
         </div>
       </footer>
     </div>
+    </ErrorBoundary>
   )
 }

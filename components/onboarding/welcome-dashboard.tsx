@@ -24,6 +24,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EnterpriseChecklist } from "./enterprise-checklist"
 
 interface QuickStartItem {
   id: string
@@ -158,7 +159,7 @@ export function WelcomeDashboard({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 border-2 border-primary/10">
@@ -515,6 +516,13 @@ export function WelcomeDashboard({
           </div>
         </CardContent>
       </Card>
+
+      {/* Add enterprise checklist for enterprise users */}
+      {userRole === "Administrator" && (
+        <div className="mt-6">
+          <EnterpriseChecklist />
+        </div>
+      )}
     </div>
   )
 }

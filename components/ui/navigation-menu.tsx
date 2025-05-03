@@ -15,6 +15,8 @@ const NavigationMenu = React.forwardRef<
       "relative z-10 flex max-w-max flex-1 items-center justify-center",
       className
     )}
+    role="navigation"
+    aria-label={props["aria-label"] || "Main Navigation"}
     {...props}
   >
     {children}
@@ -33,6 +35,7 @@ const NavigationMenuList = React.forwardRef<
       "group flex flex-1 list-none items-center justify-center space-x-1",
       className
     )}
+    role="menubar"
     {...props}
   />
 ))
@@ -51,6 +54,9 @@ const NavigationMenuTrigger = React.forwardRef<
   <NavigationMenuPrimitive.Trigger
     ref={ref}
     className={cn(navigationMenuTriggerStyle(), "group", className)}
+    role="menuitem"
+    aria-haspopup="true"
+    aria-expanded={props["data-state"] === "open"}
     {...props}
   >
     {children}{" "}

@@ -38,23 +38,23 @@ const routeTitles: Record<string, string> = {
 
 export function EnhancedBreadcrumb() {
   const pathname = usePathname()
-  
+
   // Skip rendering on main dashboard
   if (pathname === "/dashboard") return null
-  
+
   const segments = pathname.split("/").filter(Boolean)
-  
+
   // Create breadcrumb items with proper paths and titles
   const breadcrumbItems = segments.map((segment, index) => {
     // Build the path up to this segment
     const path = `/${segments.slice(0, index + 1).join("/")}`
-    
+
     // Get a readable title for this segment
     const title = routeTitles[segment] || segment.charAt(0).toUpperCase() + segment.slice(1)
-    
+
     // Check if this is the last segment (current page)
     const isLastSegment = index === segments.length - 1
-    
+
     return {
       path,
       title,
@@ -63,28 +63,28 @@ export function EnhancedBreadcrumb() {
   })
 
   return (
-    <div className="bg-muted/50 px-6 py-2 border-b">
+    <div className="bg-sidebar/95 text-sidebar-foreground px-6 py-2 border-b border-sidebar-border">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard" className="flex items-center">
+              <Link href="/dashboard" className="flex items-center text-sidebar-foreground hover:text-white">
                 <Home className="h-3.5 w-3.5" />
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          
+          <BreadcrumbSeparator className="text-sidebar-foreground/70" />
+
           {breadcrumbItems.map((item, index) => (
             <BreadcrumbItem key={item.path}>
               {item.isLastSegment ? (
-                <BreadcrumbPage className="font-medium text-primary">{item.title}</BreadcrumbPage>
+                <BreadcrumbPage className="font-medium text-white">{item.title}</BreadcrumbPage>
               ) : (
                 <>
                   <BreadcrumbLink asChild>
-                    <Link href={item.path}>{item.title}</Link>
+                    <Link href={item.path} className="text-sidebar-foreground hover:text-white">{item.title}</Link>
                   </BreadcrumbLink>
-                  <BreadcrumbSeparator />
+                  <BreadcrumbSeparator className="text-sidebar-foreground/70" />
                 </>
               )}
             </BreadcrumbItem>
