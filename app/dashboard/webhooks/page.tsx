@@ -11,8 +11,8 @@ export default function WebhooksPage() {
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
-            <p className="text-muted-foreground">Manage webhooks and API integrations</p>
+            <h1 className="text-3xl font-bold tracking-tight">Developer Settings</h1>
+            <p className="text-muted-foreground">Manage webhooks, API keys, and integrations</p>
           </div>
           <Button asChild>
             <Link href="/dashboard/webhooks/new">

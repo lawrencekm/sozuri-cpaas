@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios"
 import { handleError, ErrorType } from './error-handler'
+import { ErrorBoundary, ErrorBoundaryProps, FallbackProps } from "react-error-boundary"
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
@@ -78,6 +79,29 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// --- Helper function to wrap API calls with error handling ---
+function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  errorType: ErrorType,
+  options: { toastMessage?: string; context?: Record<string, any> } = {}
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      handleError(error, errorType, {
+        toastMessage: options.toastMessage,
+        context: {
+          source: fn.name || 'api_call', // Use function name if available
+          ...(options.context || {}),
+        },
+      });
+      // Re-throw the error so callers (like React Query) can handle it further
+      throw error;
+    }
+  };
+}
 
 // Type definitions for API responses and requests
 export interface User {

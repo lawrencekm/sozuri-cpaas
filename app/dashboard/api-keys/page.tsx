@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2, AlertTriangleIcon, ArrowLeft } from "lucide-react"
+import { Check, Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2, AlertTriangleIcon, ArrowLeft, AlertCircle } from "lucide-react"
 import { randomBytes } from "crypto"
 import { toast } from "react-hot-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -40,6 +40,18 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useWalkthrough } from "@/components/onboarding/tooltip-walkthrough"
 import Link from "next/link"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { type UseMutationResult } from "@tanstack/react-query"
 
 interface ApiKey {
   id: string
@@ -49,6 +61,7 @@ interface ApiKey {
   active: boolean
   created: string
   expires?: string
+  lastUsed?: string
 }
 
 // Define the expected shape of the data for key creation
@@ -313,6 +326,7 @@ interface ActiveApiKeysTabProps {
   handleRegenerateKey: (id: string) => void;
   deleteErrorKeyId: string | null;
   regenErrorKeyId: string | null;
+  deleteMutation: UseMutationResult<void, Error, string>;
   // Note: NewApiKeyDialog trigger is kept inside for the empty state
 }
 
@@ -322,7 +336,8 @@ function ActiveApiKeysTab({
   handleDeleteKey, 
   handleRegenerateKey, 
   deleteErrorKeyId, 
-  regenErrorKeyId 
+  regenErrorKeyId, 
+  deleteMutation
 }: ActiveApiKeysTabProps) {
   // TODO: Implement copy, regen, delete actions on table buttons
   const handleCopyKey = (key: string) => {
@@ -351,7 +366,7 @@ function ActiveApiKeysTab({
                 <TableHead>Key Preview</TableHead>
                 <TableHead>Permissions</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead className="hidden sm:table-cell">Expires</TableHead>
                 <TableHead className="text-right">Actions</TableHead> 
               </TableRow>
             </TableHeader>
@@ -375,17 +390,72 @@ function ActiveApiKeysTab({
                       {apiKey.active ? 'Active' : 'Inactive'}
                     </div>
                   </TableCell>
-                  <TableCell>{apiKey.expires || 'Never'}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{apiKey.expires || 'Never'}</TableCell>
                   <TableCell className="text-right"> 
-                    <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key">
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleRegenerateKey(apiKey.id)} title="Regenerate Key">
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteKey(apiKey.id)} title="Delete Key">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                     {regenErrorKeyId === apiKey.id && (
+                        <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                                 <AlertCircle className="h-4 w-4 text-destructive inline-block mr-1" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Failed to regenerate</p>
+                            </TooltipContent>
+                        </Tooltip>
+                     )}
+                     {deleteErrorKeyId === apiKey.id && (
+                        <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                                 <AlertCircle className="h-4 w-4 text-destructive inline-block mr-1" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Failed to delete</p>
+                            </TooltipContent>
+                        </Tooltip>
+                     )}
+                    <TooltipProvider delayDuration={100}> 
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key">
+                             <Copy className="h-4 w-4" />
+                           </Button>
+                         </TooltipTrigger>
+                         <TooltipContent><p>Copy Key</p></TooltipContent>
+                       </Tooltip>
+                       <Tooltip>
+                         <TooltipTrigger asChild>
+                           <Button variant="ghost" size="icon" onClick={() => handleRegenerateKey(apiKey.id)} title="Regenerate Key">
+                             <RefreshCw className="h-4 w-4" />
+                           </Button>
+                         </TooltipTrigger>
+                         <TooltipContent><p>Regenerate Key</p></TooltipContent>
+                       </Tooltip>
+                       <AlertDialog>
+                         <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={deleteMutation?.isPending && deleteMutation?.variables === apiKey.id ? 0 : undefined}> 
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="text-destructive hover:text-destructive"
+                                      disabled={deleteMutation?.isPending && deleteMutation?.variables === apiKey.id} 
+                                      title="Delete Key"
+                                  >
+                                      {deleteMutation?.isPending && deleteMutation?.variables === apiKey.id ? 
+                                          <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"/> 
+                                          : <Trash2 className="h-4 w-4" />
+                                      }
+                                  </Button>
+                                </AlertDialogTrigger>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Delete Key</p></TooltipContent>
+                          </Tooltip>
+                          <AlertDialogContent>
+                             {/* ... content ... */} 
+                           </AlertDialogContent>
+                       </AlertDialog>
+                      </TooltipProvider>
                   </TableCell>
                 </TableRow>
               ))}
@@ -582,7 +652,7 @@ export default function ApiKeysPage() {
   })
 
   // Delete API key mutation with error handling
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
       try {
         const response = await fetch(`/api/api-keys/${id}`, { method: 'DELETE' })
@@ -611,7 +681,7 @@ export default function ApiKeysPage() {
   })
 
   // Regenerate API key mutation with error handling
-  const regenerateMutation = useMutation({
+  const regenerateMutation = useMutation<any, Error, string>({
     mutationFn: async (id: string) => {
       try {
         const response = await fetch(`/api/api-keys/${id}/regenerate`, { method: 'POST' })
@@ -697,24 +767,17 @@ export default function ApiKeysPage() {
     <DashboardLayout>
       <ErrorBoundary>
         <div className="flex flex-col space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" asChild>
-              <Link href="/dashboard/webhooks">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Manage API Keys</h1>
-              <p className="text-muted-foreground">Create and manage your API credentials.</p>
+          <Tabs defaultValue="active" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <TabsList>
+                 <TabsTrigger value="active">Active Keys</TabsTrigger>
+                 <TabsTrigger value="expired">Expired Keys</TabsTrigger>
+                 <TabsTrigger value="usage">API Usage</TabsTrigger>
+              </TabsList>
+                <ComponentErrorBoundary> 
+                    <NewApiKeyDialog onSuccess={handleCreateSuccess} className="create-api-key-button"/>
+                </ComponentErrorBoundary>
             </div>
-          </div>
-
-          <Tabs defaultValue="active" className="w-full">
-            <TabsList>
-              <TabsTrigger value="active">Active Keys</TabsTrigger>
-              <TabsTrigger value="expired">Expired Keys</TabsTrigger>
-              <TabsTrigger value="usage">API Usage</TabsTrigger>
-            </TabsList>
 
             <TabsContent value="active" className="space-y-4 pt-4">
               <ActiveApiKeysTab 
@@ -724,6 +787,7 @@ export default function ApiKeysPage() {
                 handleRegenerateKey={handleRegenerateKey}
                 deleteErrorKeyId={deleteErrorKeyId}
                 regenErrorKeyId={regenErrorKeyId}
+                deleteMutation={deleteMutation}
               />
             </TabsContent>
 
@@ -735,8 +799,6 @@ export default function ApiKeysPage() {
               <ApiUsageTab isLoading={isLoading} />
             </TabsContent>
           </Tabs>
-
-          {/* Render the extracted documentation section */}
           <ApiDocumentationSection />
         </div>
       </ErrorBoundary>
