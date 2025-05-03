@@ -51,55 +51,81 @@ interface ApiKey {
   expires?: string
 }
 
+// Define the expected shape of the data for key creation
+interface CreateApiKeyPayload {
+  name: string;
+  permissions: string;
+  expiresIn: string;
+}
+
+// Define the expected shape of the successful response (simulated)
+interface CreateApiKeyResponse {
+  key: string;
+}
+
+// New API Key Dialog Component Props
+interface NewApiKeyDialogProps {
+  onSuccess?: () => void; // Callback on successful creation
+  // Allow passing walkthrough props if needed
+  [key: string]: any; 
+}
+
 // New API Key Dialog
-function NewApiKeyDialog() {
+function NewApiKeyDialog({ onSuccess, ...props }: NewApiKeyDialogProps) {
   const [name, setName] = useState("")
   const [permissions, setPermissions] = useState("read")
   const [expiresIn, setExpiresIn] = useState("never")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // isSubmitting state will be replaced by mutation.isPending
   const [open, setOpen] = useState(false)
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const queryClient = useQueryClient(); // Get query client for invalidation
 
-  const createApiKey = useApi(
-    async (keyData: { name: string; permissions: string; expiresIn: string }) => {
-      // Replace with actual API call in production
-      // const response = await fetch('/api/api-keys', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(keyData),
-      // });
-      // if (!response.ok) throw new Error('Failed to create API key');
-      // return await response.json();
+  // Define the mutation function (simulated API call)
+  const createApiKeyFn = async (keyData: CreateApiKeyPayload): Promise<CreateApiKeyResponse> => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    // Simulate generated API key
+    const generatedKey = randomBytes(32).toString('hex') 
+    return { key: generatedKey }
+    // Replace above simulation with actual API call:
+    // const response = await fetch('/api/api-keys', { // Assuming endpoint exists
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(keyData),
+    // });
+    // if (!response.ok) {
+    //   const errorData = await response.json().catch(() => ({ message: 'Failed to create API key' }))
+    //   throw new Error(errorData.message || 'Failed to create API key');
+    // }
+    // return await response.json();
+  };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Simulate generated API key
-      return { key: randomBytes(32).toString('hex') }
+  // Use useMutation hook
+  const mutation = useMutation<CreateApiKeyResponse, Error, CreateApiKeyPayload>({
+    mutationFn: createApiKeyFn,
+    onSuccess: (data) => {
+      setNewKey(data.key)
+      toast.success("API key created successfully")
+      // Call the onSuccess prop passed from the parent (e.g., to invalidate queries)
+      if (onSuccess) {
+        onSuccess()
+      }
     },
-    {
-      errorType: ErrorType.API,
-      successMessage: "API key created successfully",
-      errorMessage: "Failed to create API key. Please try again."
-    }
-  )
+    onError: (error) => {
+      // Use centralized error handler
+      handleError(error, ErrorType.API, {
+        toastMessage: "Failed to create API key. Please try again.",
+        context: { source: 'NewApiKeyDialog.createMutation' }
+      })
+      // setError state could be used here if needed for inline errors
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      const result = await createApiKey.execute({ name, permissions, expiresIn })
-      setNewKey(result.key)
-      toast.success("API key created successfully")
-    } catch (error) {
-      // Error is already handled by useApi hook
-    } finally {
-      setIsSubmitting(false)
-    }
+    // No need to manually set loading state, use mutation.isPending
+    mutation.mutate({ name, permissions, expiresIn });
   }
 
   const copyToClipboard = () => {
@@ -175,8 +201,8 @@ function NewApiKeyDialog() {
               <Button type="button" variant="outline" onClick={closeDialog}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!name || isSubmitting}>
-                {isSubmitting ? "Generating..." : "Generate Key"}
+              <Button type="submit" disabled={!name || mutation.isPending}>
+                {mutation.isPending ? "Generating..." : "Generate Key"}
               </Button>
             </DialogFooter>
           </form>
@@ -278,13 +304,262 @@ function ApiKeyItem({ apiKey, onDelete, onRegen }: { apiKey: ApiKey; onDelete: (
   )
 }
 
+// ----- Extracted Tab Content Components -----
+
+interface ActiveApiKeysTabProps {
+  apiKeys: ApiKey[] | undefined;
+  isLoading: boolean;
+  handleDeleteKey: (id: string) => void;
+  handleRegenerateKey: (id: string) => void;
+  deleteErrorKeyId: string | null;
+  regenErrorKeyId: string | null;
+  // Note: NewApiKeyDialog trigger is kept inside for the empty state
+}
+
+function ActiveApiKeysTab({ 
+  apiKeys, 
+  isLoading, 
+  handleDeleteKey, 
+  handleRegenerateKey, 
+  deleteErrorKeyId, 
+  regenErrorKeyId 
+}: ActiveApiKeysTabProps) {
+  // TODO: Implement copy, regen, delete actions on table buttons
+  const handleCopyKey = (key: string) => {
+     navigator.clipboard.writeText(key);
+     toast.success("API Key copied to clipboard"); // Provide feedback
+  };
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Active API Keys</CardTitle>
+        <CardDescription>Manage your active API keys</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 w-full animate-pulse rounded bg-muted"></div> // Adjusted height
+            ))}
+          </div>
+        ) : apiKeys && apiKeys.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Key Preview</TableHead>
+                <TableHead>Permissions</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Expires</TableHead>
+                <TableHead className="text-right">Actions</TableHead> 
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {apiKeys.map((apiKey: ApiKey) => (
+                <TableRow key={apiKey.id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-medium">{apiKey.name}</TableCell>
+                  <TableCell>
+                    <span className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                      {apiKey.key.substring(0, 8)}...{apiKey.key.slice(-4)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={apiKey.permissions === 'admin' ? 'destructive' : 'outline'}>
+                      {apiKey.permissions}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${apiKey.active ? 'bg-green-500' : 'bg-red-500'}`} />
+                      {apiKey.active ? 'Active' : 'Inactive'}
+                    </div>
+                  </TableCell>
+                  <TableCell>{apiKey.expires || 'Never'}</TableCell>
+                  <TableCell className="text-right"> 
+                    <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleRegenerateKey(apiKey.id)} title="Regenerate Key">
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteKey(apiKey.id)} title="Delete Key">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="flex h-[200px] items-center justify-center">
+            <div className="flex flex-col items-center justify-center text-center">
+              <Key className="h-10 w-10 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-medium">No Active API Keys</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Create your first API key to integrate with our services
+              </p>
+              {/* Keep DialogTrigger here for empty state */}
+              <DialogTrigger asChild>
+                 <Button className="mt-4">
+                   <Plus className="mr-2 h-4 w-4" /> Create API Key
+                 </Button>
+              </DialogTrigger>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Placeholder for other tab components
+function ExpiredApiKeysTab() {
+ return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Expired API Keys</CardTitle>
+        <CardDescription>View your expired API keys</CardDescription>
+      </CardHeader>
+      <CardContent>
+          <div className="flex h-[200px] items-center justify-center">
+            <div className="flex flex-col items-center justify-center text-center">
+              <Key className="h-10 w-10 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-medium">No Expired Keys</h3>
+              <p className="mt-2 text-sm text-muted-foreground">Expired API keys will appear here</p>
+            </div>
+          </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ApiUsageTab({ isLoading }: { isLoading: boolean }) {
+ return (
+     <Card>
+      <CardHeader>
+        <CardTitle>API Usage</CardTitle>
+        <CardDescription>Monitor your API usage and rate limits</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-6">
+            <div className="h-8 w-full animate-pulse rounded bg-muted"></div>
+            <div className="h-64 w-full animate-pulse rounded bg-muted"></div>
+          </div>
+        ) : (
+          <div className="flex h-[300px] items-center justify-center">
+            <div className="flex flex-col items-center justify-center text-center">
+              <RefreshCw className="h-10 w-10 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-medium">No API Usage Data</h3>
+              <p className="mt-2 text-sm text-muted-foreground">Start using our API to see usage statistics</p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+ );
+}
+
+// API Documentation Section Component
+function ApiDocumentationSection() {
+  const router = useRouter(); // Get router instance for navigation
+
+  return (
+     <Card>
+      <CardHeader>
+        <CardTitle>API Documentation</CardTitle>
+        <CardDescription>Learn how to integrate with our API</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Our comprehensive API documentation provides all the information you need to integrate SOZURI Connect
+            with your applications.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Getting Started</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Learn the basics of our API and how to make your first request.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push("/dashboard/developers/getting-started")} // Use router.push
+                >
+                  View Guide
+                </Button>
+              </CardFooter>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">API Reference</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Detailed documentation of all API endpoints, parameters, and responses.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push("/dashboard/developers/api-reference")} // Use router.push
+                >
+                  View Reference
+                </Button>
+              </CardFooter>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Code Examples</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Sample code in various programming languages to help you get started.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push("/dashboard/developers/code-examples")} // Use router.push
+                >
+                  View Examples
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full" onClick={() => router.push("/dashboard/developers")}> 
+          Visit Developer Portal
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+// ----- Main Page Component -----
+
 export default function ApiKeysPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { endWalkthrough } = useWalkthrough()
 
-  // Use React Query with proper error handling
-  const { data: apiKeys, isLoading, isError, error } = useQuery({
+  // State for inline error indicators
+  const [deleteErrorKeyId, setDeleteErrorKeyId] = useState<string | null>(null);
+  const [regenErrorKeyId, setRegenErrorKeyId] = useState<string | null>(null);
+
+  // Use React Query with proper error handling - Corrected destructuring
+  const { data: apiKeys, isLoading, isError, error } = useQuery<ApiKey[], Error>({
     queryKey: ['apiKeys'],
     queryFn: async () => {
       try {
@@ -327,9 +602,11 @@ export default function ApiKeysPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
       toast.success("API key deleted successfully")
+      setDeleteErrorKeyId(null); // Clear error on success
     },
-    onError: () => {
-      // Error already handled in mutationFn
+    onError: (error, id) => {
+      // Error already handled in mutationFn by handleError
+      setDeleteErrorKeyId(id); // Set error state for the specific key
     }
   })
 
@@ -354,11 +631,17 @@ export default function ApiKeysPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
       toast.success("API key regenerated successfully")
+      setRegenErrorKeyId(null); // Clear error on success
     },
-    onError: () => {
-      // Error already handled in mutationFn
+    onError: (error, id) => {
+      // Error already handled in mutationFn by handleError
+      setRegenErrorKeyId(id); // Set error state for the specific key
     }
   })
+
+  // Filter keys (Example - adjust based on actual data structure if needed)
+  const activeKeys = apiKeys?.filter((key: ApiKey) => key.active);
+  const expiredKeys = apiKeys?.filter((key: ApiKey) => !key.active);
 
   // Custom error UI for the entire page
   if (isError) {
@@ -385,7 +668,9 @@ export default function ApiKeysPage() {
   }
 
   const handleDeleteKey = async (id: string) => {
+    setDeleteErrorKeyId(null); // Clear previous error before trying again
     try {
+      // TODO: Implement confirmation dialog before deleting
       await deleteMutation.mutateAsync(id)
     } catch (error) {
       // Error already handled in mutation
@@ -393,19 +678,13 @@ export default function ApiKeysPage() {
   }
 
   const handleRegenerateKey = async (id: string) => {
+    setRegenErrorKeyId(null); // Clear previous error before trying again
     try {
-      const isRateLimited = await rateLimitExceeded()
-      if (isRateLimited) {
-        handleError(
-          new Error("Rate limit exceeded"),
-          ErrorType.API,
-          { toastMessage: "Too many requests - try again later" }
-        )
-        return
-      }
+      // Removed client-side rate limit check here
+      // Rely on server-side limiting and Axios interceptor for 429 errors
       await regenerateMutation.mutateAsync(id)
     } catch (error) {
-      // Error already handled in mutation
+      // Error already handled in mutation or Axios interceptor
     }
   }
 
@@ -437,222 +716,31 @@ export default function ApiKeysPage() {
               <TabsTrigger value="usage">API Usage</TabsTrigger>
             </TabsList>
 
-          <TabsContent value="active" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active API Keys</CardTitle>
-                <CardDescription>Manage your active API keys</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-24 w-full animate-pulse rounded bg-muted"></div>
-                    ))}
-                  </div>
-                ) : apiKeys?.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Key Preview</TableHead>
-                        <TableHead>Permissions</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Expires</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {apiKeys.map((apiKey: ApiKey) => (
-                        <TableRow key={apiKey.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-medium">{apiKey.name}</TableCell>
-                          <TableCell>
-                            <span className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                              {apiKey.key.substring(0, 8)}...{apiKey.key.slice(-4)}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={apiKey.permissions === 'admin' ? 'destructive' : 'outline'}>
-                              {apiKey.permissions}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className={`h-2 w-2 rounded-full ${apiKey.active ? 'bg-green-500' : 'bg-red-500'}`} />
-                              {apiKey.active ? 'Active' : 'Inactive'}
-                            </div>
-                          </TableCell>
-                          <TableCell>{apiKey.expires || 'Never'}</TableCell>
-                          <TableCell className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center">
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <Key className="h-10 w-10 text-muted-foreground/50" />
-                      <h3 className="mt-4 text-lg font-medium">No API Keys</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Create your first API key to integrate with our services
-                      </p>
-                      <DialogTrigger asChild>
-                        <Button className="mt-4">
-                          <Plus className="mr-2 h-4 w-4" /> Create API Key
-                        </Button>
-                      </DialogTrigger>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <TabsContent value="active" className="space-y-4 pt-4">
+              <ActiveApiKeysTab 
+                apiKeys={activeKeys}
+                isLoading={isLoading}
+                handleDeleteKey={handleDeleteKey}
+                handleRegenerateKey={handleRegenerateKey}
+                deleteErrorKeyId={deleteErrorKeyId}
+                regenErrorKeyId={regenErrorKeyId}
+              />
+            </TabsContent>
 
-          <TabsContent value="expired" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Expired API Keys</CardTitle>
-                <CardDescription>View your expired API keys</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="h-24 w-full animate-pulse rounded bg-muted"></div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center">
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <Key className="h-10 w-10 text-muted-foreground/50" />
-                      <h3 className="mt-4 text-lg font-medium">No Expired Keys</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">Expired API keys will appear here</p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <TabsContent value="expired" className="space-y-4 pt-4">
+              <ExpiredApiKeysTab />
+            </TabsContent>
 
-          <TabsContent value="usage" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>API Usage</CardTitle>
-                <CardDescription>Monitor your API usage and rate limits</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-6">
-                    <div className="h-8 w-full animate-pulse rounded bg-muted"></div>
-                    <div className="h-64 w-full animate-pulse rounded bg-muted"></div>
-                  </div>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <RefreshCw className="h-10 w-10 text-muted-foreground/50" />
-                      <h3 className="mt-4 text-lg font-medium">No API Usage Data</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">Start using our API to see usage statistics</p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="usage" className="space-y-4 pt-4">
+              <ApiUsageTab isLoading={isLoading} />
+            </TabsContent>
+          </Tabs>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>API Documentation</CardTitle>
-            <CardDescription>Learn how to integrate with our API</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Our comprehensive API documentation provides all the information you need to integrate SOZURI Connect
-                with your applications.
-              </p>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Getting Started</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Learn the basics of our API and how to make your first request.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => router.push("/dashboard/developers/getting-started")}
-                    >
-                      View Guide
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">API Reference</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Detailed documentation of all API endpoints, parameters, and responses.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => router.push("/dashboard/developers/api-reference")}
-                    >
-                      View Reference
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Code Examples</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Sample code in various programming languages to help you get started.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => router.push("/dashboard/developers/code-examples")}
-                    >
-                      View Examples
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={() => router.push("/dashboard/developers")}>
-              Visit Developer Portal
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+          {/* Render the extracted documentation section */}
+          <ApiDocumentationSection />
+        </div>
       </ErrorBoundary>
     </DashboardLayout>
   )
-}
-
-function rateLimitExceeded(): boolean {
-  // Implement actual rate limiting logic
-  return false // Return true if rate limited
 }
 
