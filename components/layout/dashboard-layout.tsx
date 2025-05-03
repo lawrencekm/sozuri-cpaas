@@ -13,7 +13,9 @@ import {
   Globe,
   HelpCircle,
   Home,
+  KeyRound,
   LayoutDashboard,
+  Link as LinkIcon,
   MessageCircle,
   MessagesSquare,
   Phone,
@@ -134,12 +136,22 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: "PLATFORM",
+    title: "INTEGRATIONS & API",
     items: [
       {
         title: "Webhooks",
         href: "/dashboard/webhooks",
         icon: Webhook,
+      },
+      {
+        title: "API Keys",
+        href: "/dashboard/api-keys",
+        icon: KeyRound,
+      },
+      {
+        title: "Integrations",
+        href: "/dashboard/integrations",
+        icon: LinkIcon,
       },
     ],
   },
@@ -163,10 +175,6 @@ const bottomNavItems = [
   {
     title: "Billing",
     href: "/dashboard/billing",
-  },
-  {
-    title: "API Keys",
-    href: "/dashboard/api-keys",
   },
 ]
 
@@ -238,6 +246,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         ))}
                       </div>
                     )}
+                    {item.badge && (
+                      <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
                   </div>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
@@ -275,6 +288,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         />
                       ))}
                     </div>
+                  )}
+                  {item.badge && (
+                    <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                      {item.badge}
+                    </span>
                   )}
                 </Link>
               </SidebarMenuButton>
@@ -334,9 +352,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/billing">Billing</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/api-keys">API Keys</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Button onClick={handleLogout}>Logout</Button>

@@ -14,8 +14,10 @@ export default function WebhooksPage() {
             <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
             <p className="text-muted-foreground">Manage webhooks and API integrations</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> New Webhook
+          <Button asChild>
+            <Link href="/dashboard/webhooks/new">
+              <Plus className="mr-2 h-4 w-4" /> New Webhook
+            </Link>
           </Button>
         </div>
 

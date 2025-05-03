@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2 } from "lucide-react"
+import { Check, Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2, AlertTriangleIcon, ArrowLeft } from "lucide-react"
 import { randomBytes } from "crypto"
 import { toast } from "react-hot-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { useWalkthrough } from "@/components/onboarding/tooltip-walkthrough"
+import Link from "next/link"
 
 interface ApiKey {
   id: string
@@ -365,7 +366,7 @@ export default function ApiKeysPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
-            <AlertTriangle className="h-10 w-10 text-red-600" />
+            <AlertTriangleIcon className="h-10 w-10 text-red-600" />
           </div>
           <h2 className="mt-6 text-xl font-semibold">Failed to load API keys</h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
@@ -417,12 +418,16 @@ export default function ApiKeysPage() {
     <DashboardLayout>
       <ErrorBoundary>
         <div className="flex flex-col space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" asChild>
+              <Link href="/dashboard/webhooks">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
-              <p className="text-muted-foreground">Manage API keys for your applications</p>
+              <h1 className="text-2xl font-bold tracking-tight">Manage API Keys</h1>
+              <p className="text-muted-foreground">Create and manage your API credentials.</p>
             </div>
-            <NewApiKeyDialog />
           </div>
 
           <Tabs defaultValue="active" className="w-full">

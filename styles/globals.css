@@ -86,7 +86,7 @@ body {
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border/50;
   }
   body {
     @apply bg-background text-foreground;
@@ -99,6 +99,15 @@ body {
   }
   .text-lg {
     font-size: 1.25rem;
+  }
+}
+@media (max-width: 640px) {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .prose :where(img):not(:where([class~="not-prose"] *)) {
+    max-width: 85vw;
   }
 }
 

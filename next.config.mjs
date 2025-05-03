@@ -22,14 +22,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    // Disabling experimental features that are causing worker thread errors
-    webpackBuildWorker: false,
-    parallelServerBuildTraces: false,
-    parallelServerCompiles: false,
-    workerThreads: false,
-    cpus: 1, // Limit to single CPU to avoid worker thread issues
-  },
   webpack: (config, { isServer }) => {
     // Prevent worker thread usage in webpack
     if (isServer) {

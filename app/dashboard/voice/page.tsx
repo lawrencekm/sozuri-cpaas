@@ -14,8 +14,10 @@ export default function VoicePage() {
             <h1 className="text-3xl font-bold tracking-tight">Voice Solutions</h1>
             <p className="text-muted-foreground">Manage voice calls, IVR systems, and voice messaging</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> New Voice Campaign
+          <Button asChild>
+            <Link href="/dashboard/voice/campaigns/new">
+              <Plus className="mr-2 h-4 w-4" /> New Voice Campaign
+            </Link>
           </Button>
         </div>
 

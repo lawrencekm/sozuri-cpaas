@@ -4,9 +4,10 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp, AlertTriangle, RefreshCw } from "lucide-react"
+import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp, AlertTriangle, RefreshCw, Menu } from "lucide-react"
 import { handleError, ErrorType } from "@/lib/error-handler"
 import { ErrorBoundary } from "@/components/error-handling/error-boundary"
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -227,8 +228,8 @@ function NewProjectDialog() {
             <DialogTitle>Create New Project</DialogTitle>
             <DialogDescription>Set up a new communication project to organize your campaigns.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
+          <div className="grid gap-4 py-4 px-2 sm:px-4">
+            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
               <Label htmlFor="name">Project Name</Label>
               <Input
                 id="name"
@@ -239,7 +240,7 @@ function NewProjectDialog() {
                 required
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
               <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
@@ -249,7 +250,7 @@ function NewProjectDialog() {
                 placeholder="Brief description of your project"
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
               <Label htmlFor="type">Project Type</Label>
               <Select value={formData.type} onValueChange={handleSelectChange}>
                 <SelectTrigger>
@@ -450,14 +451,18 @@ export default function Dashboard() {
       <ErrorBoundary>
         <div className="space-y-8">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-400/80 p-8 shadow-lg flex flex-col md:flex-row items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center">
-              Welcome back, <span className="ml-2 text-blue-100">Enterprise User</span>
-              <span className="ml-4 bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-blue-100 border border-white/20">AI FIRST</span>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-400/80 p-4 sm:p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center justify-between mb-4 gap-4 md:gap-6">
+          <div className="w-full md:w-[60%]">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              Welcome back, <span className="text-blue-100">Escobar</span>
+              <span className="bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold text-blue-100 border border-white/20">
+                AI FIRST
+              </span>
             </h1>
-            <p className="text-blue-100 text-lg font-medium mb-4">Powering intelligent SMS communications with automation and insight</p>
-            <div className="flex gap-3 mt-2">
+            <p className="text-blue-100 text-sm sm:text-base md:text-lg font-medium mb-4">
+              Powering intelligent SMS communications with automation and insight
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button size="lg" className="bg-white text-blue-700 font-semibold shadow-md hover:bg-blue-50">Send SMS</Button>
               <Button size="lg" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/10">New Campaign</Button>
               <Button size="lg" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/10" asChild>
@@ -477,10 +482,10 @@ export default function Dashboard() {
 
         {/* Key Performance Metrics */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Key Performance Metrics</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-2">Key Performance Metrics</h2>
           <p className="text-muted-foreground mb-4">Real-time communication performance indicators</p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <DeliveryRateMetricCard
               value="98.7"
               change="+1.2%"
@@ -513,7 +518,7 @@ export default function Dashboard() {
         </div>
 
         {/* AI Insights */}
-        <div className="grid md:grid-cols-3 gap-6 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
@@ -563,7 +568,7 @@ export default function Dashboard() {
               <BarChartIcon className="h-6 w-6 text-primary mr-2" aria-label="Chart Icon" />
               <h2 className="text-lg font-semibold tracking-tight">Monthly Message Volume</h2>
             </div>
-            <div className="w-full h-60">
+            <div className="w-full h-[200px] sm:h-[300px] md:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <ReBarChart
                   data={[
@@ -611,10 +616,10 @@ export default function Dashboard() {
       </div>
     </div>
     <Tabs defaultValue="projects" className="w-full">
-      <TabsList>
-        <TabsTrigger value="projects">Projects</TabsTrigger>
-        <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+      <TabsList className="w-full flex flex-col sm:flex-row h-auto">
+        <TabsTrigger value="projects" className="w-full sm:w-auto">Projects</TabsTrigger>
+        <TabsTrigger value="campaigns" className="w-full sm:w-auto">Campaigns</TabsTrigger>
+        <TabsTrigger value="analytics" className="w-full sm:w-auto">Analytics</TabsTrigger>
       </TabsList>
       <TabsContent value="projects" className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
@@ -630,7 +635,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : projects.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {projects.map((project) => (
               <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
             ))}
@@ -677,6 +682,12 @@ export default function Dashboard() {
             </Tabs>
           </div>
         </ErrorBoundary>
+        {/*mobile menu toggle button */}
+        <div className="md:hidden fixed bottom-4 right-4 z-50">
+          <Button variant="outline" size="lg" className="rounded-full p-3 shadow-lg">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
         </DashboardLayout>
     );
   }
