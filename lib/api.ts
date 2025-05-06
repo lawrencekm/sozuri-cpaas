@@ -95,13 +95,11 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
           ...(options.context || {}),
         },
       });
-      // Re-throw the error so callers (like React Query) can handle it further
       throw error;
     }
   };
 }
 
-// Type definitions for API responses and requests
 export interface User {
   id: string;
   name: string;
@@ -144,7 +142,6 @@ export interface MessagePayload {
   callbackUrl?: string;
 }
 
-// Auth API with error handling
 export const authAPI = {
   login: withErrorHandling(
     (credentials: { email: string; password: string }): Promise<AuthResponse> =>
@@ -169,7 +166,6 @@ export const authAPI = {
   ),
 }
 
-// Projects API with error handling
 export const projectsAPI = {
   getAll: withErrorHandling(
     (): Promise<Project[]> => api.get("/projects").then(res => res.data),
@@ -199,7 +195,6 @@ export const projectsAPI = {
   ),
 }
 
-// Campaigns API with error handling
 export const campaignsAPI = {
   getAll: withErrorHandling(
     (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
@@ -229,7 +224,6 @@ export const campaignsAPI = {
   ),
 }
 
-// Messaging API with error handling
 export const messagingAPI = {
   // SMS
   getSMS: withErrorHandling(
