@@ -7,7 +7,6 @@ const api = axios.create({
   timeout: 15000, // 15 seconds timeout
 })
 
-// Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
     // Get token from localStorage or cookies
@@ -27,11 +26,10 @@ api.interceptors.request.use(
   },
 )
 
-// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Get request context for better error reporting
+    
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
