@@ -146,6 +146,30 @@ export interface MessagePayload {
   callbackUrl?: string;
 }
 
+// --- Types for Campaign Templates & Automations ---
+export interface CampaignTemplate {
+  id: string;
+  project_id: string;
+  name: string;
+  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  content: string;
+  type: 'transactional' | 'marketing' | 'notification' | 'reminder';
+  variables: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignAutomation {
+  id: string;
+  project_id: string;
+  name: string;
+  trigger_event: string;
+  campaign_template_id: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // Auth API with error handling
 export const authAPI = {
   login: withErrorHandling(
@@ -231,6 +255,64 @@ export const campaignsAPI = {
   ),
 }
 
+// --- Campaign Templates API ---
+export const campaignTemplatesAPI = {
+  getAll: withErrorHandling(
+    (projectId: string): Promise<CampaignTemplate[]> =>
+      api.get(`/templates`, { params: { project_id: projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getById: withErrorHandling(
+    (id: string): Promise<CampaignTemplate> =>
+      api.get(`/templates/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+  create: withErrorHandling(
+    (template: Omit<CampaignTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<CampaignTemplate> =>
+      api.post(`/templates`, template).then(res => res.data),
+    ErrorType.API
+  ),
+  update: withErrorHandling(
+    (id: string, template: Partial<Omit<CampaignTemplate, 'id' | 'created_at' | 'updated_at'>>): Promise<CampaignTemplate> =>
+      api.put(`/templates/${id}`, template).then(res => res.data),
+    ErrorType.API
+  ),
+  delete: withErrorHandling(
+    (id: string): Promise<void> =>
+      api.delete(`/templates/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
+// --- Campaign Automations API ---
+export const campaignAutomationsAPI = {
+  getAll: withErrorHandling(
+    (projectId: string): Promise<CampaignAutomation[]> =>
+      api.get(`/automations`, { params: { project_id: projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getById: withErrorHandling(
+    (id: string): Promise<CampaignAutomation> =>
+      api.get(`/automations/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+  create: withErrorHandling(
+    (automation: Omit<CampaignAutomation, 'id' | 'created_at' | 'updated_at'>): Promise<CampaignAutomation> =>
+      api.post(`/automations`, automation).then(res => res.data),
+    ErrorType.API
+  ),
+  update: withErrorHandling(
+    (id: string, automation: Partial<Omit<CampaignAutomation, 'id' | 'created_at' | 'updated_at'>>): Promise<CampaignAutomation> =>
+      api.put(`/automations/${id}`, automation).then(res => res.data),
+    ErrorType.API
+  ),
+  delete: withErrorHandling(
+    (id: string): Promise<void> =>
+      api.delete(`/automations/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
 // Messaging API with error handling
 export const messagingAPI = {
   // SMS
@@ -254,5 +336,13 @@ export const messagingAPI = {
     (data: { messages: MessagePayload[] }) => api.post("/messaging/sms/bulk", data).then(res => res.data),
     ErrorType.API,
     { toastMessage: "Failed to send bulk SMS messages. Please try again." }
+  ),
+}
+
+// Analytics API with error handling
+export const analyticsAPI = {
+  getEngagement: withErrorHandling(
+    (timeframe: string) => api.get(`/analytics/engagement`, { params: { timeframe } }).then(res => res.data),
+    ErrorType.API
   ),
 }

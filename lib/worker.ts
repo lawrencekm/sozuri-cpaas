@@ -1,19 +1,36 @@
-// Placeholder worker file to prevent Next.js build errors
-// This file is referenced by Next.js build process but was missing
+// Worker implementation for Next.js
+// This file is used by Next.js build process
 
-interface WorkerInterface {
-  on: (event: string, callback: Function) => void;
-  postMessage: (message: any) => void;
-  terminate: () => void;
+/**
+ * Interface for worker functionality
+ */
+export interface WorkerInterface {
+  on: (event: string, callback: Function) => WorkerInterface;
+  postMessage: (message: any) => WorkerInterface;
+  terminate: () => WorkerInterface;
 }
 
+/**
+ * Creates a worker interface with no-op implementations
+ * @returns {WorkerInterface} Worker interface
+ */
 export function worker(): WorkerInterface {
   return {
     // No-op implementation
-    on: function() {},
-    postMessage: function() {},
-    terminate: function() {}
+    on: function(event: string, callback: Function): WorkerInterface {
+      // Intentionally empty
+      return this;
+    },
+    postMessage: function(message: any): WorkerInterface {
+      // Intentionally empty
+      return this;
+    },
+    terminate: function(): WorkerInterface {
+      // Intentionally empty
+      return this;
+    }
   };
 }
 
+// Default export for compatibility
 export default worker;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { 
-    ArrowLeft, Zap, Workflow, Users, ShoppingCart, MessageSquareMore, Mail, HelpCircle, 
+    ArrowLeft, MessageSquareMore, Mail, HelpCircle, 
     CheckCircle2, XCircle, Link as LinkIcon, AlertCircle, Trash2, Loader2, Settings 
 } from "lucide-react"
 import Link from "next/link"
@@ -15,35 +15,43 @@ import { toast } from "react-hot-toast";
 import { handleError, ErrorType } from "@/lib/error-handler";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+    ZapierLogo,
+    SalesforceLogo,
+    HubSpotLogo,
+    MailchimpLogo,
+    ShopifyLogo,
+    ZendeskLogo,
+    MakeLogo
+} from "@/components/brand-logos";
 
-// --- Types --- (Should be shared)
 interface PotentialIntegration {
-    type: string; // Unique identifier (e.g., 'zapier', 'hubspot')
+    type: string; 
     title: string;
     description: string;
     icon: React.ComponentType<any>;
-    category: string; // For potential future filtering
+    category: string;
 }
 
 interface ConfiguredIntegration {
   id: string;
-  type: string; // Matches PotentialIntegration type
-  name: string; // User-defined name for this specific connection
-  connected: boolean; // Represents current connection status from backend
+  type: string; 
+  name: string; 
+  connected: boolean; 
   createdAt: string;
-  // Add other relevant fields like credentials ID, configuration details, etc.
+  
 }
 
 // --- Potential Integrations List ---
 // TODO: Fetch this from an API or define centrally
 const potentialIntegrations: PotentialIntegration[] = [
-    { type: 'zapier', title: 'Zapier', description: 'Connect SOZURI to thousands of apps via Zapier.', icon: Zap, category: 'Automation' },
-    { type: 'make', title: 'Make.com', description: 'Automate workflows using Make.com (formerly Integromat).', icon: Workflow, category: 'Automation' },
-    { type: 'salesforce', title: 'Salesforce', description: 'Sync contacts and communications with Salesforce CRM.', icon: Users, category: 'CRM' },
-    { type: 'hubspot', title: 'HubSpot', description: 'Integrate with HubSpot CRM and Marketing Hub.', icon: Users, category: 'CRM' },
-    { type: 'mailchimp', title: 'Mailchimp', description: 'Connect with Mailchimp for email marketing sync.', icon: Mail, category: 'Marketing' },
-    { type: 'shopify', title: 'Shopify', description: 'Automate e-commerce notifications via Shopify.', icon: ShoppingCart, category: 'Ecommerce' },
-    { type: 'zendesk', title: 'Zendesk', description: 'Streamline support by connecting with Zendesk.', icon: MessageSquareMore, category: 'Support' },
+    { type: 'zapier', title: 'Zapier', description: 'Connect SOZURI to thousands of apps via Zapier.', icon: ZapierLogo, category: 'Automation' },
+    { type: 'make', title: 'Make.com', description: 'Automate workflows using Make.com (formerly Integromat).', icon: MakeLogo, category: 'Automation' },
+    { type: 'salesforce', title: 'Salesforce', description: 'Sync contacts and communications with Salesforce CRM.', icon: SalesforceLogo, category: 'CRM' },
+    { type: 'hubspot', title: 'HubSpot', description: 'Integrate with HubSpot CRM and Marketing Hub.', icon: HubSpotLogo, category: 'CRM' },
+    { type: 'mailchimp', title: 'Mailchimp', description: 'Connect with Mailchimp for email marketing sync.', icon: MailchimpLogo, category: 'Marketing' },
+    { type: 'shopify', title: 'Shopify', description: 'Automate e-commerce notifications via Shopify.', icon: ShopifyLogo, category: 'Ecommerce' },
+    { type: 'zendesk', title: 'Zendesk', description: 'Streamline support by connecting with Zendesk.', icon: ZendeskLogo, category: 'Support' },
 ];
 
 // --- API Functions ---
@@ -61,7 +69,7 @@ const fetchConfiguredIntegrations = async (): Promise<ConfiguredIntegration[]> =
 const disconnectIntegrationFn = async (id: string): Promise<void> => {
    // TODO: Replace with actual call using configured Axios instance from lib/api
   const response = await fetch(`/api/integrations/${id}`, { method: 'DELETE' });
-  if (!response.ok && response.status !== 204) { // 204 is success (No Content)
+  if (!response.ok && response.status !== 204) { 
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to disconnect integration');
   }
@@ -82,7 +90,7 @@ function IntegrationCard({ potential, configured, onDisconnect, isDisconnecting,
     const Icon = potential.icon;
     const isConfigured = !!configured;
     const isConnected = isConfigured && configured.connected;
-    const currentErrorId = disconnectErrorId; // To track error for *this* card
+    const currentErrorId = disconnectErrorId;
 
     const handleConnect = () => {
         // TODO: Implement actual connection flow (e.g., OAuth or setup page)
@@ -173,12 +181,10 @@ function IntegrationCard({ potential, configured, onDisconnect, isDisconnecting,
     );
 }
 
-// --- Main Page Component ---
 export default function IntegrationsPage() {
   const queryClient = useQueryClient();
   const [disconnectErrorId, setDisconnectErrorId] = useState<string | null>(null);
 
-  // Fetch Configured Integrations
   const { data: configuredIntegrations, isLoading, isError, error } = useQuery<ConfiguredIntegration[], Error>({
     queryKey: ['integrations'],
     queryFn: fetchConfiguredIntegrations,
@@ -187,13 +193,13 @@ export default function IntegrationsPage() {
 
   // Disconnect Mutation
    const disconnectMutation = useMutation<void, Error, {id: string, name: string}>({
-    mutationFn: ({ id }) => disconnectIntegrationFn(id),
-    onSuccess: (_, variables) => {
+    mutationFn: ({ id }: { id: string }) => disconnectIntegrationFn(id),
+    onSuccess: (_: void, variables: { id: string; name: string }) => {
       toast.success(`Successfully disconnected "${variables.name}"`);
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
       setDisconnectErrorId(null);
     },
-    onError: (error, variables) => {
+    onError: (error: Error, variables: { id: string; name: string }) => {
       handleError(error, ErrorType.API, { 
           toastMessage: `Failed to disconnect "${variables.name}". Please try again.`, 
           context: { integrationId: variables.id, source: 'IntegrationsPage.disconnectMutation' } 
@@ -208,7 +214,9 @@ export default function IntegrationsPage() {
   };
 
   // Create a map for quick lookup of configured integrations by type
-  const configuredMap = new Map(configuredIntegrations?.map(int => [int.type, int]) || []);
+  const configuredMap = new Map<string, ConfiguredIntegration>(
+    (configuredIntegrations || []).map((int: ConfiguredIntegration) => [int.type, int])
+  );
 
   return (
     <DashboardLayout>
@@ -255,7 +263,7 @@ export default function IntegrationsPage() {
                     <IntegrationCard 
                         key={potential.type}
                         potential={potential}
-                        configured={configuredMap.get(potential.type)}
+                        configured={configuredMap.get(potential.type) as ConfiguredIntegration | undefined}
                         onDisconnect={handleDisconnect}
                         isDisconnecting={disconnectMutation.isPending}
                         disconnectErrorId={disconnectErrorId}
@@ -272,4 +280,4 @@ export default function IntegrationsPage() {
       </div>
     </DashboardLayout>
   )
-} 
+}

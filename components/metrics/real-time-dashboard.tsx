@@ -1,42 +1,43 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import { formatTime } from "@/lib/date-formatter"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { 
-  RefreshCw, 
-  Clock, 
-  BarChart3, 
+import {
+  RefreshCw,
+  Clock,
+  BarChart3,
   ArrowUpRight,
   MessageCircle,
   Phone,
   MessagesSquare
 } from "lucide-react"
-import { 
-  DeliveryRateMetricCard, 
-  LatencyMetricCard, 
-  ErrorRateMetricCard, 
-  CostMetricCard, 
+import {
+  DeliveryRateMetricCard,
+  LatencyMetricCard,
+  ErrorRateMetricCard,
+  CostMetricCard,
   ThroughputMetricCard,
   ConversionRateMetricCard
 } from "./advanced-metric-card"
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from "recharts"
 
 // Mock data for real-time metrics
@@ -73,11 +74,11 @@ const generateMockData = () => {
 const generateTimeSeriesData = () => {
   const now = new Date()
   const data = []
-  
+
   for (let i = 24; i >= 0; i--) {
     const time = new Date(now.getTime() - i * 15 * 60000) // 15-minute intervals
     data.push({
-      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: formatTime(time),
       sms: Math.floor(80 + Math.random() * 40),
       whatsapp: Math.floor(60 + Math.random() * 30),
       voice: Math.floor(30 + Math.random() * 20),
@@ -86,7 +87,7 @@ const generateTimeSeriesData = () => {
       latency: 80 + Math.random() * 50,
     })
   }
-  
+
   return data
 }
 
@@ -97,21 +98,21 @@ export function RealTimeDashboard() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("sms")
   const [refreshInterval, setRefreshInterval] = useState<number | null>(30000) // 30 seconds default
-  
+
   // Function to refresh data
   const refreshData = () => {
     setIsLoading(true)
-    
+
     // Simulate API call delay
     setTimeout(() => {
       setMetrics(generateMockData())
       setTimeSeriesData(prev => {
         const newData = [...prev]
         const now = new Date()
-        
+
         // Add new data point
         newData.push({
-          time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: formatTime(now),
           sms: Math.floor(80 + Math.random() * 40),
           whatsapp: Math.floor(60 + Math.random() * 30),
           voice: Math.floor(30 + Math.random() * 20),
@@ -119,36 +120,32 @@ export function RealTimeDashboard() {
           errorRate: 0.5 + Math.random() * 1.5,
           latency: 80 + Math.random() * 50,
         })
-        
+
         // Remove oldest data point to keep 24 points
         if (newData.length > 24) {
           newData.shift()
         }
-        
+
         return newData
       })
-      
+
       setLastUpdated(new Date())
       setIsLoading(false)
     }, 800)
   }
-  
+
   // Set up auto-refresh
   useEffect(() => {
     if (!refreshInterval) return
-    
+
     const intervalId = setInterval(refreshData, refreshInterval)
-    
+
     return () => clearInterval(intervalId)
   }, [refreshInterval])
-  
+
   // Format the last updated time
-  const formattedLastUpdated = lastUpdated.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
-  
+  const formattedLastUpdated = formatTime(lastUpdated)
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -163,10 +160,10 @@ export function RealTimeDashboard() {
             <Clock className="h-3 w-3 mr-1" />
             Last updated: {formattedLastUpdated}
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={refreshData} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshData}
             disabled={isLoading}
             className="h-8"
           >
@@ -174,33 +171,33 @@ export function RealTimeDashboard() {
             Refresh
           </Button>
           <div className="flex border rounded-md overflow-hidden">
-            <Button 
-              variant={refreshInterval === 10000 ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={refreshInterval === 10000 ? "default" : "ghost"}
+              size="sm"
               onClick={() => setRefreshInterval(10000)}
               className="h-8 rounded-none px-2"
             >
               10s
             </Button>
-            <Button 
-              variant={refreshInterval === 30000 ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={refreshInterval === 30000 ? "default" : "ghost"}
+              size="sm"
               onClick={() => setRefreshInterval(30000)}
               className="h-8 rounded-none px-2"
             >
               30s
             </Button>
-            <Button 
-              variant={refreshInterval === 60000 ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={refreshInterval === 60000 ? "default" : "ghost"}
+              size="sm"
               onClick={() => setRefreshInterval(60000)}
               className="h-8 rounded-none px-2"
             >
               1m
             </Button>
-            <Button 
-              variant={refreshInterval === null ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={refreshInterval === null ? "default" : "ghost"}
+              size="sm"
               onClick={() => setRefreshInterval(null)}
               className="h-8 rounded-none px-2"
             >
@@ -209,7 +206,7 @@ export function RealTimeDashboard() {
           </div>
         </div>
       </div>
-      
+
       <Tabs defaultValue="sms" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="sms" className="flex items-center gap-1.5">
@@ -225,54 +222,54 @@ export function RealTimeDashboard() {
             <span>Voice</span>
           </TabsTrigger>
         </TabsList>
-        
+
         {/* SMS Metrics */}
         <TabsContent value="sms" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <DeliveryRateMetricCard 
-              value={metrics.sms.deliveryRate} 
-              change="+1.2%" 
-              trend="up" 
+            <DeliveryRateMetricCard
+              value={metrics.sms.deliveryRate}
+              change="+1.2%"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?metric=delivery-rate"
               isLoading={isLoading}
             />
-            <LatencyMetricCard 
-              value={metrics.sms.latency} 
-              change="-5ms" 
-              trend="down" 
+            <LatencyMetricCard
+              value={metrics.sms.latency}
+              change="-5ms"
+              trend="down"
               detailsLink="/dashboard/analytics/messaging?metric=latency"
               isLoading={isLoading}
             />
-            <ErrorRateMetricCard 
-              value={metrics.sms.errorRate} 
-              change="-0.3%" 
-              trend="down" 
+            <ErrorRateMetricCard
+              value={metrics.sms.errorRate}
+              change="-0.3%"
+              trend="down"
               detailsLink="/dashboard/analytics/messaging?metric=error-rate"
               isLoading={isLoading}
             />
-            <CostMetricCard 
-              value={metrics.sms.cost} 
-              change="+$120.50" 
-              trend="up" 
+            <CostMetricCard
+              value={metrics.sms.cost}
+              change="+$120.50"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?metric=cost"
               isLoading={isLoading}
             />
-            <ThroughputMetricCard 
-              value={metrics.sms.throughput} 
-              change="+15/sec" 
-              trend="up" 
+            <ThroughputMetricCard
+              value={metrics.sms.throughput}
+              change="+15/sec"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?metric=throughput"
               isLoading={isLoading}
             />
-            <ConversionRateMetricCard 
-              value={metrics.sms.conversionRate} 
-              change="+0.8%" 
-              trend="up" 
+            <ConversionRateMetricCard
+              value={metrics.sms.conversionRate}
+              change="+0.8%"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?metric=conversion"
               isLoading={isLoading}
             />
           </div>
-          
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -297,7 +294,7 @@ export function RealTimeDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>
@@ -320,54 +317,54 @@ export function RealTimeDashboard() {
             </Card>
           </div>
         </TabsContent>
-        
+
         {/* WhatsApp Metrics */}
         <TabsContent value="whatsapp" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <DeliveryRateMetricCard 
-              value={metrics.whatsapp.deliveryRate} 
-              change="+0.8%" 
-              trend="up" 
+            <DeliveryRateMetricCard
+              value={metrics.whatsapp.deliveryRate}
+              change="+0.8%"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=delivery-rate"
               isLoading={isLoading}
             />
-            <LatencyMetricCard 
-              value={metrics.whatsapp.latency} 
-              change="-8ms" 
-              trend="down" 
+            <LatencyMetricCard
+              value={metrics.whatsapp.latency}
+              change="-8ms"
+              trend="down"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=latency"
               isLoading={isLoading}
             />
-            <ErrorRateMetricCard 
-              value={metrics.whatsapp.errorRate} 
-              change="-0.2%" 
-              trend="down" 
+            <ErrorRateMetricCard
+              value={metrics.whatsapp.errorRate}
+              change="-0.2%"
+              trend="down"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=error-rate"
               isLoading={isLoading}
             />
-            <CostMetricCard 
-              value={metrics.whatsapp.cost} 
-              change="+$85.30" 
-              trend="up" 
+            <CostMetricCard
+              value={metrics.whatsapp.cost}
+              change="+$85.30"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=cost"
               isLoading={isLoading}
             />
-            <ThroughputMetricCard 
-              value={metrics.whatsapp.throughput} 
-              change="+12/sec" 
-              trend="up" 
+            <ThroughputMetricCard
+              value={metrics.whatsapp.throughput}
+              change="+12/sec"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=throughput"
               isLoading={isLoading}
             />
-            <ConversionRateMetricCard 
-              value={metrics.whatsapp.conversionRate} 
-              change="+1.2%" 
-              trend="up" 
+            <ConversionRateMetricCard
+              value={metrics.whatsapp.conversionRate}
+              change="+1.2%"
+              trend="up"
               detailsLink="/dashboard/analytics/messaging?channel=whatsapp&metric=conversion"
               isLoading={isLoading}
             />
           </div>
-          
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -392,7 +389,7 @@ export function RealTimeDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>
@@ -415,54 +412,54 @@ export function RealTimeDashboard() {
             </Card>
           </div>
         </TabsContent>
-        
+
         {/* Voice Metrics */}
         <TabsContent value="voice" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <DeliveryRateMetricCard 
-              value={metrics.voice.deliveryRate} 
-              change="+0.5%" 
-              trend="up" 
+            <DeliveryRateMetricCard
+              value={metrics.voice.deliveryRate}
+              change="+0.5%"
+              trend="up"
               detailsLink="/dashboard/analytics/voice?metric=delivery-rate"
               isLoading={isLoading}
             />
-            <LatencyMetricCard 
-              value={metrics.voice.latency} 
-              change="-12ms" 
-              trend="down" 
+            <LatencyMetricCard
+              value={metrics.voice.latency}
+              change="-12ms"
+              trend="down"
               detailsLink="/dashboard/analytics/voice?metric=latency"
               isLoading={isLoading}
             />
-            <ErrorRateMetricCard 
-              value={metrics.voice.errorRate} 
-              change="-0.1%" 
-              trend="down" 
+            <ErrorRateMetricCard
+              value={metrics.voice.errorRate}
+              change="-0.1%"
+              trend="down"
               detailsLink="/dashboard/analytics/voice?metric=error-rate"
               isLoading={isLoading}
             />
-            <CostMetricCard 
-              value={metrics.voice.cost} 
-              change="+$210.75" 
-              trend="up" 
+            <CostMetricCard
+              value={metrics.voice.cost}
+              change="+$210.75"
+              trend="up"
               detailsLink="/dashboard/analytics/voice?metric=cost"
               isLoading={isLoading}
             />
-            <ThroughputMetricCard 
-              value={metrics.voice.throughput} 
-              change="+8/sec" 
-              trend="up" 
+            <ThroughputMetricCard
+              value={metrics.voice.throughput}
+              change="+8/sec"
+              trend="up"
               detailsLink="/dashboard/analytics/voice?metric=throughput"
               isLoading={isLoading}
             />
-            <ConversionRateMetricCard 
-              value={metrics.voice.conversionRate} 
-              change="+1.5%" 
-              trend="up" 
+            <ConversionRateMetricCard
+              value={metrics.voice.conversionRate}
+              change="+1.5%"
+              trend="up"
               detailsLink="/dashboard/analytics/voice?metric=conversion"
               isLoading={isLoading}
             />
           </div>
-          
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -487,7 +484,7 @@ export function RealTimeDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>

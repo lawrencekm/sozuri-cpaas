@@ -3,27 +3,28 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { 
-  Activity, 
-  AlertCircle, 
-  BarChart3, 
-  Bell, 
-  Calendar, 
-  CheckCircle2, 
-  ChevronRight, 
-  Clock, 
-  Download, 
-  Filter, 
-  Lightbulb, 
-  MessageCircle, 
-  Rocket, 
-  Settings, 
-  Sparkles, 
-  ThumbsUp, 
-  Trash2, 
-  TrendingUp, 
-  Users, 
-  Zap 
+import { formatShortDate } from "@/lib/date-formatter"
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Bell,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Download,
+  Filter,
+  Lightbulb,
+  MessageCircle,
+  Rocket,
+  Settings,
+  Sparkles,
+  ThumbsUp,
+  Trash2,
+  TrendingUp,
+  Users,
+  Zap
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -65,7 +66,7 @@ export default function AISuggestionsPage() {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
   const [filter, setFilter] = useState("all")
   const [implementedCount, setImplementedCount] = useState(0)
-  
+
   // Simulated AI suggestions data
   const mockSuggestions: AISuggestion[] = [
     {
@@ -267,14 +268,14 @@ export default function AISuggestionsPage() {
       ]
     }
   ]
-  
+
   useEffect(() => {
     // Simulate API call to fetch suggestions
     const fetchSuggestions = async () => {
       try {
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 1500))
-        
+
         setSuggestions(mockSuggestions)
         setImplementedCount(mockSuggestions.filter(s => s.implemented).length)
       } catch (error) {
@@ -283,36 +284,36 @@ export default function AISuggestionsPage() {
         setIsLoading(false)
       }
     }
-    
+
     fetchSuggestions()
   }, [])
-  
-  const filteredSuggestions = filter === "all" 
-    ? suggestions 
-    : filter === "implemented" 
+
+  const filteredSuggestions = filter === "all"
+    ? suggestions
+    : filter === "implemented"
       ? suggestions.filter(s => s.implemented)
-      : filter === "pending" 
+      : filter === "pending"
         ? suggestions.filter(s => !s.implemented)
         : suggestions.filter(s => s.category === filter)
-  
+
   const toggleImplementation = (id: string) => {
-    setSuggestions(prev => 
-      prev.map(suggestion => 
-        suggestion.id === id 
+    setSuggestions(prev =>
+      prev.map(suggestion =>
+        suggestion.id === id
           ? { ...suggestion, implemented: !suggestion.implemented }
           : suggestion
       )
     )
-    
+
     // Update implemented count
     const updatedSuggestion = suggestions.find(s => s.id === id)
     if (updatedSuggestion) {
-      setImplementedCount(prev => 
+      setImplementedCount(prev =>
         updatedSuggestion.implemented ? prev - 1 : prev + 1
       )
     }
   }
-  
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "engagement":
@@ -329,7 +330,7 @@ export default function AISuggestionsPage() {
         return <Lightbulb className="h-4 w-4" />
     }
   }
-  
+
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case "high":
@@ -342,7 +343,7 @@ export default function AISuggestionsPage() {
         return "bg-gray-100 text-gray-800 hover:bg-gray-200"
     }
   }
-  
+
   return (
     <DashboardLayout>
       <div className="flex flex-col space-y-8">
@@ -356,7 +357,7 @@ export default function AISuggestionsPage() {
               Intelligent recommendations to optimize your communication strategy
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-[180px]">
@@ -373,17 +374,17 @@ export default function AISuggestionsPage() {
                 <SelectItem value="timing">Timing</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
-            
+
             <Button>
               <Rocket className="mr-2 h-4 w-4" /> Apply All
             </Button>
           </div>
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
@@ -396,28 +397,28 @@ export default function AISuggestionsPage() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Implementation Rate</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {suggestions.length > 0 
-                  ? Math.round((implementedCount / suggestions.length) * 100) 
+                {suggestions.length > 0
+                  ? Math.round((implementedCount / suggestions.length) * 100)
                   : 0}%
               </div>
               <div className="mt-2">
-                <Progress 
-                  value={suggestions.length > 0 
-                    ? (implementedCount / suggestions.length) * 100 
-                    : 0} 
-                  className="h-2" 
+                <Progress
+                  value={suggestions.length > 0
+                    ? (implementedCount / suggestions.length) * 100
+                    : 0}
+                  className="h-2"
                 />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Potential Impact</CardTitle>
@@ -430,7 +431,7 @@ export default function AISuggestionsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">AI Analysis</CardTitle>
@@ -443,7 +444,7 @@ export default function AISuggestionsPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Personalized Recommendations</h2>
@@ -451,7 +452,7 @@ export default function AISuggestionsPage() {
               {filteredSuggestions.length} suggestions
             </Badge>
           </div>
-          
+
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
@@ -472,13 +473,13 @@ export default function AISuggestionsPage() {
           ) : filteredSuggestions.length > 0 ? (
             <div className="space-y-6">
               {filteredSuggestions.map((suggestion) => (
-                <Card 
-                  key={suggestion.id} 
+                <Card
+                  key={suggestion.id}
                   className={`border-l-4 ${
-                    suggestion.implemented 
-                      ? "border-l-green-500" 
-                      : suggestion.impact === "high" 
-                        ? "border-l-blue-500" 
+                    suggestion.implemented
+                      ? "border-l-green-500"
+                      : suggestion.impact === "high"
+                        ? "border-l-blue-500"
                         : "border-l-orange-500"
                   } transition-all hover:shadow-md`}
                 >
@@ -497,7 +498,7 @@ export default function AISuggestionsPage() {
                             <span className="capitalize">{suggestion.category}</span>
                           </Badge>
                           <Badge className={getImpactColor(suggestion.impact)}>
-                            {suggestion.impact === "high" ? "High Impact" : 
+                            {suggestion.impact === "high" ? "High Impact" :
                              suggestion.impact === "medium" ? "Medium Impact" : "Low Impact"}
                           </Badge>
                           <Badge variant="outline" className="flex items-center gap-1">
@@ -516,7 +517,7 @@ export default function AISuggestionsPage() {
                           <Label htmlFor={`implement-${suggestion.id}`} className="text-sm">
                             {suggestion.implemented ? "Implemented" : "Mark as implemented"}
                           </Label>
-                          <Switch 
+                          <Switch
                             id={`implement-${suggestion.id}`}
                             checked={suggestion.implemented}
                             onCheckedChange={() => toggleImplementation(suggestion.id)}
@@ -525,10 +526,10 @@ export default function AISuggestionsPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="pb-2">
                     <p className="text-muted-foreground">{suggestion.description}</p>
-                    
+
                     {suggestion.metrics && suggestion.metrics.length > 0 && (
                       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                         {suggestion.metrics.map((metric, index) => (
@@ -552,15 +553,15 @@ export default function AISuggestionsPage() {
                       </div>
                     )}
                   </CardContent>
-                  
+
                   <CardFooter className="pt-4 border-t flex justify-between">
                     <div className="text-xs text-muted-foreground">
-                      Generated on {new Date(suggestion.createdAt).toLocaleDateString()}
+                      Generated on {formatShortDate(suggestion.createdAt)}
                     </div>
                     <div className="flex gap-2">
                       {suggestion.actions.map((action, index) => (
-                        <Button 
-                          key={index} 
+                        <Button
+                          key={index}
                           variant={action.primary ? "default" : "outline"}
                           size="sm"
                           asChild
@@ -584,7 +585,7 @@ export default function AISuggestionsPage() {
                 </div>
                 <h3 className="text-lg font-medium mb-2">No suggestions found</h3>
                 <p className="text-muted-foreground text-center max-w-md mb-4">
-                  {filter !== "all" 
+                  {filter !== "all"
                     ? `No suggestions match the "${filter}" filter. Try changing your filter criteria.`
                     : "We're analyzing your data to generate personalized suggestions. Check back soon!"}
                 </p>
@@ -597,7 +598,7 @@ export default function AISuggestionsPage() {
             </Card>
           )}
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -618,7 +619,7 @@ export default function AISuggestionsPage() {
                   </div>
                   <Progress value={27} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -629,7 +630,7 @@ export default function AISuggestionsPage() {
                   </div>
                   <Progress value={18} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -640,7 +641,7 @@ export default function AISuggestionsPage() {
                   </div>
                   <Progress value={12} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -654,7 +655,7 @@ export default function AISuggestionsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Upcoming AI Analysis</CardTitle>
@@ -682,7 +683,7 @@ export default function AISuggestionsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-4 p-3 rounded-lg border">
                   <div className="flex-shrink-0">
                     <div className="p-2 rounded-full bg-primary/10">
@@ -701,7 +702,7 @@ export default function AISuggestionsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-4 p-3 rounded-lg border">
                   <div className="flex-shrink-0">
                     <div className="p-2 rounded-full bg-primary/10">

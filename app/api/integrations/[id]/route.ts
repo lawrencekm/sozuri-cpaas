@@ -12,7 +12,7 @@ interface IntegrationConfig {
 
 // Mock database - Use the same mock data source ideally, or manage state consistently
 // For simplicity, we redefine it here but this should point to a single source of truth
-let mockIntegrations: IntegrationConfig[] = [
+const mockIntegrations: IntegrationConfig[] = [
   { id: 'int_1', type: 'zapier', name: 'My Zapier Connection', connected: true, createdAt: new Date().toISOString() },
   { id: 'int_2', type: 'hubspot', name: 'Marketing HubSpot', connected: true, createdAt: new Date().toISOString() },
 ];
@@ -75,8 +75,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { name, connected /*, other updatable fields */ } = body;
 
     // Create the updated object - only update provided fields
-    const updatedIntegration = { 
-        ...mockIntegrations[integrationIndex], 
+    const updatedIntegration = {
+        ...mockIntegrations[integrationIndex],
         ...(name !== undefined && { name }),
         ...(connected !== undefined && { connected }),
         // Add other fields here
@@ -130,4 +130,4 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // handleError(error, ErrorType.API, { context: { route: `/api/integrations/${id}`, method: 'DELETE' } });
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}

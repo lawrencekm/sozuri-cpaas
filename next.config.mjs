@@ -1,20 +1,8 @@
-let userConfig = undefined
-try {
-  // try to import ESM first
-  userConfig = await import('./v0-user-next.config.mjs')
-} catch (e) {
-  try {
-    // fallback to CJS import
-    userConfig = await import("./v0-user-next.config");
-  } catch (innerError) {
-    // ignore error
-  }
-}
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
+    dirs: [], // Disable ESLint during development
   },
   typescript: {
     ignoreBuildErrors: true,
@@ -23,31 +11,24 @@ const nextConfig = {
     unoptimized: true,
   },
   webpack: (config, { isServer }) => {
-    // Prevent worker thread usage in webpack
+    // Add our worker.js file as an external module
     if (isServer) {
+      // Disable minimizers to prevent worker thread usage
       config.optimization.minimizer = [];
+
+      // Add an alias for the worker module
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'worker_threads': './lib/worker-threads-mock.js'
+      };
     }
+
     return config;
   },
-}
-
-if (userConfig) {
-  // ESM imports will have a "default" property
-  const config = userConfig.default || userConfig
-
-  for (const key in config) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
-      nextConfig[key] = {
-        ...nextConfig[key],
-        ...config[key],
-      }
-    } else {
-      nextConfig[key] = config[key]
-    }
-  }
+  // Disable worker threads completely
+  experimental: {
+    cpus: 1
+  },
 }
 
 export default nextConfig

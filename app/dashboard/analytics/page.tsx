@@ -2,15 +2,49 @@
 
 import { BarChart3, Download, Filter } from "lucide-react"
 import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
+import { Suspense, lazy } from "react"
+import dynamic from 'next/dynamic'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
-import { RealTimeDashboard } from "@/components/metrics/real-time-dashboard"
-import { CostAnalytics } from "@/components/metrics/cost-analytics"
 import { MetricsProvider } from "@/components/metrics/metrics-context"
+
+// Lazy load heavy chart components
+const RealTimeDashboard = dynamic(
+  () => import('@/components/metrics/real-time-dashboard').then(mod => ({ default: mod.RealTimeDashboard })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="h-[200px] animate-pulse bg-muted rounded-lg" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+      </div>
+    ),
+    ssr: false // Disable server-side rendering for chart components
+  }
+)
+
+const CostAnalytics = dynamic(
+  () => import('@/components/metrics/cost-analytics').then(mod => ({ default: mod.CostAnalytics })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+        <div className="h-[300px] animate-pulse bg-muted rounded-lg" />
+      </div>
+    ),
+    ssr: false
+  }
+)
 
 // Client component that uses the searchParams hook
 function AnalyticsContent() {

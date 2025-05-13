@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Home,
   KeyRound,
+  Layers,
   LayoutDashboard,
   Link as LinkIcon,
   MessageCircle,
@@ -123,6 +124,11 @@ const navGroups: NavGroup[] = [
         icon: BarChart3,
       },
       {
+        title: "Campaigns",
+        href: "/dashboard/campaigns",
+        icon: Layers,
+      },
+      {
         title: "AI Suggestions",
         href: "/dashboard/ai-suggestions",
         icon: Sparkles,
@@ -211,21 +217,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     >
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
-          <Sidebar className="border-r">
-            <SidebarHeader className="border-b py-4">
+          <Sidebar className="border-r bg-sidebar text-sidebar-foreground">
+            <SidebarHeader className="border-b border-sidebar-muted py-4">
               <div className="flex items-center justify-center px-4">
                 <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
               </div>
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="modern-scrollbar">
   {navGroups.map((group) => (
     <SidebarGroup key={group.title}>
-      <div className="px-4 pt-4 pb-1 text-xs font-bold text-muted-foreground tracking-widest uppercase">
+      <div className="px-4 pt-4 pb-1 text-xs font-bold text-sidebar-muted-foreground tracking-widest uppercase">
         {group.title}
       </div>
       <SidebarMenu>
         {group.items.map((item) => (
-          <SidebarMenuItem key={item.title}>
+          <SidebarMenuItem key={item.title} className="transition-colors duration-200 hover:bg-sidebar-muted/20">
             {item.subItems ? (
               <div className="flex flex-col">
                 <SidebarMenuButton
@@ -320,20 +326,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <SidebarRail />
           </Sidebar>
           <div className="flex w-full flex-1 flex-col">
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-6">
-              <div className="flex items-center gap-2">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-md px-6 shadow-sm">
+              <div className="flex items-center gap-3">
                 <div className="md:hidden">
                   <MobileNav />
                 </div>
                 <div className="hidden md:block">
-                  <SidebarTrigger />
+                  <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
                 </div>
-                <h1 className="hidden text-xl font-semibold sm:block">SOZURI Connect</h1>
+                <h1 className="hidden text-xl font-semibold sm:block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SOZURI Connect</h1>
               </div>
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" className="relative">
+                <div className="hidden md:flex items-center mr-2">
+                  <div className="status-dot active mr-2"></div>
+                  <span className="text-sm text-muted-foreground">System: Operational</span>
+                </div>
+                <Button variant="outline" size="icon" className="relative hover:bg-muted/80 transition-colors">
                   <Bell className="h-4 w-4" />
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse-subtle">
                     3
                   </span>
                 </Button>
@@ -374,8 +384,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<EnhancedBreadcrumb />
-<main className="flex-1 p-6">{children}</main>
+<div className="border-b bg-muted/30">
+  <div className="container mx-auto px-6">
+    <EnhancedBreadcrumb className="py-2" />
+  </div>
+</div>
+<main className="flex-1 p-4 md:p-6 animate-fade-in">
+  <div className="container mx-auto">
+    {children}
+  </div>
+</main>
           </div>
         </div>
       </SidebarProvider>

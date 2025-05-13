@@ -5,7 +5,7 @@ import { type WebhookConfig } from '../route'; // Import type from main route
 // Mock database reference (assuming it's managed in the main route file for mock purposes)
 // In a real app, you'd interact with a DB service here.
 // This is highly simplified for placeholder routes.
-let mockWebhooks: WebhookConfig[] = [
+const mockWebhooks: WebhookConfig[] = [
   { id: 'wh_1', url: 'https://example.com/hook1', description: 'Production Hook', events: ['message.sent', 'message.delivered'], isActive: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
   { id: 'wh_2', url: 'https://example.com/hook2', description: 'Staging Notifications', events: ['message.failed'], isActive: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
   { id: 'wh_3', url: 'https://example.com/hook3', description: 'Testing Endpoint', events: ['message.sent'], isActive: false, createdAt: new Date().toISOString() },
@@ -58,10 +58,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (description !== undefined) updatedWebhook.description = description;
     if (events !== undefined) updatedWebhook.events = events;
     if (isActive !== undefined) updatedWebhook.isActive = isActive;
-    
+
     // TODO: Update in DB
     mockWebhooks[index] = updatedWebhook;
-    
+
     return NextResponse.json(updatedWebhook);
   } catch (error) {
     console.error(`Failed to update webhook ${id}:`, error);
@@ -96,4 +96,4 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // TODO: Use/Implement a server-side centralized error handler
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}

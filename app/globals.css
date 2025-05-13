@@ -4,57 +4,93 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Modern Enterprise Color Palette */
+    --background: 220 33% 99%;
+    --foreground: 224 71% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%; /* Enterprise Blue */
-    --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 215 25% 27%; /* Dark Navy */
+    --popover-foreground: 224 71% 4%;
+    --primary: 226 64% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 226 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 25% 40%;
-    --accent: 217 92% 60%; /* Darker Light Blue for better contrast */
-    --accent-foreground: 215 25% 27%; /* Dark Navy */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 46%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%; /* Enterprise Blue */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 226 64% 40%;
     --radius: 0.5rem;
 
-    /* Chart colors - Enterprise palette */
-    --chart-1: 221 83% 53%; /* Enterprise Blue */
-    --chart-2: 215 25% 27%; /* Dark Navy */
-    --chart-3: 217 92% 76%; /* Light Blue */
-    --chart-4: 200 65% 55%; /* Teal */
-    --chart-5: 150 60% 45%; /* Green */
-    --chart-6: 240 60% 65%; /* Indigo */
-    --chart-7: 180 75% 45%; /* Cyan */
+    /* Sidebar specific colors */
+    --sidebar: 224 71% 4%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-muted: 225 14% 20%;
+    --sidebar-muted-foreground: 220 8% 70%;
+    --sidebar-accent: 199 89% 48%;
+
+    /* Success, warning, info colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Chart colors - Professional palette */
+    --chart-1: 226 64% 40%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 142 76% 36%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 326 100% 45%;
+    --chart-6: 38 92% 50%;
+    --chart-7: 187 100% 42%;
+
+    /* Animation durations */
+    --transition-fast: 150ms;
+    --transition-medium: 250ms;
+    --transition-slow: 350ms;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 92% 76%; /* Light Blue */
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 224 76% 48%;
+    --background: 224 71% 4%;
+    --foreground: 220 14% 96%;
+    --card: 224 71% 6%;
+    --card-foreground: 220 14% 96%;
+    --popover: 224 71% 6%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 225 14% 20%;
+    --secondary-foreground: 220 14% 96%;
+    --muted: 225 14% 10%;
+    --muted-foreground: 220 8% 70%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 14% 20%;
+    --input: 225 14% 20%;
+    --ring: 199 89% 48%;
+
+    /* Sidebar specific colors in dark mode */
+    --sidebar: 224 71% 6%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-muted: 225 14% 20%;
+    --sidebar-muted-foreground: 220 8% 70%;
+    --sidebar-accent: 199 89% 48%;
+
+    /* Success, warning, info colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
   }
 }
 
@@ -67,18 +103,128 @@
   }
 }
 
-/* Custom animations */
+/* Custom animations and utilities */
 @keyframes gradient-move {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-.animate-gradient-move {
-  background-size: 200% 200%;
-  animation: gradient-move 8s ease-in-out infinite;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.animate-bounce-slow {
-  animation: bounce 2.5s infinite;
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse-subtle {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@layer utilities {
+  .animate-gradient-move {
+    background-size: 200% 200%;
+    animation: gradient-move 8s ease-in-out infinite;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 2.5s infinite;
+  }
+
+  .animate-fade-in {
+    animation: fade-in var(--transition-medium) ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up var(--transition-medium) ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right var(--transition-medium) ease-out forwards;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+  }
+}
+
+/* Enterprise card styles */
+@layer components {
+  .enterprise-card {
+    @apply rounded-xl border bg-card p-6 shadow-sm transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .enterprise-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+  }
+
+  /* Glass effect */
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-md dark:bg-black/50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Status indicators */
+@layer components {
+  .status-dot {
+    @apply relative inline-block h-2.5 w-2.5 rounded-full;
+  }
+
+  .status-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-pulse;
+  }
+
+  .status-dot.active {
+    @apply bg-success;
+  }
+
+  .status-dot.active::after {
+    @apply bg-success/50;
+  }
+
+  .status-dot.inactive {
+    @apply bg-muted-foreground;
+  }
+
+  .status-dot.warning {
+    @apply bg-warning;
+  }
+
+  .status-dot.warning::after {
+    @apply bg-warning/50;
+  }
+}
+
+/* Modern scrollbar */
+@layer components {
+  .modern-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .modern-scrollbar::-webkit-scrollbar-track {
+    @apply bg-muted/50 rounded-full;
+  }
+
+  .modern-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full transition-colors;
+  }
+
+  .modern-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
 }

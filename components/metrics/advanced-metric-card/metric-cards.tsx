@@ -250,7 +250,7 @@ export function LatencyMetricCard({
       trend={trend === "up" ? "down" : "up"} // Invert trend for latency (lower is better)
       status={getStatus()}
       description="Average message delivery time"
-      infoTooltip="The average time it takes for a message to be delivered after being sent, measured in milliseconds."
+      infoTooltip="The average time it takes for a message to be delivered from the moment it's sent."
       icon={<Clock className="h-4 w-4" />}
       detailsLink={detailsLink}
       isLoading={isLoading}
@@ -274,8 +274,8 @@ export function ErrorRateMetricCard({
   // Determine status based on error rate
   const getStatus = (): MetricStatus => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value
-    if (numValue <= 0.5) return "good"
-    if (numValue <= 2) return "warning"
+    if (numValue <= 1) return "good"
+    if (numValue <= 5) return "warning"
     return "critical"
   }
 
@@ -284,40 +284,11 @@ export function ErrorRateMetricCard({
       title="Error Rate"
       value={`${value}%`}
       change={change}
-      trend={trend === "up" ? "down" : "up"} // Invert trend for errors (lower is better)
+      trend={trend === "up" ? "down" : "up"} // Invert trend for error rate (lower is better)
       status={getStatus()}
-      description="Percentage of failed message attempts"
-      infoTooltip="The percentage of messages that failed to be delivered due to errors, network issues, or invalid recipients."
+      description="Percentage of failed messages"
+      infoTooltip="The percentage of messages that failed to be delivered out of all messages sent."
       icon={<AlertTriangle className="h-4 w-4" />}
-      detailsLink={detailsLink}
-      isLoading={isLoading}
-    />
-  )
-}
-
-export function CostMetricCard({
-  value,
-  change,
-  trend,
-  detailsLink,
-  isLoading,
-}: {
-  value: string | number
-  change?: string | number
-  trend?: MetricTrend
-  detailsLink?: string
-  isLoading?: boolean
-}) {
-  return (
-    <AdvancedMetricCard
-      title="Cost This Month"
-      value={`$${value}`}
-      change={change}
-      trend={trend}
-      status="neutral"
-      description="Total messaging costs for current period"
-      infoTooltip="The total cost of all messages sent during the current billing period."
-      icon={<DollarSign className="h-4 w-4" />}
       detailsLink={detailsLink}
       isLoading={isLoading}
     />
@@ -337,16 +308,54 @@ export function ThroughputMetricCard({
   detailsLink?: string
   isLoading?: boolean
 }) {
+  // For throughput, higher is better
+  const getStatus = (): MetricStatus => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value
+    if (numValue >= 150) return "good"
+    if (numValue >= 100) return "warning"
+    return "neutral"
+  }
+
   return (
     <AdvancedMetricCard
       title="Throughput"
-      value={`${value}/sec`}
+      value={value}
       change={change}
       trend={trend}
-      status="neutral"
-      description="Messages processed per second"
-      infoTooltip="The number of messages that can be processed per second, indicating system capacity and performance."
+      status={getStatus()}
+      description="Messages per second"
+      infoTooltip="The number of messages that can be processed per second."
       icon={<Zap className="h-4 w-4" />}
+      detailsLink={detailsLink}
+      isLoading={isLoading}
+    />
+  )
+}
+
+export function CostMetricCard({
+  value,
+  change,
+  trend,
+  detailsLink,
+  isLoading,
+}: {
+  value: string | number
+  change?: string | number
+  trend?: MetricTrend
+  detailsLink?: string
+  isLoading?: boolean
+}) {
+  // For cost, lower is better
+  return (
+    <AdvancedMetricCard
+      title="Avg. Cost per Message"
+      value={typeof value === 'number' ? `$${value.toFixed(4)}` : value}
+      change={change}
+      trend={trend === "up" ? "down" : "up"} // Invert trend for cost (lower is better)
+      status={trend === "up" ? "warning" : "good"}
+      description="Average cost per message sent"
+      infoTooltip="The average cost incurred per message across all channels."
+      icon={<DollarSign className="h-4 w-4" />}
       detailsLink={detailsLink}
       isLoading={isLoading}
     />
@@ -370,8 +379,8 @@ export function ConversionRateMetricCard({
   const getStatus = (): MetricStatus => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value
     if (numValue >= 10) return "good"
-    if (numValue >= 5) return "warning"
-    return "neutral"
+    if (numValue >= 5) return "warning" 
+    return "critical"
   }
 
   return (
@@ -381,8 +390,8 @@ export function ConversionRateMetricCard({
       change={change}
       trend={trend}
       status={getStatus()}
-      description="Percentage of messages leading to conversions"
-      infoTooltip="The percentage of messages that resulted in the desired user action (clicks, purchases, etc.)."
+      description="Message-to-action conversion rate"
+      infoTooltip="The percentage of recipients who performed the desired action after receiving a message."
       icon={<BarChart4 className="h-4 w-4" />}
       detailsLink={detailsLink}
       showProgress={true}
@@ -390,17 +399,4 @@ export function ConversionRateMetricCard({
       isLoading={isLoading}
     />
   )
-}
-
-// Export all the components as a default object
-const MetricCards = {
-  AdvancedMetricCard,
-  DeliveryRateMetricCard,
-  LatencyMetricCard,
-  ErrorRateMetricCard,
-  ThroughputMetricCard,
-  CostMetricCard,
-  ConversionRateMetricCard
-};
-
-export default MetricCards;
+} 

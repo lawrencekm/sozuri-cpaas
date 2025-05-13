@@ -3,19 +3,20 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  Home, 
-  LayoutDashboard, 
-  MessagesSquare, 
-  Phone, 
-  MessageCircle, 
-  BarChart3, 
-  Users, 
+import {
+  Home,
+  LayoutDashboard,
+  MessagesSquare,
+  Phone,
+  MessageCircle,
+  BarChart3,
+  Users,
   Webhook,
   Settings,
   HelpCircle,
   Menu,
-  X
+  X,
+  Layers
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -84,6 +85,11 @@ const navGroups: NavGroup[] = [
         icon: BarChart3,
       },
       {
+        title: "Campaigns",
+        href: "/dashboard/campaigns",
+        icon: Layers,
+      },
+      {
         title: "Contacts",
         href: "/dashboard/contacts",
         icon: Users,
@@ -115,9 +121,9 @@ const navGroups: NavGroup[] = [
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-  
+
   const isActive = (href: string) => pathname === href
-  
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>

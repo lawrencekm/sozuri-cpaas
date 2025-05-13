@@ -8,10 +8,9 @@ interface IntegrationConfig {
   name: string;
   connected: boolean;
   createdAt: string;
-  // Add other relevant fields like credentials ID, configuration details, etc.
 }
 
-// Mock database - Replace with actual database logic
+// Mock database
 const mockIntegrations: IntegrationConfig[] = [
   { id: 'int_1', type: 'zapier', name: 'My Zapier Connection', connected: true, createdAt: new Date().toISOString() },
   { id: 'int_2', type: 'hubspot', name: 'Marketing HubSpot', connected: true, createdAt: new Date().toISOString() },
@@ -21,7 +20,7 @@ const mockIntegrations: IntegrationConfig[] = [
  * GET /api/integrations
  * Retrieves a list of configured integrations for the authenticated user.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   // TODO: Implement Authentication & Authorization check
   // Ensure user is logged in and authorized to view integrations.
 
@@ -38,11 +37,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/integrations
- * Creates/configures a new integration instance.
- * The request body should contain necessary details (type, credentials, config).
- */
 export async function POST(request: NextRequest) {
   // TODO: Implement Authentication & Authorization check
   // Ensure user is logged in and authorized to create integrations.
@@ -83,4 +77,4 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}

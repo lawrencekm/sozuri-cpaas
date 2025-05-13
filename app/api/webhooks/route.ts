@@ -12,7 +12,7 @@ export interface WebhookConfig {
 }
 
 // Mock database - Replace with actual database logic
-let mockWebhooks: WebhookConfig[] = [
+const mockWebhooks: WebhookConfig[] = [
   { id: 'wh_1', url: 'https://example.com/hook1', description: 'Production Hook', events: ['message.sent', 'message.delivered'], isActive: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
   { id: 'wh_2', url: 'https://example.com/hook2', description: 'Staging Notifications', events: ['message.failed'], isActive: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
   { id: 'wh_3', url: 'https://example.com/hook3', description: 'Testing Endpoint', events: ['message.sent'], isActive: false, createdAt: new Date().toISOString() },
@@ -22,7 +22,7 @@ let mockWebhooks: WebhookConfig[] = [
  * GET /api/webhooks
  * Retrieves a list of configured webhooks for the authenticated user.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   // TODO: Implement Authentication & Authorization check
   try {
     // TODO: Replace with actual database query
@@ -70,4 +70,4 @@ export async function POST(request: NextRequest) {
         }
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
-} 
+}

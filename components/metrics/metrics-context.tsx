@@ -179,8 +179,9 @@ const createMockMetrics = (): MetricsData => {
 
 // Create the context
 interface MetricsContextType {
-  metrics: MetricsData
+  metrics: MetricsData | null
   isLoading: boolean
+  isInitialized: boolean
   refreshMetrics: () => Promise<void>
   setAutoRefresh: (intervalMs: number | null) => void
 }
@@ -189,28 +190,30 @@ const MetricsContext = createContext<MetricsContextType | undefined>(undefined)
 
 // Create the provider component
 export function MetricsProvider({ children }: { children: ReactNode }) {
-  const [metrics, setMetrics] = useState<MetricsData>(createDefaultMetrics())
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [metrics, setMetrics] = useState<MetricsData | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isInitialized, setIsInitialized] = useState<boolean>(false)
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null)
   const [refreshIntervalId, setRefreshIntervalId] = useState<NodeJS.Timeout | null>(null)
 
-  // Function to fetch metrics data
+  // Function to fetch metrics data with reduced delay in development
   const fetchMetrics = async (): Promise<MetricsData> => {
     // In a real application, this would be an API call
     // For now, we'll use mock data
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(createMockMetrics())
-      }, 800) // Simulate API delay
+      }, process.env.NODE_ENV === 'production' ? 800 : 100) // Reduced delay in development
     })
   }
 
-  // Function to refresh metrics
+  // Function to refresh metrics - lazy loading
   const refreshMetrics = async () => {
     setIsLoading(true)
     try {
       const newMetrics = await fetchMetrics()
       setMetrics(newMetrics)
+      setIsInitialized(true)
     } catch (error) {
       console.error("Error fetching metrics:", error)
     } finally {
@@ -229,18 +232,22 @@ export function MetricsProvider({ children }: { children: ReactNode }) {
     // Set new interval if requested
     if (intervalMs) {
       setRefreshInterval(intervalMs)
-      const id = setInterval(refreshMetrics, intervalMs)
-      setRefreshIntervalId(id)
+      // Ensure metrics are loaded before setting interval
+      if (!isInitialized) {
+        refreshMetrics().then(() => {
+          const id = setInterval(refreshMetrics, intervalMs)
+          setRefreshIntervalId(id)
+        })
+      } else {
+        const id = setInterval(refreshMetrics, intervalMs)
+        setRefreshIntervalId(id)
+      }
     } else {
       setRefreshInterval(null)
     }
   }
 
-  // Initial fetch
-  useEffect(() => {
-    refreshMetrics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // No initial fetch - we'll load data only when needed
 
   // Clean up interval on unmount
   useEffect(() => {
@@ -251,11 +258,15 @@ export function MetricsProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshIntervalId])
 
+  // Get metrics with fallback to default if null
+  const getMetrics = () => metrics || createDefaultMetrics()
+
   return (
     <MetricsContext.Provider
       value={{
-        metrics,
+        metrics: getMetrics(),
         isLoading,
+        isInitialized,
         refreshMetrics,
         setAutoRefresh,
       }}

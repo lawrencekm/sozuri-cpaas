@@ -43,6 +43,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import { useCampaignTemplates, useCreateCampaignTemplate, useDeleteCampaignTemplate, useUpdateCampaignTemplate, useCampaignAutomations, useCreateCampaignAutomation, useDeleteCampaignAutomation, useUpdateCampaignAutomation } from "@/hooks/use-api"
 
 // New Campaign Dialog
 function NewCampaignDialog() {
@@ -64,7 +65,6 @@ function NewCampaignDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would save this to your backend
     console.log("Creating campaign:", formData)
     setOpen(false)
   }
@@ -124,6 +124,100 @@ function NewCampaignDialog() {
             <Button type="submit" disabled={!formData.name || !formData.channel}>
               Create Campaign
             </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// --- Campaign Template Dialog ---
+function NewTemplateDialog({ onCreate }: { onCreate: (template: any) => void }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    channel: "",
+    content: "",
+    type: "marketing",
+    variables: "",
+  })
+  const [open, setOpen] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, channel: value }))
+  }
+
+  const handleTypeChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, type: value }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onCreate({ ...formData, variables: formData.variables.split(",").map(v => v.trim()) })
+    setOpen(false)
+    setFormData({ name: "", channel: "", content: "", type: "marketing", variables: "" })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> New Template</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Create Campaign Template</DialogTitle>
+            <DialogDescription>Save a reusable template for future campaigns.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Template Name</Label>
+              <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="channel">Channel</Label>
+              <Select value={formData.channel} onValueChange={handleSelectChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sms">SMS</SelectItem>
+                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                  <SelectItem value="viber">Viber</SelectItem>
+                  <SelectItem value="rcs">RCS</SelectItem>
+                  <SelectItem value="voice">Voice</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type">Type</Label>
+              <Select value={formData.type} onValueChange={handleTypeChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="transactional">Transactional</SelectItem>
+                  <SelectItem value="notification">Notification</SelectItem>
+                  <SelectItem value="reminder">Reminder</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="variables">Variables (comma separated)</Label>
+              <Input id="variables" name="variables" value={formData.variables} onChange={handleChange} placeholder="e.g. firstName, orderId" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="content">Content</Label>
+              <textarea id="content" name="content" value={formData.content} onChange={handleChange} className="border rounded p-2 min-h-[80px]" required />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={!formData.name || !formData.channel || !formData.content}>Save Template</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -199,6 +293,187 @@ function CampaignCard({ campaign }: { campaign: any }) {
       </CardFooter>
     </Card>
   )
+}
+
+// --- Templates Tab Section ---
+function TemplatesTab() {
+  const { id: projectId } = useParams();
+  const { data: templates, isLoading, error } = useCampaignTemplates(projectId as string);
+  const createTemplate = useCreateCampaignTemplate();
+  const deleteTemplate = useDeleteCampaignTemplate();
+  const updateTemplate = useUpdateCampaignTemplate();
+
+  const handleCreate = (template: any) => {
+    createTemplate.mutate({ ...template, project_id: projectId });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteTemplate.mutate(id);
+  };
+
+  const handleUpdate = (id: string, updatedData: any) => {
+    updateTemplate.mutate({ id, ...updatedData });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Campaign Templates</h2>
+        <NewTemplateDialog onCreate={handleCreate} />
+      </div>
+      {isLoading ? (
+        <Card><CardContent className="p-6 text-center text-muted-foreground">Loading templates...</CardContent></Card>
+      ) : error ? (
+        <Card><CardContent className="p-6 text-center text-red-600">Failed to load templates.</CardContent></Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {(!templates || templates.length === 0) ? (
+            <Card><CardContent className="p-6 text-center text-muted-foreground">No templates yet.</CardContent></Card>
+          ) : (
+            templates.map((tpl: any) => (
+              <Card key={tpl.id}>
+                <CardHeader>
+                  <CardTitle>{tpl.name}</CardTitle>
+                  <CardDescription>{tpl.type.charAt(0).toUpperCase() + tpl.type.slice(1)} template for {tpl.channel.toUpperCase()}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-2 text-sm text-muted-foreground">Variables: {tpl.variables.join(", ") || "None"}</div>
+                  <div className="bg-muted rounded p-2 text-sm whitespace-pre-line">{tpl.content}</div>
+                </CardContent>
+                <CardFooter className="flex justify-between text-xs text-muted-foreground">
+                  <span>Last updated {tpl.updated_at}</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleUpdate(tpl.id, { name: tpl.name + " (Updated)" })}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(tpl.id)}>Delete</Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Automations Tab Section ---
+function AutomationsTab() {
+  const { id: projectId } = useParams();
+  const { data: automations, isLoading, error } = useCampaignAutomations(projectId as string);
+  const createAutomation = useCreateCampaignAutomation();
+  const deleteAutomation = useDeleteCampaignAutomation();
+  const updateAutomation = useUpdateCampaignAutomation();
+  const [form, setForm] = useState({
+    name: "",
+    trigger_event: "",
+    campaign_template_id: "",
+    is_active: true,
+  });
+  const [open, setOpen] = useState(false);
+
+  // Fetch templates for the select dropdown
+  const { data: templates } = useCampaignTemplates(projectId as string);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleTemplateChange = (value: string) => {
+    setForm((prev) => ({ ...prev, campaign_template_id: value }));
+  };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createAutomation.mutate({ ...form, project_id: projectId as string });
+    setOpen(false);
+    setForm({ name: "", trigger_event: "", campaign_template_id: "", is_active: true });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteAutomation.mutate(id);
+  };
+
+  const handleUpdate = (id: string, updatedData: any) => {
+    updateAutomation.mutate({ id, ...updatedData });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Automations & Triggers</h2>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> New Automation</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>Create Automation</DialogTitle>
+                <DialogDescription>Set up a trigger to launch a campaign template automatically.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Automation Name</Label>
+                  <Input id="name" name="name" value={form.name} onChange={handleChange} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="trigger_event">Trigger Event</Label>
+                  <Input id="trigger_event" name="trigger_event" value={form.trigger_event} onChange={handleChange} placeholder="e.g. user_signup, order_placed" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="campaign_template_id">Campaign Template</Label>
+                  <Select value={form.campaign_template_id} onValueChange={handleTemplateChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates && templates.map((tpl: any) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={!form.name || !form.trigger_event || !form.campaign_template_id}>Save Automation</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+      {isLoading ? (
+        <Card><CardContent className="p-6 text-center text-muted-foreground">Loading automations...</CardContent></Card>
+      ) : error ? (
+        <Card><CardContent className="p-6 text-center text-red-600">Failed to load automations.</CardContent></Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {(!automations || automations.length === 0) ? (
+            <Card><CardContent className="p-6 text-center text-muted-foreground">No automations yet.</CardContent></Card>
+          ) : (
+            automations.map((auto: any) => (
+              <Card key={auto.id}>
+                <CardHeader>
+                  <CardTitle>{auto.name}</CardTitle>
+                  <CardDescription>On <span className="font-semibold">{auto.trigger_event}</span> trigger, launch <span className="font-semibold">{templates?.find((t: any) => t.id === auto.campaign_template_id)?.name || 'Template'}</span></CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className={auto.is_active ? "text-green-600" : "text-red-600"}>{auto.is_active ? "Active" : "Inactive"}</span>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between text-xs text-muted-foreground">
+                  <span>Last updated {auto.updated_at}</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleUpdate(auto.id, { name: auto.name + " (Updated)" })}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(auto.id)}>Delete</Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Metric Card Component
@@ -333,6 +608,8 @@ export default function ProjectDetailPage() {
         <Tabs defaultValue="campaigns" className="w-full">
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="automations">Automations</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="audience">Audience</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -343,6 +620,12 @@ export default function ProjectDetailPage() {
                 <CampaignCard key={campaign.id} campaign={campaign} />
               ))}
             </div>
+          </TabsContent>
+          <TabsContent value="templates" className="pt-4">
+            <TemplatesTab />
+          </TabsContent>
+          <TabsContent value="automations" className="pt-4">
+            <AutomationsTab />
           </TabsContent>
           <TabsContent value="analytics" className="pt-4">
             <Card>
