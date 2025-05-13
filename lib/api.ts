@@ -7,7 +7,6 @@ const api = axios.create({
   timeout: 15000, // 15 seconds timeout
 })
 
-// Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
     // Get token from localStorage or cookies
@@ -27,11 +26,10 @@ api.interceptors.request.use(
   },
 )
 
-// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Get request context for better error reporting
+    
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
@@ -97,13 +95,11 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
           ...(options.context || {}),
         },
       });
-      // Re-throw the error so callers (like React Query) can handle it further
       throw error;
     }
   };
 }
 
-// Type definitions for API responses and requests
 export interface User {
   id: string;
   name: string;
@@ -195,7 +191,6 @@ export const authAPI = {
   ),
 }
 
-// Projects API with error handling
 export const projectsAPI = {
   getAll: withErrorHandling(
     (): Promise<Project[]> => api.get("/projects").then(res => res.data),
@@ -225,7 +220,6 @@ export const projectsAPI = {
   ),
 }
 
-// Campaigns API with error handling
 export const campaignsAPI = {
   getAll: withErrorHandling(
     (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
@@ -313,7 +307,6 @@ export const campaignAutomationsAPI = {
   ),
 }
 
-// Messaging API with error handling
 export const messagingAPI = {
   // SMS
   getSMS: withErrorHandling(
