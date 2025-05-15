@@ -69,7 +69,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    title: "OVERVIEW",
+    title: "COMMUNICATIONS",
     items: [
       {
         title: "Dashboard",
@@ -82,11 +82,6 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/projects",
         icon: LayoutDashboard,
       },
-    ],
-  },
-  {
-    title: "COMMUNICATIONS",
-    items: [
       {
         title: "Messaging",
         href: "/dashboard/messaging",
@@ -385,8 +380,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </header>
             {/* Enhanced Breadcrumbs */}
 <div className="border-b bg-muted/30">
-  <div className="container mx-auto px-6">
-    <EnhancedBreadcrumb className="py-2" />
+  <div className="container mx-auto px-6 py-2">
+    <EnhancedBreadcrumb />
   </div>
 </div>
 <main className="flex-1 p-4 md:p-6 animate-fade-in">

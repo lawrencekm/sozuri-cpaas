@@ -1,75 +1,28 @@
-Overview
+# SOZURI CPaaS Portal
 
-Getting Started
+Key Features:
 
-Prerequisites
-Installation
+- AI-First Approach: Intelligent recommendations and optimizations based on communication patterns
+- Industry-Specific Solutions: Tailored features for Retail, Healthcare, Financial Services, and Education
+- Enterprise-Grade Security: Compliance with industry standards and robust security measures
+- Developer-Friendly: Comprehensive API documentation, SDKs, and webhooks for seamless integration
 
+## Getting Started
 
+### Prerequisites
 
-Backend Configuration
+- Node.js 18.x or later
+- npm or yarn
+- Backend API service (see Backend Configuration)
 
-API Structure
-Environment Variables
-Authentication
-Database Setup
-
-
-
-Integration Points
-
-Messaging Services
-Voice Services
-Chat Applications
-
-
-Data Models
-Development
-Deployment
-Contributing
-License
-
-Recent Improvements & Best Practices
-
-Updated Development Guidelines
-Updated Environment Variables
-Updated Installation Steps
-Monitoring & Observability
-
-
-
-
-Overview
-Key differentiators:
-
-
-AI-First Approach: Intelligent recommendations and optimizations based on communication patterns
-
-Industry-Specific Solutions: Tailored features for Retail, Healthcare, Financial Services, and Education
-
-Enterprise-Grade Security: Compliance with industry standards and robust security measures
-
-Developer-Friendly: Comprehensive API documentation, SDKs, and webhooks for seamless integration
-
-
-Getting Started
-
-Prerequisites
-
-Node.js 18.x or later
-npm or yarn
-Backend API service (see Backend Configuration)
-
-
+### Installation
 
 Install dependencies:
 ```bash
 npm install
-
-or
+# or
 yarn install
 ```
-
 
 Set up environment variables:
 ```bash
@@ -77,19 +30,14 @@ cp .env.example .env.local
 ```
 Edit .env.local with your configuration (see Environment Variables section).
 
-
 Run the development server:
 ```bash
 npm run dev
-
-or
+# or
 yarn dev
 ```
 
-
 Open http://localhost:3000 in your browser.
-
-
 
 Backend Configuration
 The SOZURI CPaaS Portal is designed to work with a RESTful API backend. This section outlines how to configure your backend to work with the portal.

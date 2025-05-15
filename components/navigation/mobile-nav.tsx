@@ -36,7 +36,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    title: "Overview",
+    title: "Communications",
     items: [
       {
         title: "Dashboard",
@@ -48,11 +48,6 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/projects",
         icon: LayoutDashboard,
       },
-    ],
-  },
-  {
-    title: "Communications",
-    items: [
       {
         title: "Messaging",
         href: "/dashboard/messaging",
