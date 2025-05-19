@@ -53,8 +53,10 @@ export function ErrorProvider({ children }: ErrorProviderProps) {
   // Set up global error handler for unhandled promise rejections
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason))
+      
       captureError(
-        event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+        error,
         { 
           errorType: ErrorType.UNKNOWN,
           context: { source: 'unhandledRejection' },

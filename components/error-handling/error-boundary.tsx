@@ -46,15 +46,13 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   )
 }
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode
-  fallbackComponent?: React.ComponentType<FallbackProps>
-}
-
 export function ErrorBoundary({ 
   children, 
   fallbackComponent = ErrorFallback 
-}: ErrorBoundaryProps) {
+}: {
+  children: React.ReactNode
+  fallbackComponent?: React.ComponentType<FallbackProps>
+}) {
   return (
     <ReactErrorBoundary
       FallbackComponent={fallbackComponent}
@@ -62,7 +60,7 @@ export function ErrorBoundary({
         handleError(error, ErrorType.UNKNOWN, {
           showToast: false,
           context: { source: 'ErrorBoundary.onError' }
-        })
+        });
       }}
     >
       {children}
@@ -99,7 +97,7 @@ export function ComponentErrorBoundary({
         handleError(error, ErrorType.UNKNOWN, {
           showToast: false,
           context: { source: 'ComponentErrorBoundary' }
-        })
+        });
       }}
     >
       {children}

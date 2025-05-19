@@ -59,12 +59,7 @@ export const handleError = (
 
   // 3. Report to monitoring service if enabled
   if (reportToMonitoring) {
-    // Integrate with your monitoring service (Sentry, LogRocket, etc.)
-    // Example for Sentry:
-    // Sentry.captureException(error, { 
-    //   tags: { errorType },
-    //   extra: { ...context }
-    // });
+    // You can integrate a different monitoring service here
   }
 
   return error;
