@@ -12,7 +12,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-// Define route titles for better readability
 const routeTitles: Record<string, string> = {
   dashboard: "Dashboard",
   messaging: "Messaging",
@@ -39,20 +38,15 @@ const routeTitles: Record<string, string> = {
 export function EnhancedBreadcrumb() {
   const pathname = usePathname()
 
-  // Skip rendering on main dashboard
   if (pathname === "/dashboard") return null
 
   const segments = pathname.split("/").filter(Boolean)
 
-  // Create breadcrumb items with proper paths and titles
   const breadcrumbItems = segments.map((segment, index) => {
-    // Build the path up to this segment
     const path = `/${segments.slice(0, index + 1).join("/")}`
 
-    // Get a readable title for this segment
     const title = routeTitles[segment] || segment.charAt(0).toUpperCase() + segment.slice(1)
 
-    // Check if this is the last segment (current page)
     const isLastSegment = index === segments.length - 1
 
     return {
@@ -63,34 +57,32 @@ export function EnhancedBreadcrumb() {
   })
 
   return (
-    <div className="bg-sidebar/95 text-sidebar-foreground px-6 py-2 border-b border-sidebar-border">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard" className="flex items-center text-sidebar-foreground hover:text-white">
-                <Home className="h-3.5 w-3.5" />
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator className="text-sidebar-foreground/70" />
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/dashboard" className="flex items-center text-black hover:text-black">
+              <Home className="h-3.5 w-3.5" />
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator className="text-black" />
 
-          {breadcrumbItems.map((item, index) => (
-            <BreadcrumbItem key={item.path}>
-              {item.isLastSegment ? (
-                <BreadcrumbPage className="font-medium text-white">{item.title}</BreadcrumbPage>
-              ) : (
-                <>
-                  <BreadcrumbLink asChild>
-                    <Link href={item.path} className="text-sidebar-foreground hover:text-white">{item.title}</Link>
-                  </BreadcrumbLink>
-                  <BreadcrumbSeparator className="text-sidebar-foreground/70" />
-                </>
-              )}
-            </BreadcrumbItem>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
+        {breadcrumbItems.map((item, index) => (
+          <BreadcrumbItem key={item.path}>
+            {item.isLastSegment ? (
+              <BreadcrumbPage className="font-medium text-black">{item.title}</BreadcrumbPage>
+            ) : (
+              <>
+                <BreadcrumbLink asChild>
+                  <Link href={item.path} className="text-black hover:text-black transition-colors">{item.title}</Link>
+                </BreadcrumbLink>
+                <BreadcrumbSeparator className="text-black" />
+              </>
+            )}
+          </BreadcrumbItem>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }

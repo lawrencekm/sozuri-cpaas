@@ -65,6 +65,22 @@ const config: Config = {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        onboarding: {
+          bg: "hsl(var(--onboarding-bg))",
+          accent: "hsl(var(--onboarding-accent))",
+          text: "hsl(var(--onboarding-text))",
+          border: "hsl(var(--onboarding-border))",
+        },
+        sidebar: {
+          background: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -84,6 +100,9 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      backgroundImage: {
+        'onboarding-gradient': 'linear-gradient(135deg, hsl(var(--onboarding-bg)), hsl(var(--onboarding-accent)))',
       },
     },
   },

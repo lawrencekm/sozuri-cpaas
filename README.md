@@ -1,11 +1,17 @@
 # SOZURI CPaaS Portal
 
-Key Features:
+## Key Features
 
-- AI-First Approach: Intelligent recommendations and optimizations based on communication patterns
-- Industry-Specific Solutions: Tailored features for Retail, Healthcare, Financial Services, and Education
-- Enterprise-Grade Security: Compliance with industry standards and robust security measures
-- Developer-Friendly: Comprehensive API documentation, SDKs, and webhooks for seamless integration
+- **AI-First Approach**: Intelligent recommendations and optimizations based on communication patterns
+- **Industry-Specific Solutions**: Tailored features for Retail, Healthcare, Financial Services, and Education
+- **Enterprise-Grade Security**: Compliance with industry standards and robust security measures
+- **Developer-Friendly**: Comprehensive API documentation, SDKs, and webhooks for seamless integration
+
+## Recent Updates
+
+- **Improved Onboarding Experience**: Onboarding walkthrough now only appears once to new users and doesn't reappear if "Remind Later" is clicked
+- **Enhanced Dashboard**: Added time-based greetings (Good morning/afternoon/evening)
+visibility
 
 ## Getting Started
 
@@ -215,3 +221,4 @@ Integrated AI-powered analytics for pattern recognition
 Added predictive analytics for campaign performance
 Implemented anomaly detection for early issue identification
 Created personalized recommendations based on usage patterns
+

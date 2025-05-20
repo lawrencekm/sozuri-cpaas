@@ -18,6 +18,7 @@ import {
   X,
   Layers
 } from "lucide-react"
+import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -36,7 +37,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    title: "Communications",
+    title: "COMMUNICATIONS",
     items: [
       {
         title: "Dashboard",
@@ -53,26 +54,26 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/messaging",
         icon: MessagesSquare,
         subItems: [
-          { title: "SMS", href: "/dashboard/messaging/sms" },
-          { title: "WhatsApp", href: "/dashboard/messaging/whatsapp" },
-          { title: "Viber", href: "/dashboard/messaging/viber" },
+          { title: "SMS", href: "/dashboard/messaging/sms", icon: SMSLogo },
+          { title: "WhatsApp", href: "/dashboard/messaging/whatsapp", icon: WhatsAppLogo },
+          { title: "Viber", href: "/dashboard/messaging/viber", icon: ViberLogo },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },
       {
         title: "Voice",
         href: "/dashboard/voice",
-        icon: Phone,
+        icon: VoiceLogo,
       },
       {
         title: "Chat Apps",
         href: "/dashboard/chat",
-        icon: MessageCircle,
+        icon: ChatLogo,
       },
     ],
   },
   {
-    title: "Data & Insights",
+    title: "DATA & INSIGHTS",
     items: [
       {
         title: "Analytics",
@@ -92,7 +93,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: "Platform",
+    title: "INTEGRATIONS & API",
     items: [
       {
         title: "Webhooks",
@@ -127,11 +128,11 @@ export function MobileNav() {
           <span className="sr-only">Toggle menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[85%] max-w-[300px] p-0">
+      <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar text-sidebar-foreground border-r border-sidebar-muted">
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b p-4">
-            <div className="font-semibold">SOZURI Connect</div>
-            <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+          <div className="flex items-center justify-between border-b border-sidebar-muted p-4">
+            <div className="font-semibold text-sidebar-foreground">SOZURI Connect</div>
+            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-sidebar-foreground hover:bg-sidebar-muted/30">
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -139,7 +140,7 @@ export function MobileNav() {
             <div className="space-y-2 px-2">
               {navGroups.map((group) => (
                 <div key={group.title} className="pb-2">
-                  <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <div className="px-3 py-2 text-xs font-medium text-blue-500 uppercase tracking-wider">
                     {group.title}
                   </div>
                   <div className="space-y-1">
@@ -148,12 +149,12 @@ export function MobileNav() {
                         {item.subItems ? (
                           <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value={item.title} className="border-none">
-                              <AccordionTrigger className={`px-3 py-2 text-sm rounded-md hover:bg-muted ${
-                                isActive(item.href) ? "bg-primary/10 text-primary font-medium" : ""
+                              <AccordionTrigger className={`px-3 py-2 text-sm rounded-md hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent ${
+                                isActive(item.href) ? "bg-sidebar-accent/20 text-sidebar-accent font-medium" : ""
                               }`}>
                                 <div className="flex items-center gap-3">
-                                  {item.icon && <item.icon className="h-4 w-4" />}
-                                  <span>{item.title}</span>
+                                  {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent" />}
+                                  <span className="font-medium">{item.title}</span>
                                 </div>
                               </AccordionTrigger>
                               <AccordionContent>
@@ -162,13 +163,14 @@ export function MobileNav() {
                                     <Link
                                       key={subItem.title}
                                       href={subItem.href}
-                                      className={`block px-3 py-2 text-sm rounded-md ${
+                                      className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
                                         isActive(subItem.href)
-                                          ? "bg-primary/10 text-primary font-medium"
-                                          : "hover:bg-muted"
+                                          ? "bg-sidebar-accent/20 text-sidebar-accent font-medium"
+                                          : "text-sidebar-muted-foreground hover:bg-sidebar-muted/30 hover:text-sidebar-foreground focus:bg-transparent"
                                       }`}
                                       onClick={() => setOpen(false)}
                                     >
+                                      {subItem.icon && <subItem.icon size={16} />}
                                       {subItem.title}
                                     </Link>
                                   ))}
@@ -179,15 +181,15 @@ export function MobileNav() {
                         ) : (
                           <Link
                             href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md ${
+                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors ${
                               isActive(item.href)
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "hover:bg-muted"
+                                ? "bg-sidebar-accent/20 text-sidebar-accent font-medium"
+                                : "hover:bg-sidebar-muted/30 focus:bg-transparent"
                             }`}
                             onClick={() => setOpen(false)}
                           >
-                            {item.icon && <item.icon className="h-4 w-4" />}
-                            <span>{item.title}</span>
+                            {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent" />}
+                            <span className="font-medium">{item.title}</span>
                           </Link>
                         )}
                       </div>
@@ -197,10 +199,10 @@ export function MobileNav() {
               ))}
             </div>
           </div>
-          <div className="border-t p-4">
+          <div className="border-t border-sidebar-muted p-4">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">John Doe</div>
-              <Button variant="outline" size="sm">Logout</Button>
+              <div className="text-sm font-medium text-sidebar-foreground">John Doe</div>
+              <Button variant="outline" size="sm" className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50">Logout</Button>
             </div>
           </div>
         </div>

@@ -25,6 +25,7 @@ import {
   Users,
   Webhook,
 } from "lucide-react"
+import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -47,7 +48,6 @@ import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
 import { MobileNav } from "@/components/navigation/mobile-nav"
 import { ProductTour } from "@/components/onboarding/product-tour"
 
-// Add this type definition for Lucide icons
 interface LucideProps extends React.SVGProps<SVGSVGElement> {
   className?: string
 }
@@ -57,11 +57,10 @@ interface NavItem {
   href: string
   icon?: React.ComponentType<LucideProps>
   subItems?: NavItem[]
-  channels?: Array<{ name: string; color: string }>
+  channels?: Array<{ name: string; logo: React.ComponentType<LucideProps> }>
   badge?: string
 }
 
-// Navigation with logical grouping for better organization
 interface NavGroup {
   title: string;
   items: NavItem[];
@@ -87,9 +86,9 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/messaging",
         icon: MessagesSquare,
         channels: [
-          { name: "SMS", color: "bg-primary" },
-          { name: "WhatsApp", color: "bg-green-500" },
-          { name: "Viber", color: "bg-purple-500" },
+          { name: "SMS", logo: SMSLogo },
+          { name: "WhatsApp", logo: WhatsAppLogo },
+          { name: "Viber", logo: ViberLogo },
         ],
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms" },
@@ -219,99 +218,105 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </SidebarHeader>
             <SidebarContent className="modern-scrollbar">
-  {navGroups.map((group) => (
-    <SidebarGroup key={group.title}>
-      <div className="px-4 pt-4 pb-1 text-xs font-bold text-sidebar-muted-foreground tracking-widest uppercase">
-        {group.title}
-      </div>
-      <SidebarMenu>
-        {group.items.map((item) => (
-          <SidebarMenuItem key={item.title} className="transition-colors duration-200 hover:bg-sidebar-muted/20">
-            {item.subItems ? (
-              <div className="flex flex-col">
-                <SidebarMenuButton
-                  isActive={isMenuActive(item)}
-                  onClick={() => toggleMenu(item.title)}
-                  className="flex justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    {item.icon && <item.icon className="h-4 w-4" />}
-                    <span>{item.title}</span>
-                    {item.channels && (
-                      <div className="flex space-x-1 ml-auto">
-                        {item.channels.map((channel) => (
-                          <div
-                            key={channel.name}
-                            className={`h-2 w-2 rounded-full ${channel.color}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {item.badge && (
-                      <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
+              {navGroups.map((group) => (
+                <SidebarGroup key={group.title}>
+                  <div className="px-4 pt-4 pb-1 text-xs font-bold text-blue-500 tracking-widest uppercase">
+                    {group.title}
                   </div>
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
-                  />
-                </SidebarMenuButton>
-                {openMenus[item.title] && (
-                  <div className="ml-8 mt-1 flex flex-col space-y-1">
-                    {item.subItems.map((subItem) => (
-                      <Link
-                        key={subItem.title}
-                        href={subItem.href}
-                        className={`rounded-md px-2 py-1.5 text-sm ${
-                          isActive(subItem.href)
-                            ? "bg-primary/10 font-medium text-primary"
-                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                        }`}
-                      >
-                        {subItem.title}
-                      </Link>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title} className="my-0.5 px-2 transition-colors duration-200">
+                        {item.subItems ? (
+                          <div className="flex flex-col">
+                            <SidebarMenuButton
+                              isActive={isMenuActive(item)}
+                              onClick={() => toggleMenu(item.title)}
+                              className="flex justify-between items-center rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent"
+                            >
+                              <div className="flex items-center gap-3">
+                                {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
+                                <span className="font-medium text-black">{item.title}</span>
+                                {item.channels && (
+                                  <div className="flex space-x-1 ml-auto">
+                                    {item.channels.map((channel) => (
+                                      <div
+                                        key={channel.name}
+                                        className="h-4 w-4 flex-shrink-0"
+                                        title={channel.name}
+                                      >
+                                        <channel.logo className="h-4 w-4" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.badge && (
+                                  <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <ChevronDown
+                                className={`h-4 w-4 ml-2 flex-shrink-0 transition-transform ${openMenus[item.title] ? "rotate-180" : ""}`}
+                              />
+                            </SidebarMenuButton>
+                            {openMenus[item.title] && (
+                              <div className="ml-7 mt-1 flex flex-col space-y-1 border-l-2 border-sidebar-muted pl-3 py-1">
+                                {item.subItems.map((subItem) => (
+                                  <Link
+                                    key={subItem.title}
+                                    href={subItem.href}
+                                    className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                                      isActive(subItem.href)
+                                        ? "bg-sidebar-accent/15 font-medium text-black"
+                                        : "text-black/80 hover:bg-sidebar-muted/20 hover:text-black"
+                                    }`}
+                                  >
+                                    {subItem.title}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <SidebarMenuButton asChild isActive={isActive(item.href)}>
+                            <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
+                              {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
+                              <span className="font-medium text-black">{item.title}</span>
+                              {item.channels && (
+                                <div className="flex space-x-1 ml-auto">
+                                  {item.channels.map((channel) => (
+                                    <div
+                                      key={channel.name}
+                                      className="h-4 w-4 flex-shrink-0"
+                                      title={channel.name}
+                                    >
+                                      <channel.logo className="h-4 w-4" />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {item.badge && (
+                                <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        )}
+                      </SidebarMenuItem>
                     ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                <Link href={item.href} className="flex items-center gap-2">
-                  {item.icon && <item.icon className="h-4 w-4" />}
-                  <span>{item.title}</span>
-                  {item.channels && (
-                    <div className="flex space-x-1 ml-auto">
-                      {item.channels.map((channel) => (
-                        <div
-                          key={channel.name}
-                          className={`h-2 w-2 rounded-full ${channel.color}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {item.badge && (
-                    <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            )}
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
-  ))}
-</SidebarContent>
+                  </SidebarMenu>
+                </SidebarGroup>
+              ))}
+            </SidebarContent>
             <SidebarFooter className="border-t">
               <SidebarMenu>
                 {bottomNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className="my-0.5 px-2">
                     <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                      <Link href={item.href} className="flex items-center gap-2">
-                        {item.icon && <item.icon className="h-4 w-4" />}
-                        <span>{item.title}</span>
+                      <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
+                        {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
+                        <span className="font-medium text-black">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -379,7 +384,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<div className="border-b bg-muted/30">
+<div className="border-b border-border bg-white shadow-sm z-10">
   <div className="container mx-auto px-6 py-2">
     <EnhancedBreadcrumb />
   </div>

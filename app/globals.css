@@ -4,23 +4,41 @@
 
 @layer base {
   :root {
-    /* Modern Enterprise Color Palette */
+    /* Base colors */
     --background: 220 33% 99%;
     --foreground: 224 71% 4%;
     --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
+
+    /* Primary brand color */
     --primary: 226 64% 40%;
     --primary-foreground: 0 0% 100%;
+
+    /* Secondary colors */
     --secondary: 226 33% 17%;
     --secondary-foreground: 210 40% 98%;
+
+    /* Muted elements */
     --muted: 220 14% 96%;
     --muted-foreground: 220 8% 46%;
+
+    /* Accent elements */
     --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
+
+    /* Feedback colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Borders and form elements */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 226 64% 40%;
@@ -28,18 +46,10 @@
 
     /* Sidebar specific colors */
     --sidebar: 224 71% 4%;
-    --sidebar-foreground: 220 14% 96%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 225 14% 20%;
-    --sidebar-muted-foreground: 220 8% 70%;
+    --sidebar-muted-foreground: 220 8% 85%;
     --sidebar-accent: 199 89% 48%;
-
-    /* Success, warning, info colors */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
 
     /* Chart colors - Professional palette */
     --chart-1: 226 64% 40%;
@@ -57,40 +67,51 @@
   }
 
   .dark {
+    /* Base colors */
     --background: 224 71% 4%;
     --foreground: 220 14% 96%;
     --card: 224 71% 6%;
     --card-foreground: 220 14% 96%;
     --popover: 224 71% 6%;
     --popover-foreground: 220 14% 96%;
+
+    /* Primary brand color */
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
+
+    /* Secondary colors */
     --secondary: 225 14% 20%;
     --secondary-foreground: 220 14% 96%;
+
+    /* Muted elements */
     --muted: 225 14% 10%;
     --muted-foreground: 220 8% 70%;
+
+    /* Accent elements */
     --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
+
+    /* Feedback colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 225 14% 20%;
-    --input: 225 14% 20%;
-    --ring: 199 89% 48%;
-
-    /* Sidebar specific colors in dark mode */
-    --sidebar: 224 71% 6%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-muted: 225 14% 20%;
-    --sidebar-muted-foreground: 220 8% 70%;
-    --sidebar-accent: 199 89% 48%;
-
-    /* Success, warning, info colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+
+    /* Borders and form elements */
+    --border: 225 14% 20%;
+    --input: 225 14% 20%;
+    --ring: 199 89% 48%;
+
+    /* Sidebar specific colors */
+    --sidebar: 224 71% 6%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-muted: 225 14% 20%;
+    --sidebar-muted-foreground: 220 8% 85%;
+    --sidebar-accent: 199 89% 48%;
   }
 }
 

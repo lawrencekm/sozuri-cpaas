@@ -1,17 +1,25 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, Suspense, lazy } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Activity, BarChart3, Layers, MessageCircle, Phone, Plus, Sparkles, TrendingDown, TrendingUp, Users, BarChart as BarChartIcon, Clock, Mail, ArrowUp, AlertTriangle, RefreshCw, Menu } from "lucide-react"
+import {
+  Layers, MessageCircle, Plus, Sparkles,
+  TrendingDown, TrendingUp, BarChart as BarChartIcon,
+  Mail, ArrowUp, ArrowDownRight, AlertTriangle, RefreshCw, ArrowRight,
+  MessagesSquare, BarChart3, Users, CheckCircle2, Activity,
+  Clock, Shield, ChevronRight, Zap
+} from "lucide-react"
+import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { handleError, ErrorType } from "@/lib/error-handler"
 import { ErrorBoundary } from "@/components/error-handling/error-boundary"
-import { VisuallyHidden } from '@/components/ui/visually-hidden'
 import dynamic from 'next/dynamic'
+import { getTimeBasedGreeting } from "@/lib/greeting-utils"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -29,30 +37,26 @@ import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
 
 // Import chart components
-import { 
+import {
   DeliveryRateMetricCard,
   LatencyMetricCard,
   ErrorRateMetricCard,
   ThroughputMetricCard
 } from '@/components/metrics/advanced-metric-card/metric-cards'
 
-// Lazy load heavy components
 const EnhancedEmptyState = dynamic(
   () => import('@/components/onboarding/enhanced-empty-state').then(mod => ({ default: mod.EnhancedEmptyState })),
   {
-    loading: () => <div className="h-[600px] w-full animate-pulse bg-muted rounded-lg" />
+    loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />
   }
 )
 
 const WelcomeDashboard = dynamic(
   () => import('@/components/onboarding/welcome-dashboard').then(mod => ({ default: mod.WelcomeDashboard })),
   {
-    loading: () => <div className="h-[600px] w-full animate-pulse bg-muted rounded-lg" />
+    loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />
   }
 )
-
-// Lazy load chart components
-// Dynamic imports for other components
 
 // Lazy load other components
 const PageHierarchy = dynamic(
@@ -65,11 +69,10 @@ const PageHierarchy = dynamic(
 const AISuggestionsCard = dynamic(
   () => import('@/components/dashboard/ai-suggestions-card').then(mod => ({ default: mod.AISuggestionsCard })),
   {
-    loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />
+    loading: () => <div className="h-[200px] w-full animate-pulse bg-muted rounded-lg" />
   }
 )
 
-// Define the DashboardCard component
 function DashboardCard({
   title,
   value,
@@ -90,12 +93,12 @@ function DashboardCard({
   isLoading?: boolean
 }) {
   return (
-    <Card variant="interactive" className="animate-slide-up">
-      <CardContent padded="md">
+    <Card className="dashboard-card">
+      <CardContent className="p-5">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color} text-white shadow-sm`}>
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color} text-white`}>
                 {icon}
               </div>
               <p className="text-sm font-medium">{title}</p>
@@ -105,7 +108,7 @@ function DashboardCard({
                 <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <p className="text-2xl font-bold text-foreground">
                     {value}
                   </p>
                   <div
@@ -127,7 +130,6 @@ function DashboardCard({
   )
 }
 
-// Project card component
 function ProjectCard({
   project,
   onSelect,
@@ -135,12 +137,12 @@ function ProjectCard({
 }: { project: any; onSelect: (project: any) => void; isLoading?: boolean }) {
   if (isLoading) {
     return (
-      <Card variant="default" className="animate-pulse">
-        <CardHeader className="pb-2" withBackground>
+      <Card className="dashboard-card animate-pulse">
+        <CardHeader className="pb-2 bg-muted/30">
           <div className="h-6 w-3/4 animate-pulse rounded bg-muted"></div>
           <div className="h-4 w-1/2 animate-pulse rounded bg-muted"></div>
         </CardHeader>
-        <CardContent padded="md">
+        <CardContent className="p-5">
           <div className="flex justify-between text-sm">
             <div>
               <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
@@ -156,7 +158,7 @@ function ProjectCard({
             </div>
           </div>
         </CardContent>
-        <CardFooter withBorder>
+        <CardFooter className="border-t p-4">
           <div className="h-9 w-full animate-pulse rounded bg-muted"></div>
         </CardFooter>
       </Card>
@@ -164,13 +166,13 @@ function ProjectCard({
   }
 
   return (
-    <Card variant="interactive" className="animate-slide-up overflow-hidden">
-      <CardHeader className="pb-2" withBackground>
-        <CardTitle size="lg">{project.name}</CardTitle>
-        <CardDescription truncate>{project.description}</CardDescription>
+    <Card className="dashboard-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">{project.name}</CardTitle>
+        <CardDescription className="line-clamp-1">{project.description}</CardDescription>
       </CardHeader>
-      <CardContent padded="md">
-        <div className="grid grid-cols-3 gap-4 text-sm">
+      <CardContent className="p-5">
+        <div className="grid grid-cols-3 gap-3 text-sm">
           <div className="bg-muted/30 p-3 rounded-lg">
             <p className="text-muted-foreground text-xs">Campaigns</p>
             <p className="font-medium text-base">{project.campaigns}</p>
@@ -185,7 +187,7 @@ function ProjectCard({
           </div>
         </div>
       </CardContent>
-      <CardFooter withBorder align="center">
+      <CardFooter className="border-t p-4">
         <Button variant="default" size="sm" className="w-full" onClick={() => onSelect(project)}>
           <Layers className="mr-2 h-4 w-4" />
           View Project
@@ -220,27 +222,12 @@ function NewProjectDialog() {
     setIsSubmitting(true)
 
     try {
-      // Replace with actual API call
-      // const response = await fetch('/api/projects', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData),
-      // });
-      //
-      // if (!response.ok) {
-      //   const errorData = await response.json().catch(() => ({}));
-      //   throw new Error(errorData.message || 'Failed to create project');
-      // }
-
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       setOpen(false)
       router.refresh()
     } catch (error) {
-      // Use centralized error handler
       handleError(error, ErrorType.API, {
         toastMessage: "Failed to create project. Please try again.",
         context: {
@@ -266,8 +253,8 @@ function NewProjectDialog() {
             <DialogTitle>Create New Project</DialogTitle>
             <DialogDescription>Set up a new communication project to organize your campaigns.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4 px-2 sm:px-4">
-            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
               <Label htmlFor="name">Project Name</Label>
               <Input
                 id="name"
@@ -278,7 +265,7 @@ function NewProjectDialog() {
                 required
               />
             </div>
-            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
+            <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
@@ -288,7 +275,7 @@ function NewProjectDialog() {
                 placeholder="Brief description of your project"
               />
             </div>
-            <div className="grid gap-2 w-full max-w-[500px] mx-auto">
+            <div className="grid gap-2">
               <Label htmlFor="type">Project Type</Label>
               <Select value={formData.type} onValueChange={handleSelectChange}>
                 <SelectTrigger>
@@ -328,52 +315,95 @@ function AIMetricsCard({
   isLoading?: boolean;
 }) {
   return (
-    <Card variant="glass" className="animate-slide-up">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2" withBorder>
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
-            <Activity className="h-4 w-4" />
-          </div>
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        </div>
-        <div className="bg-accent/10 text-accent text-xs font-medium px-2 py-1 rounded-full">
-          AI Powered
-        </div>
+    <Card className="dashboard-card h-full border-accent/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-accent" />
+          {title}
+        </CardTitle>
+        <CardDescription>
+          Industry-leading AI-powered communications
+        </CardDescription>
       </CardHeader>
-      <CardContent padded="md">
-        <div className="space-y-4">
-          <div className="bg-muted/30 p-3 rounded-lg flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Prediction Accuracy</span>
-            <span className="text-sm font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">{metrics.accuracy}%</span>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="h-4 w-3/4 animate-pulse rounded bg-muted"></div>
+            <div className="h-4 w-1/2 animate-pulse rounded bg-muted"></div>
+            <div className="h-4 w-2/3 animate-pulse rounded bg-muted"></div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted/30 p-3 rounded-lg">
-              <span className="text-xs text-muted-foreground block mb-1">AI Predictions</span>
-              <span className="text-lg font-medium">{metrics.predictions}</span>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Accuracy</span>
+                <span className="text-sm font-medium">{metrics.accuracy}%</span>
+              </div>
+              <Progress value={metrics.accuracy} className="h-1 bg-muted" />
             </div>
-            <div className="bg-muted/30 p-3 rounded-lg">
-              <span className="text-xs text-muted-foreground block mb-1">Optimizations</span>
-              <span className="text-lg font-medium">{metrics.optimizations}</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg bg-accent/10 p-3">
+                <span className="text-xs text-muted-foreground">Predictions</span>
+                <p className="text-lg font-semibold">{metrics.predictions}</p>
+              </div>
+              <div className="rounded-lg bg-accent/10 p-3">
+                <span className="text-xs text-muted-foreground">Optimizations</span>
+                <p className="text-lg font-semibold">{metrics.optimizations}</p>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">Accuracy</span>
-              <span className="text-xs font-medium">{metrics.accuracy}%</span>
-            </div>
-            <Progress value={metrics.accuracy} className="h-1.5 rounded-full bg-muted/50" indicatorClassName="bg-gradient-to-r from-accent to-primary" />
-          </div>
-        </div>
+        )}
       </CardContent>
+      <CardFooter className="border-t">
+        <Button variant="ghost" className="w-full text-accent hover:text-accent/80" asChild>
+          <Link href="/dashboard/ai-suggestions">
+            View AI Suggestions
+            <ArrowUp className="ml-2 h-4 w-4 rotate-45" />
+          </Link>
+        </Button>
+      </CardFooter>
     </Card>
-  );
+  )
 }
 
-// This function is now imported from components/dashboard/ai-suggestions-card.tsx
-
-// Animation styles are now defined in global CSS
-
 // Client-side only chart component
+// Define quick access navigation items
+interface QuickAccessItem {
+  title: string;
+  href: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
+const hierarchyMap: Record<string, QuickAccessItem[]> = {
+  "/dashboard": [
+    {
+      title: "Messaging",
+      href: "/dashboard/messaging",
+      icon: <MessagesSquare className="h-5 w-5 text-primary" />,
+      description: "Manage all messaging channels",
+    },
+    {
+      title: "Voice",
+      href: "/dashboard/voice",
+      icon: <VoiceLogo size={20} />,
+      description: "Manage voice calls and IVR",
+    },
+    {
+      title: "Analytics",
+      href: "/dashboard/analytics",
+      icon: <BarChart3 className="h-5 w-5 text-blue-500" />,
+      description: "View performance metrics",
+    },
+    {
+      title: "Contacts",
+      href: "/dashboard/contacts",
+      icon: <Users className="h-5 w-5 text-green-500" />,
+      description: "Manage your audience",
+    },
+  ],
+};
+
 const ClientSideChart = ({ data }: { data: Array<{ name: string; messages: number }> }) => {
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
 
@@ -395,9 +425,8 @@ export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [projects, setProjects] = useState<any[]>([])
-  const [isNewUser, setIsNewUser] = useState(false) // Set to true to show the enhanced empty state
+  const [isNewUser, setIsNewUser] = useState(false)
 
-  // Check if this is a new user with no data
   if (isNewUser) {
     return (
       <DashboardLayout>
@@ -406,15 +435,21 @@ export default function Dashboard() {
     )
   }
 
-  // Check if this is a returning user who needs the welcome dashboard
-  const showWelcomeDashboard = false; // Set to true to show the welcome dashboard
+  // Get user information from localStorage or context in a real app
+  const [userInfo, setUserInfo] = useState({
+    name: "John",
+    companyName: "Acme Corporation",
+    userRole: "Platform Administrator"
+  });
+
+  const showWelcomeDashboard = false;
   if (showWelcomeDashboard) {
     return (
       <DashboardLayout>
         <WelcomeDashboard
-          userName="John Doe"
-          companyName="Acme Corporation"
-          userRole="Platform Administrator"
+          userName={userInfo.name}
+          companyName={userInfo.companyName}
+          userRole={userInfo.userRole}
         />
       </DashboardLayout>
     )
@@ -434,7 +469,6 @@ export default function Dashboard() {
 
   const [error, setError] = useState<Error | null>(null)
 
-  // Sample chart data
   const chartData = [
     { name: "Jan", messages: 1200 },
     { name: "Feb", messages: 1900 },
@@ -451,47 +485,27 @@ export default function Dashboard() {
   ]
 
   useEffect(() => {
-    // Fetch dashboard data
     const fetchDashboardData = async () => {
       try {
-        // Replace with actual API calls
-        // const projectsResponse = await fetch('/api/projects');
-        // const metricsResponse = await fetch('/api/metrics');
-        //
-        // if (!projectsResponse.ok) {
-        //   const errorData = await projectsResponse.json().catch(() => ({}));
-        //   throw new Error(errorData.message || 'Failed to fetch projects');
-        // }
-        //
-        // if (!metricsResponse.ok) {
-        //   const errorData = await metricsResponse.json().catch(() => ({}));
-        //   throw new Error(errorData.message || 'Failed to fetch metrics');
-        // }
-        //
-        // const projectsData = await projectsResponse.json();
-        // const metricsData = await metricsResponse.json();
-
         // Simulate API call delay
         await new Promise((resolve) => setTimeout(resolve, 1500))
 
         // Placeholder empty data
         setProjects([])
         setMetrics({
-          deliveryRate: { value: "0", change: "0%", trend: "up" },
-          latency: { value: "0", change: "0ms", trend: "down" },
-          errorRate: { value: "0", change: "0%", trend: "down" },
-          throughput: { value: "0", change: "0/sec", trend: "up" },
+          deliveryRate: { value: "98.7", change: "+1.2%", trend: "up" },
+          latency: { value: "87", change: "-5ms", trend: "down" },
+          errorRate: { value: "0.8", change: "-0.3%", trend: "down" },
+          throughput: { value: "156", change: "+12/sec", trend: "up" },
           ai: {
-            accuracy: 0,
-            predictions: 0,
-            optimizations: 0
+            accuracy: 92,
+            predictions: 1243,
+            optimizations: 87
           }
         })
         setError(null)
       } catch (error: any) {
         setError(error instanceof Error ? error : new Error('An unexpected error occurred'))
-
-        // Use centralized error handler
         handleError(error, ErrorType.API, {
           toastMessage: "Failed to load dashboard data",
           context: { source: 'Dashboard.fetchDashboardData' }
@@ -508,16 +522,15 @@ export default function Dashboard() {
     router.push(`/dashboard/projects/${project.id}`)
   }
 
-  // Show error UI if there was a problem loading dashboard data
   if (error) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
-            <AlertTriangle className="h-10 w-10 text-red-600" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
           <h2 className="mt-6 text-xl font-semibold">Failed to load dashboard data</h2>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          <p className="mt-2 max-w-md text-sm text-muted-foreground text-center">
             {error.message || 'An unexpected error occurred'}
           </p>
           <Button
@@ -536,231 +549,615 @@ export default function Dashboard() {
     <DashboardLayout>
       <ErrorBoundary>
         <div className="space-y-8">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-accent p-4 sm:p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center justify-between mb-6 gap-4 md:gap-6 animate-gradient-move">
-          <div className="w-full md:w-[60%] animate-fade-in">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-white border border-white/20 flex items-center">
-                <div className="status-dot active mr-2"></div>
-                Enterprise Platform
+          {/* Welcome header with time-based greeting */}
+          <div className="bg-card rounded-xl border shadow-md mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6">
+              <div>
+                <h1 className="text-2xl font-semibold text-foreground">{getTimeBasedGreeting(userInfo.name)}</h1>
+                <p className="text-muted-foreground text-sm mt-1">Your communications dashboard is ready</p>
               </div>
-              <div className="bg-accent/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-white border border-white/10 flex items-center">
-                <Sparkles className="mr-1 h-3 w-3" />
-                AI Powered
+              <div className="flex gap-2 mt-4 sm:mt-0">
+                <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
+                  <Link href="/dashboard/messaging">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Send Message
+                  </Link>
+                </Button>
+                <Button size="sm" className="font-medium rounded-lg" asChild>
+                  <Link href="/dashboard/campaigns/new">
+                    <Layers className="mr-2 h-4 w-4" />
+                    New Campaign
+                  </Link>
+                </Button>
               </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-              Welcome back, <span className="text-white/90">Escobar</span>
-            </h1>
-            <p className="text-white/80 text-sm sm:text-base md:text-lg font-medium mb-6 max-w-xl">
-              Streamline your communications with enterprise-grade messaging solutions and AI-powered insights
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button size="lg" className="bg-white text-primary font-semibold shadow-md hover:bg-white/90 transition-colors">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Send Message
-              </Button>
-              <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 transition-colors">
-                <Layers className="mr-2 h-4 w-4" />
-                New Campaign
-              </Button>
-              <Button size="lg" variant="outline" className="bg-accent/20 backdrop-blur-md border-accent/30 text-white hover:bg-accent/30 transition-colors" asChild>
-                <Link href="/dashboard/ai-suggestions">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  AI Suggestions
-                </Link>
-              </Button>
-            </div>
-          </div>
-          <div className="hidden md:flex flex-col items-center animate-pulse-subtle">
-            <div className="relative">
-              <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
-              <BarChartIcon className="h-24 w-24 text-white mb-2 relative z-10" />
-            </div>
-            <span className="text-white/80 text-sm font-medium">Enterprise Communications</span>
-          </div>
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl opacity-60 pointer-events-none" />
-          <div className="absolute left-1/4 bottom-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl opacity-60 pointer-events-none" />
-        </div>
-
-        {/* Key Performance Metrics */}
-        <div className="mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold mb-2">Key Performance Metrics</h2>
-          <p className="text-muted-foreground mb-4">Real-time communication performance indicators</p>
-
-          <Suspense fallback={
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
-              ))}
-            </div>
-          }>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-              <DeliveryRateMetricCard
-                value="98.7"
-                change="+1.2%"
-                trend="up"
-                detailsLink="/dashboard/analytics?metric=delivery-rate"
-                isLoading={isLoading}
-              />
-              <LatencyMetricCard
-                value="87"
-                change="-5ms"
-                trend="down"
-                detailsLink="/dashboard/analytics?metric=latency"
-                isLoading={isLoading}
-              />
-              <ErrorRateMetricCard
-                value="0.8"
-                change="-0.3%"
-                trend="down"
-                detailsLink="/dashboard/analytics?metric=error-rate"
-                isLoading={isLoading}
-              />
-              <ThroughputMetricCard
-                value="156"
-                change="+12/sec"
-                trend="up"
-                detailsLink="/dashboard/analytics?metric=throughput"
-                isLoading={isLoading}
-              />
-            </div>
-          </Suspense>
-        </div>
-
-        {/* AI Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" aria-label="Total Messages" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24,234</div>
-              <div className="flex items-center text-xs text-muted-foreground mt-2">
-                <ArrowUp className="h-3 w-3 text-green-500 mr-1" aria-label="Upward Trend" />
-                12.3% from last month
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Services</CardTitle>
-              <BarChartIcon className="h-4 w-4 text-muted-foreground" aria-label="Active Services" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5/8</div>
-              <div className="mt-2">
-                <Progress value={62} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
-          <AIMetricsCard
-            title="AI Performance"
-            metrics={metrics.ai}
-            isLoading={isLoading}
-          />
-        </div>
-
-        {/* AI Suggestions */}
-        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />}>
-          <AISuggestionsCard />
-        </Suspense>
-
-        {/* Navigation Hierarchy */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Quick Navigation</h2>
-          <p className="text-muted-foreground mb-4">Access key platform features</p>
-          <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-muted rounded-lg" />}>
-            <PageHierarchy />
-          </Suspense>
-        </div>
-
-        {/* Analytics Chart Section */}
-        <div className="my-10">
-          <div className="bg-card rounded-2xl p-8 shadow-xl mb-8 border border-border flex flex-col">
-            <div className="flex items-center mb-4">
-              <BarChartIcon className="h-6 w-6 text-primary mr-2" aria-label="Chart Icon" />
-              <h2 className="text-lg font-semibold tracking-tight">Monthly Message Volume</h2>
-            </div>
-            <div className="w-full h-[200px] sm:h-[300px] md:h-[400px]">
-              <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />}>
-                <ClientSideChart data={chartData} />
-              </Suspense>
-            </div>
-          </div>
-        </div>
-        </div>
-        <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="w-full flex flex-col sm:flex-row h-auto">
-            <TabsTrigger value="projects" className="w-full sm:w-auto">Projects</TabsTrigger>
-            <TabsTrigger value="campaigns" className="w-full sm:w-auto">Campaigns</TabsTrigger>
-            <TabsTrigger value="analytics" className="w-full sm:w-auto">Analytics</TabsTrigger>
-          </TabsList>
-          <TabsContent value="projects" className="space-y-4 pt-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Your Projects</h2>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/projects">View All Projects</Link>
-              </Button>
-            </div>
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <ProjectCard key={i} project={{}} onSelect={() => {}} isLoading={true} />
-                ))}
-              </div>
-            ) : projects.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Layers className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Projects Yet</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first project to get started</p>
-                  <div className="mt-4">
-                    <NewProjectDialog />
+            <div className="border-t px-6 py-4 bg-muted/30">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">All Systems Operational</div>
+                    <div className="text-xs text-muted-foreground">Last checked: {new Date().toLocaleTimeString()}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">5 Active Channels</div>
+                    <div className="text-xs text-muted-foreground">SMS, WhatsApp, Viber, RCS, Voice</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
+                    <Shield className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">API Status: Healthy</div>
+                    <div className="text-xs text-muted-foreground">99.9% uptime this month</div>
                   </div>
                 </div>
               </div>
-            )}
-          </TabsContent>
-          <TabsContent value="campaigns" className="pt-4">
-            <div className="flex h-[300px] items-center justify-center rounded-2xl border border-blue-100 bg-white/60 shadow-sm">
-              <div className="flex flex-col items-center justify-center text-center">
-                <Layers className="h-10 w-10 text-blue-400/70" />
-                <h3 className="mt-4 text-lg font-semibold text-blue-900 flex items-center gap-2">Campaign Management <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">AI</span></h3>
-                <p className="mt-2 text-sm text-blue-700/80">Create and manage your communication campaigns</p>
-                <Button className="mt-4 bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700" asChild>
-                  <Link href="/dashboard/campaigns">Manage Campaigns</Link>
-                </Button>
+            </div>
+          </div>
+
+          {/* Quick Navigation - Moved to second position */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Quick Access</h2>
+                <p className="text-sm text-muted-foreground">Navigate to frequently used sections</p>
               </div>
             </div>
-          </TabsContent>
-          <TabsContent value="analytics" className="pt-4">
-            <div className="flex h-[300px] items-center justify-center rounded-2xl border border-blue-100 bg-white/60 shadow-sm">
-              <div className="flex flex-col items-center justify-center text-center">
-                <BarChart3 className="h-10 w-10 text-blue-400/70" />
-                <h3 className="mt-4 text-lg font-semibold text-blue-900 flex items-center gap-2">Performance Analytics <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">AI</span></h3>
-                <p className="mt-2 text-sm text-blue-700/80">
-                  View detailed metrics and insights for your communications
-                </p>
-                <Button className="mt-4 bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700" asChild>
-                  <Link href="/dashboard/analytics?tab=real-time">View Analytics</Link>
-                </Button>
+            <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-muted rounded-lg" />}>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {hierarchyMap["/dashboard"]?.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="group relative overflow-hidden rounded-xl border bg-card p-5 hover:border-primary hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex justify-between">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                        {item.icon}
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                    </div>
+                    <div className="mt-4">
+                      <h3 className="font-semibold">{item.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {item.description}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </Suspense>
+          </div>
+
+          {/* Key Performance Metrics */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Performance Metrics</h2>
+                <p className="text-sm text-muted-foreground">Real-time communication metrics across all channels</p>
+              </div>
+              <Link
+                href="/dashboard/analytics"
+                className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
+              >
+                View analytics
+                <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Suspense fallback={
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i} variant="flat" className="h-[120px] animate-pulse">
+                      <CardContent className="p-6">
+                        <div className="h-4 w-3/4 bg-muted rounded mb-3"></div>
+                        <div className="h-6 w-1/2 bg-muted rounded mb-2"></div>
+                        <div className="h-3 w-1/3 bg-muted rounded"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              }>
+                <Card variant="interactive" className="shadow-md">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-green-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        Delivery Rate
+                      </CardTitle>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.deliveryRate.value}%`}</div>
+                    <div className="flex items-center text-xs text-success mt-1">
+                      <ArrowUp className="h-3 w-3 mr-1" />
+                      <span>{metrics.deliveryRate.change} from last period</span>
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Success</div>
+                          <div className="font-medium">98.7%</div>
+                        </div>
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Failed</div>
+                          <div className="font-medium">1.3%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card variant="interactive" className="shadow-md">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        Average Latency
+                      </CardTitle>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                        <Clock className="h-4 w-4 text-blue-500" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.latency.value} ms`}</div>
+                    <div className="flex items-center text-xs text-success mt-1">
+                      <ArrowDownRight className="h-3 w-3 mr-1" />
+                      <span>{metrics.latency.change} from last period</span>
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">SMS</div>
+                          <div className="font-medium">65 ms</div>
+                        </div>
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">WhatsApp</div>
+                          <div className="font-medium">112 ms</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card variant="interactive" className="shadow-md">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-amber-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        Error Rate
+                      </CardTitle>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.errorRate.value}%`}</div>
+                    <div className="flex items-center text-xs text-success mt-1">
+                      <ArrowDownRight className="h-3 w-3 mr-1" />
+                      <span>{metrics.errorRate.change} from last period</span>
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Network</div>
+                          <div className="font-medium">0.3%</div>
+                        </div>
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Invalid</div>
+                          <div className="font-medium">0.5%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card variant="interactive" className="shadow-md">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-purple-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        Throughput
+                      </CardTitle>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
+                        <Zap className="h-4 w-4 text-purple-500" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.throughput.value}`}</div>
+                    <div className="flex items-center text-xs text-success mt-1">
+                      <ArrowUp className="h-3 w-3 mr-1" />
+                      <span>{metrics.throughput.change} from last period</span>
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Peak</div>
+                          <div className="font-medium">210/sec</div>
+                        </div>
+                        <div className="bg-muted/20 p-2 rounded-lg">
+                          <div className="text-muted-foreground">Average</div>
+                          <div className="font-medium">156/sec</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Suspense>
+            </div>
+          </div>
+
+          {/* Analytics Chart Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Message Volume</h2>
+                <p className="text-sm text-muted-foreground">Monthly message delivery across all channels</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select defaultValue="year">
+                  <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="month">Last 30 days</SelectItem>
+                    <SelectItem value="quarter">Last quarter</SelectItem>
+                    <SelectItem value="year">Last 12 months</SelectItem>
+                    <SelectItem value="custom">Custom range</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <Card variant="interactive" className="shadow-md">
+              <CardHeader className="px-6 py-4 border-b flex flex-row justify-between items-center bg-muted/10">
+                <div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-primary"></span>
+                      <span className="text-xs font-medium">Total Messages</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-success"></span>
+                      <span className="text-xs font-medium">Delivery Rate</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm font-medium bg-primary/10 px-3 py-1 rounded-full">
+                  Total: 56,234
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="w-full h-[300px]">
+                  <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />}>
+                    <ClientSideChart data={chartData} />
+                  </Suspense>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Insights Grid */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Platform Insights</h2>
+                <p className="text-sm text-muted-foreground">Key metrics and channel performance</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card variant="interactive" className="shadow-md">
+                <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">
+                      Message Delivery
+                    </CardTitle>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                      <Mail className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-semibold">24,234</div>
+                  <div className="flex items-center text-xs text-success mt-1">
+                    <ArrowUp className="h-3 w-3 mr-1" />
+                    <span>12.3% from last month</span>
+                  </div>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-muted/20 p-2 rounded-lg">
+                        <div className="text-muted-foreground">Delivered</div>
+                        <div className="font-medium">23,945</div>
+                      </div>
+                      <div className="bg-muted/20 p-2 rounded-lg">
+                        <div className="text-muted-foreground">Failed</div>
+                        <div className="font-medium">289</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card variant="interactive" className="shadow-md">
+                <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">
+                      Active Channels
+                    </CardTitle>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                      <BarChartIcon className="h-4 w-4 text-blue-500" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="text-2xl font-semibold">5</div>
+                    <div className="text-xs text-muted-foreground ml-2">of 8 available</div>
+                  </div>
+                  <div className="mt-2 w-full">
+                    <Progress value={62} className="h-1.5" />
+                  </div>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex flex-wrap gap-1.5">
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-md">
+                        <SMSLogo size={12} />
+                        <span className="text-xs font-medium">SMS</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-md">
+                        <WhatsAppLogo size={12} />
+                        <span className="text-xs font-medium">WhatsApp</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-100 rounded-md">
+                        <ViberLogo size={12} />
+                        <span className="text-xs font-medium">Viber</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-100 rounded-md">
+                        <VoiceLogo size={12} />
+                        <span className="text-xs font-medium">Voice</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded-md">
+                        <RCSLogo size={12} />
+                        <span className="text-xs font-medium">RCS</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <AIMetricsCard
+                title="AI Performance"
+                metrics={metrics.ai}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+
+          {/* AI Recommendations */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">AI Recommendations</h2>
+                <p className="text-sm text-muted-foreground">Smart suggestions to optimize your communications</p>
+              </div>
+              <Link
+                href="/dashboard/ai-suggestions"
+                className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
+              >
+                View all suggestions
+                <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
+              </Link>
+            </div>
+            <Suspense fallback={
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-6 w-3/4 bg-muted rounded"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-16 bg-muted rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            }>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Optimize Send Time Card */}
+                <Card className="shadow-md border-l-4 border-l-blue-500 hover:shadow-lg transition-all">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                          <Clock className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <CardTitle className="text-base">Optimize Send Time</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        High Impact
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      Sending messages between 2-4 PM could increase open rates by up to 23%.
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        5 min to implement
+                      </Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-3">
+                    <Button variant="outline" size="sm" className="ml-auto" asChild>
+                      <Link href="/dashboard/ai-suggestions">
+                        View Analysis
+                        <ChevronRight className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Re-engage Dormant Customers Card */}
+                <Card className="shadow-md border-l-4 border-l-green-500 hover:shadow-lg transition-all">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-green-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                          <Users className="h-4 w-4 text-green-500" />
+                        </div>
+                        <CardTitle className="text-base">Re-engage Dormant Customers</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        High Impact
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      1,247 customers haven't engaged in 60 days. A targeted campaign could recover 15%.
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        15 min to implement
+                      </Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-3">
+                    <Button variant="outline" size="sm" className="ml-auto" asChild>
+                      <Link href="/dashboard/campaigns/new">
+                        Create Campaign
+                        <ChevronRight className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </Suspense>
+          </div>
+
+          {/* Projects & Resources Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Projects & Resources</h2>
+                <p className="text-sm text-muted-foreground">Manage your communication projects and assets</p>
+              </div>
+              <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
+                <Link href="/dashboard/projects/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Project
+                </Link>
+              </Button>
+            </div>
+            <Card variant="interactive" className="shadow-md">
+              <Tabs defaultValue="projects" className="w-full">
+                <div className="border-b">
+                  <TabsList className="p-0 h-12 bg-transparent border-b-0 rounded-none">
+                    <TabsTrigger value="projects" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Projects
+                    </TabsTrigger>
+                    <TabsTrigger value="campaigns" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Campaigns
+                    </TabsTrigger>
+                    <TabsTrigger value="templates" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Templates
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <div className="p-6">
+                  <TabsContent value="projects" className="m-0">
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="border rounded-lg p-4 animate-pulse">
+                            <div className="h-5 w-1/2 bg-muted rounded mb-3"></div>
+                            <div className="h-4 w-3/4 bg-muted rounded mb-4"></div>
+                            <div className="grid grid-cols-3 gap-2 mb-4">
+                              <div className="h-12 bg-muted rounded"></div>
+                              <div className="h-12 bg-muted rounded"></div>
+                              <div className="h-12 bg-muted rounded"></div>
+                            </div>
+                            <div className="h-8 bg-muted rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : projects.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {projects.map((project) => (
+                          <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <Layers className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No projects yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create your first project to organize your communication campaigns and messages
+                        </p>
+                        <Button className="rounded-lg" asChild>
+                          <Link href="/dashboard/projects/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Project
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="campaigns" className="m-0">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <MessageCircle className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">Campaign Management</h3>
+                      <p className="text-sm text-muted-foreground max-w-md mb-6">
+                        Create and manage your communication campaigns across multiple channels
+                      </p>
+                      <Button asChild className="rounded-lg">
+                        <Link href="/dashboard/campaigns">Manage Campaigns</Link>
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="templates" className="m-0">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <MessageCircle className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">Message Templates</h3>
+                      <p className="text-sm text-muted-foreground max-w-md mb-6">
+                        Create reusable message templates for consistent communication
+                      </p>
+                      <Button asChild className="rounded-lg">
+                        <Link href="/dashboard/messaging/templates">Manage Templates</Link>
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </Card>
+          </div>
+        </div>
       </ErrorBoundary>
-      {/*mobile menu toggle button */}
-      <div className="md:hidden fixed bottom-4 right-4 z-50">
-        <Button variant="outline" size="lg" className="rounded-full p-3 shadow-lg">
-          <Menu className="h-6 w-6" />
+
+      {/* Mobile action button */}
+      <div className="md:hidden fixed bottom-6 right-6 z-50">
+        <Button size="icon" className="rounded-full h-14 w-14 shadow-xl bg-gradient-to-r from-primary to-accent text-white hover:shadow-2xl transition-all duration-300" asChild>
+          <Link href="/dashboard/messaging">
+            <MessageCircle className="h-7 w-7" />
+          </Link>
         </Button>
       </div>
     </DashboardLayout>

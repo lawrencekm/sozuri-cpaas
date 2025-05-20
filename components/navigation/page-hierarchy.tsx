@@ -2,14 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  MessageCircle, 
-  MessagesSquare, 
-  Phone, 
-  BarChart3, 
+import {
+  MessagesSquare,
+  BarChart3,
   Users,
   ArrowRight
 } from "lucide-react"
+import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 
 interface HierarchyItem {
   title: string
@@ -18,31 +17,30 @@ interface HierarchyItem {
   description: string
 }
 
-// Define hierarchy for main sections
 const hierarchyMap: Record<string, HierarchyItem[]> = {
   "/dashboard/messaging": [
     {
       title: "SMS",
       href: "/dashboard/messaging/sms",
-      icon: <MessageCircle className="h-5 w-5 text-primary" />,
+      icon: <SMSLogo size={20} />,
       description: "Send and manage SMS messages",
     },
     {
       title: "WhatsApp",
       href: "/dashboard/messaging/whatsapp",
-      icon: <MessageCircle className="h-5 w-5 text-green-500" />,
+      icon: <WhatsAppLogo size={20} />,
       description: "Send and manage WhatsApp messages",
     },
     {
       title: "Viber",
       href: "/dashboard/messaging/viber",
-      icon: <MessageCircle className="h-5 w-5 text-purple-500" />,
+      icon: <ViberLogo size={20} />,
       description: "Send and manage Viber messages",
     },
     {
       title: "RCS",
       href: "/dashboard/messaging/rcs",
-      icon: <MessageCircle className="h-5 w-5 text-blue-500" />,
+      icon: <RCSLogo size={20} />,
       description: "Send and manage RCS messages",
     },
   ],
@@ -56,7 +54,7 @@ const hierarchyMap: Record<string, HierarchyItem[]> = {
     {
       title: "Voice",
       href: "/dashboard/voice",
-      icon: <Phone className="h-5 w-5 text-orange-500" />,
+      icon: <VoiceLogo size={20} />,
       description: "Manage voice calls and IVR",
     },
     {
@@ -76,12 +74,11 @@ const hierarchyMap: Record<string, HierarchyItem[]> = {
 
 export function PageHierarchy() {
   const pathname = usePathname()
-  
-  // Find the exact matching path
+
   const items = hierarchyMap[pathname]
-  
+
   if (!items) return null
-  
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
       {items.map((item) => (
