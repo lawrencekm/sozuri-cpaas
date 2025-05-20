@@ -429,7 +429,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [projects, setProjects] = useState<any[]>([])
   // For demo purposes, we'll set this to true to show the new user experience
-  // In a real app, this would be determined by checking user metadata
+  // In config our app, this would be determined by checking user metadata
   const [isNewUser, setIsNewUser] = useState(true)
 
   // This is just for demo purposes to toggle between new and returning user views
@@ -438,8 +438,7 @@ export default function Dashboard() {
   }
 
   // We'll use the EnhancedEmptyState for completely new users who haven't set up anything yet
-  // For this demo, we'll show the dashboard with appropriate sections for new vs returning users
-  if (false) { // Changed to false to show our improved dashboard for both new and returning users
+  if (false) {
     return (
       <DashboardLayout>
         <EnhancedEmptyState />
@@ -606,7 +605,7 @@ export default function Dashboard() {
                     </Button>
                     {isNewUser && (
                       <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
-                        <Link href="/dashboard/onboarding">
+                        <Link href="/dashboard/onboarding/tour">
                           <Sparkles className="mr-2 h-4 w-4" />
                           Quick Tour
                         </Link>
@@ -642,6 +641,18 @@ export default function Dashboard() {
                             <WhatsAppLogo className="h-3 w-3 mr-1" />
                             WA
                           </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                            <ViberLogo className="h-3 w-3 mr-1" />
+                            Viber
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                            <RCSLogo className="h-3 w-3 mr-1" />
+                            RCS
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                            <VoiceLogo className="h-3 w-3 mr-1" />
+                            Voice
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -661,8 +672,9 @@ export default function Dashboard() {
                     <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-medium text-white">Recent Activity</h3>
-                        <Link href="/dashboard/analytics" className="text-xs text-white/70 hover:text-white">
+                        <Link href="/dashboard/activity" className="text-xs text-white/70 hover:text-white flex items-center">
                           View All
+                          <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
                       </div>
                       <div className="space-y-2">
@@ -692,40 +704,73 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="bg-gradient-to-r from-primary/5 to-transparent p-6 rounded-xl border">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">Complete these steps to get started</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium text-primary">0</span> of <span>3</span> completed
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-muted">
+                      <div className="h-full bg-primary w-0"></div>
+                    </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
                       <MessageCircle className="h-6 w-6 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Set Up Messaging</h3>
                     <p className="text-sm text-muted-foreground mb-4">Configure your first messaging channel to start sending communications</p>
-                    <Button size="sm" className="mt-auto" asChild>
-                      <Link href="/dashboard/messaging">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                      <Clock className="h-3 w-3" />
+                      <span>5 min to complete</span>
+                    </div>
+                    <Button size="sm" className="mt-auto w-full" asChild>
+                      <Link href="/dashboard/messaging/setup">
                         Get Started
                       </Link>
                     </Button>
                   </div>
 
-                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-muted">
+                      <div className="h-full bg-primary w-0"></div>
+                    </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
                       <Users className="h-6 w-6 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Import Contacts</h3>
                     <p className="text-sm text-muted-foreground mb-4">Add your contacts to start building your audience database</p>
-                    <Button size="sm" className="mt-auto" asChild>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                      <Clock className="h-3 w-3" />
+                      <span>10 min to complete</span>
+                    </div>
+                    <Button size="sm" className="mt-auto w-full" asChild>
                       <Link href="/dashboard/contacts/import">
                         Import Now
                       </Link>
                     </Button>
                   </div>
 
-                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-muted">
+                      <div className="h-full bg-primary w-0"></div>
+                    </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
                       <Layers className="h-6 w-6 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Create First Campaign</h3>
                     <p className="text-sm text-muted-foreground mb-4">Design and schedule your first communication campaign</p>
-                    <Button size="sm" className="mt-auto" asChild>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                      <Clock className="h-3 w-3" />
+                      <span>15 min to complete</span>
+                    </div>
+                    <Button size="sm" className="mt-auto w-full" asChild>
                       <Link href="/dashboard/campaigns/new">
                         Create Campaign
                       </Link>
@@ -735,9 +780,49 @@ export default function Dashboard() {
 
                 <div className="mt-6 flex justify-center">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/dashboard/onboarding">
+                    <Link href="/dashboard/onboarding/guide">
                       <Sparkles className="mr-2 h-4 w-4" />
                       View Complete Onboarding Guide
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* What's New - Only for returning users */}
+          {!isNewUser && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">What's New</h2>
+                  <p className="text-sm text-muted-foreground">Latest features and improvements</p>
+                </div>
+                <Link
+                  href="/dashboard/whats-new"
+                  className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
+                >
+                  View all updates
+                  <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
+                </Link>
+              </div>
+              <div className="bg-gradient-to-r from-accent/5 to-transparent p-4 rounded-xl border">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
+                    <Sparkles className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium">New AI-Powered Campaign Optimization</h3>
+                    <p className="text-xs text-muted-foreground">Released 2 days ago</p>
+                  </div>
+                  <Badge className="ml-auto bg-accent/10 text-accent hover:bg-accent/20 border-0">New</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Our new AI engine analyzes your campaign performance and automatically suggests optimizations to improve engagement and conversion rates.</p>
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/dashboard/ai-suggestions">
+                      Try It Now
+                      <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
                   </Button>
                 </div>
@@ -754,7 +839,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">Your recent projects and activities</p>
                 </div>
                 <Link
-                  href="/dashboard/recent-activity"
+                  href="/dashboard/activity"
                   className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
                 >
                   View all activity
@@ -777,7 +862,14 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    <p className="text-xs text-muted-foreground">Last edited 2 hours ago</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs text-muted-foreground">Last edited 2 hours ago</p>
+                      <p className="text-xs font-medium">Step 2 of 4</p>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full mb-3">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '50%' }}></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-4">Next step: Select target audience</p>
                     <div className="mt-4 flex justify-end">
                       <Button variant="outline" size="sm" asChild>
                         <Link href="/dashboard/campaigns/draft-123">
@@ -795,7 +887,7 @@ export default function Dashboard() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
                           <BarChart3 className="h-4 w-4 text-green-500" />
                         </div>
-                        <CardTitle className="text-sm font-medium">Campaign Performance</CardTitle>
+                        <CardTitle className="text-sm font-medium">Spring Sale Campaign</CardTitle>
                       </div>
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         Updated
@@ -803,7 +895,23 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    <p className="text-xs text-muted-foreground">New data available from yesterday's campaign</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs text-muted-foreground">Updated 30 minutes ago</p>
+                      <div className="flex items-center gap-1 text-xs text-success font-medium">
+                        <TrendingUp className="h-3 w-3" />
+                        <span>+24.8%</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <div className="bg-muted/20 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Open Rate</div>
+                        <div className="text-sm font-medium">92.4%</div>
+                      </div>
+                      <div className="bg-muted/20 p-2 rounded-lg">
+                        <div className="text-xs text-muted-foreground">Conversions</div>
+                        <div className="text-sm font-medium">1,247</div>
+                      </div>
+                    </div>
                     <div className="mt-4 flex justify-end">
                       <Button variant="outline" size="sm" asChild>
                         <Link href="/dashboard/analytics/campaign-456">
@@ -821,7 +929,7 @@ export default function Dashboard() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
                           <Users className="h-4 w-4 text-purple-500" />
                         </div>
-                        <CardTitle className="text-sm font-medium">Contact List Import</CardTitle>
+                        <CardTitle className="text-sm font-medium">VIP Customer Import</CardTitle>
                       </div>
                       <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                         In Progress
@@ -829,16 +937,79 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    <p className="text-xs text-muted-foreground">78% complete (1,247 of 1,600 contacts)</p>
-                    <div className="mt-2 w-full">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs text-muted-foreground">Started 15 minutes ago</p>
+                      <p className="text-xs font-medium">78% complete</p>
+                    </div>
+                    <div className="w-full mb-2">
                       <Progress value={78} className="h-1.5" />
                     </div>
-                    <div className="mt-4 flex justify-end">
+                    <div className="flex items-center justify-between text-xs mb-4">
+                      <span className="text-muted-foreground">1,247 of 1,600 contacts</span>
+                      <span className="text-muted-foreground">~2 min remaining</span>
+                    </div>
+                    <div className="mt-4 flex justify-between">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                        Pause
+                      </Button>
                       <Button variant="outline" size="sm" asChild>
                         <Link href="/dashboard/contacts/import-789">
-                          View Progress
+                          View Details
                         </Link>
                       </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Suggested Next Steps - Only for new users */}
+          {isNewUser && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Suggested Next Steps</h2>
+                  <p className="text-sm text-muted-foreground">Recommended actions to explore the platform</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-primary">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium mb-1">Explore AI-Powered Features</h3>
+                        <p className="text-xs text-muted-foreground mb-3">Discover how our AI can help optimize your messaging campaigns and improve engagement.</p>
+                        <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
+                          <Link href="/dashboard/ai-features">
+                            Learn More
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-accent">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 flex-shrink-0">
+                        <MessageCircle className="h-5 w-5 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium mb-1">Send Your First Test Message</h3>
+                        <p className="text-xs text-muted-foreground mb-3">Try sending a test message to yourself to see how the platform works in real-time.</p>
+                        <Button variant="link" size="sm" className="p-0 h-auto text-accent" asChild>
+                          <Link href="/dashboard/messaging/test">
+                            Send Test Message
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
