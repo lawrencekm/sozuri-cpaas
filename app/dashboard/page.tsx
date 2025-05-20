@@ -731,7 +731,7 @@ export default function Dashboard() {
                       <span>5 min to complete</span>
                     </div>
                     <Button size="sm" className="mt-auto w-full" asChild>
-                      <Link href="/dashboard/messaging/setup">
+                      <Link href="/dashboard/messaging">
                         Get Started
                       </Link>
                     </Button>
@@ -751,7 +751,7 @@ export default function Dashboard() {
                       <span>10 min to complete</span>
                     </div>
                     <Button size="sm" className="mt-auto w-full" asChild>
-                      <Link href="/dashboard/contacts/import">
+                      <Link href="/dashboard/contacts">
                         Import Now
                       </Link>
                     </Button>
@@ -984,7 +984,7 @@ export default function Dashboard() {
                         <h3 className="text-sm font-medium mb-1">Explore AI-Powered Features</h3>
                         <p className="text-xs text-muted-foreground mb-3">Discover how our AI can help optimize your messaging campaigns and improve engagement.</p>
                         <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
-                          <Link href="/dashboard/ai-features">
+                          <Link href="/dashboard/ai-suggestions">
                             Learn More
                             <ArrowRight className="ml-1 h-3 w-3" />
                           </Link>
@@ -1004,7 +1004,7 @@ export default function Dashboard() {
                         <h3 className="text-sm font-medium mb-1">Send Your First Test Message</h3>
                         <p className="text-xs text-muted-foreground mb-3">Try sending a test message to yourself to see how the platform works in real-time.</p>
                         <Button variant="link" size="sm" className="p-0 h-auto text-accent" asChild>
-                          <Link href="/dashboard/messaging/test">
+                          <Link href="/dashboard/messaging">
                             Send Test Message
                             <ArrowRight className="ml-1 h-3 w-3" />
                           </Link>
