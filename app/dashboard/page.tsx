@@ -17,6 +17,9 @@ import { ErrorBoundary } from "@/components/error-handling/error-boundary"
 import dynamic from 'next/dynamic'
 import { getTimeBasedGreeting } from "@/lib/greeting-utils"
 
+// Add CSS for background grid pattern
+import "@/styles/dashboard-patterns.css"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -425,9 +428,18 @@ export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [projects, setProjects] = useState<any[]>([])
-  const [isNewUser, setIsNewUser] = useState(false)
+  // For demo purposes, we'll set this to true to show the new user experience
+  // In a real app, this would be determined by checking user metadata
+  const [isNewUser, setIsNewUser] = useState(true)
 
-  if (isNewUser) {
+  // This is just for demo purposes to toggle between new and returning user views
+  const toggleUserExperience = () => {
+    setIsNewUser(!isNewUser)
+  }
+
+  // We'll use the EnhancedEmptyState for completely new users who haven't set up anything yet
+  // For this demo, we'll show the dashboard with appropriate sections for new vs returning users
+  if (false) { // Changed to false to show our improved dashboard for both new and returning users
     return (
       <DashboardLayout>
         <EnhancedEmptyState />
@@ -549,62 +561,292 @@ export default function Dashboard() {
     <DashboardLayout>
       <ErrorBoundary>
         <div className="space-y-8">
-          {/* Welcome header with time-based greeting */}
-          <div className="bg-card rounded-xl border shadow-md mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6">
-              <div>
-                <h1 className="text-2xl font-semibold text-foreground">{getTimeBasedGreeting(userInfo.name)}</h1>
-                <p className="text-muted-foreground text-sm mt-1">Your communications dashboard is ready</p>
+          {/* Enhanced Welcome Hero Section */}
+          <div className="relative overflow-hidden rounded-xl mb-8 bg-gradient-to-r from-primary/90 to-accent/90 text-white">
+            <div className="absolute inset-0 bg-grid-white animate-subtle-move [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.5),transparent)]"></div>
+            <div className="relative z-10 p-8">
+              {/* Demo toggle for switching between new and returning user views */}
+              <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
+                <span className="text-white/80">Demo:</span>
+                <button
+                  onClick={toggleUserExperience}
+                  className={`px-2 py-1 rounded-md transition-colors ${isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
+                >
+                  New User
+                </button>
+                <button
+                  onClick={toggleUserExperience}
+                  className={`px-2 py-1 rounded-md transition-colors ${!isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
+                >
+                  Returning User
+                </button>
               </div>
-              <div className="flex gap-2 mt-4 sm:mt-0">
-                <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
-                  <Link href="/dashboard/messaging">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Send Message
-                  </Link>
-                </Button>
-                <Button size="sm" className="font-medium rounded-lg" asChild>
-                  <Link href="/dashboard/campaigns/new">
-                    <Layers className="mr-2 h-4 w-4" />
-                    New Campaign
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="border-t px-6 py-4 bg-muted/30">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">All Systems Operational</div>
-                    <div className="text-xs text-muted-foreground">Last checked: {new Date().toLocaleTimeString()}</div>
+
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="max-w-2xl">
+                  <h1 className="text-3xl font-bold tracking-tight">{getTimeBasedGreeting(userInfo.name)}</h1>
+                  <p className="mt-2 text-white/80 text-lg">
+                    {isNewUser
+                      ? "Welcome to your communication hub. Let's get you started with the basics."
+                      : "Your communication platform is ready. Here's what's happening today."}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button size="default" variant="default" className="bg-white text-primary hover:bg-white/90 font-medium rounded-lg" asChild>
+                      <Link href="/dashboard/messaging">
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Send Message
+                      </Link>
+                    </Button>
+                    <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
+                      <Link href="/dashboard/campaigns/new">
+                        <Layers className="mr-2 h-4 w-4" />
+                        New Campaign
+                      </Link>
+                    </Button>
+                    {isNewUser && (
+                      <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
+                        <Link href="/dashboard/onboarding">
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Quick Tour
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-                    <Activity className="h-5 w-5 text-primary" />
+
+                <div className="flex flex-col gap-3 w-full md:w-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
+                        <CheckCircle2 className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">Systems Operational</div>
+                        <div className="text-xs text-white/70">Last checked: {new Date().toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                        <Activity className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">5 Active Channels</div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                            <SMSLogo className="h-3 w-3 mr-1" />
+                            SMS
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                            <WhatsAppLogo className="h-3 w-3 mr-1" />
+                            WA
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                        <Shield className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">API: Healthy</div>
+                        <div className="text-xs text-white/70">99.9% uptime this month</div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-sm font-medium">5 Active Channels</div>
-                    <div className="text-xs text-muted-foreground">SMS, WhatsApp, Viber, RCS, Voice</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg shadow-sm">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
-                    <Shield className="h-5 w-5 text-accent" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">API Status: Healthy</div>
-                    <div className="text-xs text-muted-foreground">99.9% uptime this month</div>
-                  </div>
+
+                  {!isNewUser && (
+                    <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-medium text-white">Recent Activity</h3>
+                        <Link href="/dashboard/analytics" className="text-xs text-white/70 hover:text-white">
+                          View All
+                        </Link>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-white/70">Messages sent today</span>
+                          <span className="font-medium text-white">247</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-white/70">Open rate</span>
+                          <span className="font-medium text-white">92.4%</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Quick Navigation - Moved to second position */}
+          {/* Getting Started Guide - Only for new users */}
+          {isNewUser && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Getting Started with SOZURI</h2>
+                  <p className="text-sm text-muted-foreground">Complete these steps to set up your account</p>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-primary/5 to-transparent p-6 rounded-xl border">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                      <MessageCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-medium mb-2">Set Up Messaging</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Configure your first messaging channel to start sending communications</p>
+                    <Button size="sm" className="mt-auto" asChild>
+                      <Link href="/dashboard/messaging">
+                        Get Started
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                      <Users className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-medium mb-2">Import Contacts</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Add your contacts to start building your audience database</p>
+                    <Button size="sm" className="mt-auto" asChild>
+                      <Link href="/dashboard/contacts/import">
+                        Import Now
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                      <Layers className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-medium mb-2">Create First Campaign</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Design and schedule your first communication campaign</p>
+                    <Button size="sm" className="mt-auto" asChild>
+                      <Link href="/dashboard/campaigns/new">
+                        Create Campaign
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/dashboard/onboarding">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      View Complete Onboarding Guide
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Continue where you left off - Only for returning users */}
+          {!isNewUser && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Continue Where You Left Off</h2>
+                  <p className="text-sm text-muted-foreground">Your recent projects and activities</p>
+                </div>
+                <Link
+                  href="/dashboard/recent-activity"
+                  className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
+                >
+                  View all activity
+                  <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="shadow-md hover:shadow-lg transition-all">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                          <MessageCircle className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <CardTitle className="text-sm font-medium">Summer Promotion Campaign</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        Draft
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-xs text-muted-foreground">Last edited 2 hours ago</p>
+                    <div className="mt-4 flex justify-end">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/dashboard/campaigns/draft-123">
+                          Continue Editing
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-md hover:shadow-lg transition-all">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-green-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                          <BarChart3 className="h-4 w-4 text-green-500" />
+                        </div>
+                        <CardTitle className="text-sm font-medium">Campaign Performance</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Updated
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-xs text-muted-foreground">New data available from yesterday's campaign</p>
+                    <div className="mt-4 flex justify-end">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/dashboard/analytics/campaign-456">
+                          View Results
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-md hover:shadow-lg transition-all">
+                  <CardHeader className="pb-2 bg-gradient-to-r from-purple-500/5 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
+                          <Users className="h-4 w-4 text-purple-500" />
+                        </div>
+                        <CardTitle className="text-sm font-medium">Contact List Import</CardTitle>
+                      </div>
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        In Progress
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-xs text-muted-foreground">78% complete (1,247 of 1,600 contacts)</p>
+                    <div className="mt-2 w-full">
+                      <Progress value={78} className="h-1.5" />
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/dashboard/contacts/import-789">
+                          View Progress
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Navigation */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <div>
