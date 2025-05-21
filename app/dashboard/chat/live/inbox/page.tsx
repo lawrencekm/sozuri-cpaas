@@ -46,6 +46,16 @@ function LiveChatInboxContent() {
   const [isTyping, setIsTyping] = useState(false)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Add this useEffect for cleanup
+  useEffect(() => {
+    const timeoutId = typingTimeoutRef.current; // Capture the current value
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []); // Empty dependency array for mount/unmount effect
+
   // Load conversations when the component mounts
   useEffect(() => {
     loadConversations(activeTab !== 'all' ? activeTab : undefined)

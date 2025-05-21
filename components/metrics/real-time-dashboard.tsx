@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { formatTime } from "@/lib/date-formatter"
 import {
   Card,
@@ -98,16 +98,27 @@ export function RealTimeDashboard() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("sms")
   const [refreshInterval, setRefreshInterval] = useState<number | null>(30000) // 30 seconds default
+  const mounted = useRef(true); // Mounted ref
+
+  // Add this useEffect for mounted ref management
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   // Function to refresh data
   const refreshData = () => {
+    if (!mounted.current) return; // Check if component is mounted before starting refresh
     setIsLoading(true)
 
     // Simulate API call delay
     setTimeout(() => {
-      setMetrics(generateMockData())
-      setTimeSeriesData(prev => {
-        const newData = [...prev]
+      if (mounted.current) { // Check again inside timeout callback
+        setMetrics(generateMockData())
+        setTimeSeriesData(prev => {
+          const newData = [...prev]
         const now = new Date()
 
         // Add new data point
@@ -129,8 +140,12 @@ export function RealTimeDashboard() {
         return newData
       })
 
-      setLastUpdated(new Date())
-      setIsLoading(false)
+          return newData
+        })
+
+        setLastUpdated(new Date())
+        setIsLoading(false)
+      }
     }, 800)
   }
 

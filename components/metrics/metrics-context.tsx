@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react"
 
 // Define types for our metrics data
 export interface ChannelMetrics {
@@ -195,29 +195,43 @@ export function MetricsProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState<boolean>(false)
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null)
   const [refreshIntervalId, setRefreshIntervalId] = useState<NodeJS.Timeout | null>(null)
+  const mountedRef = useRef(true); // For checking if provider is mounted
 
   // Function to fetch metrics data with reduced delay in development
-  const fetchMetrics = async (): Promise<MetricsData> => {
+  const fetchMetrics = async (): Promise<MetricsData | null> => { // Modified to potentially return null
     // In a real application, this would be an API call
     // For now, we'll use mock data
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(createMockMetrics())
+        // Although not strictly necessary to check mountedRef here if caller does,
+        // it's safer if fetchMetrics could be called from elsewhere.
+        if (mountedRef.current) {
+          resolve(createMockMetrics())
+        } else {
+          resolve(null); // Resolve with null if unmounted
+        }
       }, process.env.NODE_ENV === 'production' ? 800 : 100) // Reduced delay in development
     })
   }
 
   // Function to refresh metrics - lazy loading
   const refreshMetrics = async () => {
+    if (!mountedRef.current) return; // Don't do anything if unmounted
     setIsLoading(true)
     try {
       const newMetrics = await fetchMetrics()
-      setMetrics(newMetrics)
-      setIsInitialized(true)
+      if (mountedRef.current && newMetrics) { // Check again after await and if newMetrics is not null
+        setMetrics(newMetrics)
+        setIsInitialized(true)
+      }
     } catch (error) {
-      console.error("Error fetching metrics:", error)
+      if (mountedRef.current) {
+        console.error("Error fetching metrics:", error)
+      }
     } finally {
-      setIsLoading(false)
+      if (mountedRef.current) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -251,12 +265,14 @@ export function MetricsProvider({ children }: { children: ReactNode }) {
 
   // Clean up interval on unmount
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      if (refreshIntervalId) {
-        clearInterval(refreshIntervalId)
+      mountedRef.current = false;
+      if (refreshIntervalId) { // Existing cleanup
+        clearInterval(refreshIntervalId);
       }
-    }
-  }, [refreshIntervalId])
+    };
+  }, [refreshIntervalId]); // Keep existing dependency for interval cleanup
 
   // Get metrics with fallback to default if null
   const getMetrics = () => metrics || createDefaultMetrics()
