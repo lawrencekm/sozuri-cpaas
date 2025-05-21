@@ -34,8 +34,31 @@ export function VoiceAnalytics() {
   }
 
   useEffect(() => {
-    fetchVoiceMetrics()
-  }, [timeframe])
+    let isMounted = true;
+    const fetchVoiceMetricsAsync = async () => {
+      try {
+        const data = await analyticsAPI.getMetrics("voice", "all", timeframe);
+        if (isMounted) {
+          setMetrics(data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error fetching voice metrics:", error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    if (isMounted) {
+      setIsLoading(true);
+      fetchVoiceMetricsAsync();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [timeframe]) // Keep existing dependencies
 
   if (isLoading || !metrics) {
     return (

@@ -36,8 +36,31 @@ export function MessagingAnalytics() {
   }
 
   useEffect(() => {
-    fetchMessagingMetrics()
-  }, [selectedChannel, timeframe])
+    let isMounted = true;
+    const fetchMessagingMetricsAsync = async () => {
+      try {
+        const data = await analyticsAPI.getMetrics(selectedChannel, "all", timeframe);
+        if (isMounted) {
+          setMetrics(data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error fetching messaging metrics:", error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    if (isMounted) {
+      setIsLoading(true);
+      fetchMessagingMetricsAsync();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedChannel, timeframe]) // Keep existing dependencies
 
   if (isLoading || !metrics) {
     return (

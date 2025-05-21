@@ -68,20 +68,32 @@ export function AISuggestionsCard() {
   ]
   
   useEffect(() => {
-    // Simulate API call
+    let isMounted = true; // Mounted flag
     const fetchSuggestions = async () => {
       try {
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 1000))
-        setSuggestions(mockSuggestions)
+        if (isMounted) {
+          setSuggestions(mockSuggestions)
+        }
       } catch (error) {
-        console.error("Error fetching suggestions:", error)
+        if (isMounted) { // Also check before logging if it involves component state
+          console.error("Error fetching suggestions:", error)
+        }
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
     
     fetchSuggestions()
+    
+    return () => {
+      isMounted = false; // Cleanup function to set flag on unmount
+    };
+  // If mockSuggestions is not stable (e.g., defined inside component or passed as prop without memo), add it to dependency array.
+  // For this specific case, mockSuggestions is defined outside and is stable.
   }, [])
   
   const getCategoryIcon = (category: string) => {

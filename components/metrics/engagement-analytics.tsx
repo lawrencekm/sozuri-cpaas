@@ -37,8 +37,35 @@ export function EngagementAnalytics() {
   }
 
   useEffect(() => {
-    fetchEngagementData()
-  }, [timeframe])
+    let isMounted = true;
+    const fetchEngagementDataAsync = async () => {
+      // setIsLoading(true); // Consider setting loading true only if mounted, or right at the start
+      try {
+        const data = await analyticsAPI.getEngagement(timeframe);
+        if (isMounted) {
+          setEngagementData(data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error fetching engagement data:", error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    // To prevent calling setIsLoading(true) if already unmounted before fetch starts
+    if (isMounted) {
+      setIsLoading(true); // Set loading true here
+      fetchEngagementDataAsync();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [timeframe]) // Keep existing dependencies
 
   if (isLoading || !engagementData) {
     return (
