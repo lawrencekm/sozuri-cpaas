@@ -1,10 +1,9 @@
 import axios, { AxiosError } from "axios"
 import { handleError, ErrorType } from './error-handler'
-import { ErrorBoundary, ErrorBoundaryProps, FallbackProps } from "react-error-boundary"
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
-  timeout: 15000, // 15 seconds timeout
+  timeout: 5000, // 5 seconds timeout for faster fallback
 })
 
 api.interceptors.request.use(
@@ -29,7 +28,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    
+
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
@@ -104,7 +103,16 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'supervisor' | 'agent' | 'user';
+  status: 'active' | 'inactive' | 'suspended';
+  created_at: string;
+  last_login?: string;
+  company?: string;
+  permissions?: string[];
+  balance?: number;
+  currency?: string;
+  project_id?: string;
+  project?: Project;
 }
 
 export interface AuthResponse {
@@ -121,6 +129,10 @@ export interface Project {
   engagement?: number;
   created: string;
   updated: string;
+  user_id: string;
+  status: 'active' | 'inactive' | 'suspended';
+  balance: number;
+  currency: string;
 }
 
 export interface Campaign {
@@ -188,6 +200,46 @@ export const authAPI = {
   getProfile: withErrorHandling(
     (): Promise<User> => api.get("/auth/me").then(res => res.data),
     ErrorType.AUTHENTICATION
+  ),
+
+  impersonate: withErrorHandling(
+    (userId: string): Promise<AuthResponse> =>
+      api.post("/auth/impersonate", { userId }).then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
+
+  stopImpersonation: withErrorHandling(
+    (): Promise<AuthResponse> => api.post("/auth/stop-impersonation").then(res => res.data),
+    ErrorType.AUTHENTICATION
+  ),
+}
+
+export const userAPI = {
+  getLogs: withErrorHandling(
+    (params?: {
+      page?: number;
+      limit?: number;
+      level?: string;
+      startDate?: string;
+      endDate?: string;
+      search?: string;
+    }): Promise<{ logs: LogEntry[]; total: number; page: number; limit: number }> =>
+      api.get("/users/logs", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  downloadLogs: withErrorHandling(
+    (params?: {
+      startDate?: string;
+      endDate?: string;
+      level?: string;
+      format?: 'json' | 'csv' | 'txt';
+    }): Promise<Blob> =>
+      api.get("/users/logs/download", {
+        params,
+        responseType: 'blob'
+      }).then(res => res.data),
+    ErrorType.API
   ),
 }
 
@@ -338,4 +390,115 @@ export const analyticsAPI = {
     (timeframe: string) => api.get(`/analytics/engagement`, { params: { timeframe } }).then(res => res.data),
     ErrorType.API
   ),
+}
+
+// Admin API for user management and system administration
+export const adminAPI = {
+  // User Management
+  getAllUsers: withErrorHandling(
+    (params?: { page?: number; limit?: number; search?: string; role?: string }): Promise<{ users: User[]; total: number; page: number; limit: number }> =>
+      api.get("/admin/users", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getUserById: withErrorHandling(
+    (id: string): Promise<User> =>
+      api.get(`/admin/users/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  updateUser: withErrorHandling(
+    (id: string, data: Partial<User>): Promise<User> =>
+      api.put(`/admin/users/${id}`, data).then(res => res.data),
+    ErrorType.API
+  ),
+
+  deleteUser: withErrorHandling(
+    (id: string): Promise<void> =>
+      api.delete(`/admin/users/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  // Project Management
+  getAllProjects: withErrorHandling(
+    (params?: { page?: number; limit?: number; search?: string; user_id?: string }): Promise<{ projects: Project[]; total: number; page: number; limit: number }> =>
+      api.get("/admin/projects", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getProjectById: withErrorHandling(
+    (id: string): Promise<Project> =>
+      api.get(`/admin/projects/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  updateProject: withErrorHandling(
+    (id: string, data: Partial<Project>): Promise<Project> =>
+      api.put(`/admin/projects/${id}`, data).then(res => res.data),
+    ErrorType.API
+  ),
+
+  // Credit Management
+  topupUserCredit: withErrorHandling(
+    (userId: string, amount: number): Promise<{ balance: number; transaction_id: string }> =>
+      api.post(`/admin/users/${userId}/topup`, { amount }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getUserTransactions: withErrorHandling(
+    (userId: string, params?: { page?: number; limit?: number }): Promise<{ transactions: any[]; total: number }> =>
+      api.get(`/admin/users/${userId}/transactions`, { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  // System Logs
+  getLogs: withErrorHandling(
+    (params?: {
+      page?: number;
+      limit?: number;
+      level?: string;
+      startDate?: string;
+      endDate?: string;
+      search?: string;
+    }): Promise<{ logs: LogEntry[]; total: number; page: number; limit: number }> =>
+      api.get("/admin/logs", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  downloadLogs: withErrorHandling(
+    (params?: {
+      startDate?: string;
+      endDate?: string;
+      level?: string;
+      format?: 'json' | 'csv' | 'txt';
+    }): Promise<Blob> =>
+      api.get("/admin/logs/download", {
+        params,
+        responseType: 'blob'
+      }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  exportLogs: withErrorHandling(
+    (params: {
+      startDate: string;
+      endDate: string;
+      format: 'json' | 'csv' | 'txt';
+      email?: string;
+    }): Promise<{ exportId: string; status: string }> =>
+      api.post("/admin/logs/export", params).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
+// Log Entry interface
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  level: 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+  message: string;
+  context?: Record<string, any>;
+  source?: string;
+  userId?: string;
+  requestId?: string;
 }

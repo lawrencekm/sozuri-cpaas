@@ -10,6 +10,7 @@ import {
   BarChart3,
   Bell,
   ChevronDown,
+  FileText,
   Globe,
   HelpCircle,
   Home,
@@ -21,6 +22,7 @@ import {
   MessagesSquare,
   Phone,
   Settings,
+  Shield,
   Sparkles,
   Users,
   Webhook,
@@ -132,6 +134,11 @@ const navGroups: NavGroup[] = [
         title: "Contacts",
         href: "/dashboard/contacts",
         icon: Users,
+      },
+      {
+        title: "Logs",
+        href: "/dashboard/logs",
+        icon: FileText,
       },
     ],
   },
@@ -317,6 +324,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
                         {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
                         <span className="font-medium text-black">{item.title}</span>
+                        {item.badge && (
+                          <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                            {item.badge}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

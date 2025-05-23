@@ -3,9 +3,19 @@ const path = require('path');
 
 const nextConfig = {
   experimental: {
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+      // Temporarily disable complex aliases for Turbopack compatibility
+      // resolveAlias: {
+      //   'worker_threads': false,
+      // },
+    },
     webpackMemoryOptimizations: true,
-    webpackBuildWorker: false,
-    cpus: 1,
     optimizeCss: true,
     optimizePackageImports: [
       'recharts',
@@ -33,97 +43,106 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  webpack: (config, { isServer }) => {
-    config.parallelism = 1;
+  // Webpack config (fallback for when Turbopack is not used)
+  webpack: (config, { isServer, dev }) => {
+    if (!dev || process.env.DISABLE_TURBOPACK === 'true') {
+      config.parallelism = 1;
 
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      path: false,
-      'worker_threads': false,
-      os: false,
-      child_process: false,
-      stream: false,
-      http: false,
-      https: false,
-      zlib: false
-    };
-
-    if (isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
         'worker_threads': path.resolve(__dirname, 'lib/worker-threads-mock.js'),
-        './lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
-        '../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
-        '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+        os: false,
+        child_process: false,
+        stream: false,
+        http: false,
+        https: false,
+        zlib: false
       };
 
-      config.plugins = config.plugins.filter(plugin => 
-        !plugin.constructor.name.includes('Worker') && 
-        !plugin.constructor.name.includes('Thread')
-      );
+      if (isServer) {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          'worker_threads': path.resolve(__dirname, 'lib/worker-threads-mock.js'),
+          './lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+          '../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+          '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+        };
 
-      config.plugins.push({
-        apply: (compiler) => {
-          compiler.hooks.afterEmit.tap('CopyWorkerShimPlugin', () => {
-            const fs = require('fs');
-            const path = require('path');
+        config.plugins = config.plugins.filter(plugin =>
+          !plugin.constructor.name.includes('Worker') &&
+          !plugin.constructor.name.includes('Thread')
+        );
 
-            const outputDir = path.resolve(__dirname, '.next/server/lib');
-            if (!fs.existsSync(outputDir)) {
-              fs.mkdirSync(outputDir, { recursive: true });
-            }
+        config.plugins.push({
+          apply: (compiler) => {
+            compiler.hooks.afterEmit.tap('CopyWorkerShimPlugin', () => {
+              const fs = require('fs');
+              const path = require('path');
 
-            const workerSource = path.resolve(__dirname, 'lib/worker-shim.js');
-            const workerDest = path.resolve(outputDir, 'worker.js');
+              // Copy to multiple locations to ensure compatibility
+              const outputDirs = [
+                path.resolve(__dirname, '.next/server/lib'),
+                path.resolve(__dirname, '.next/server/vendor-chunks/lib'),
+                path.resolve(__dirname, '.next/server/chunks/lib')
+              ];
 
-            try {
-              fs.copyFileSync(workerSource, workerDest);
-              console.log('Successfully copied worker-shim.js to output directory as worker.js');
-            } catch (err) {
-              console.error('Error copying worker-shim.js:', err);
-            }
+              outputDirs.forEach(outputDir => {
+                if (!fs.existsSync(outputDir)) {
+                  fs.mkdirSync(outputDir, { recursive: true });
+                }
 
-            const mockSource = path.resolve(__dirname, 'lib/worker-threads-mock.js');
-            const mockDest = path.resolve(outputDir, 'worker-threads-mock.js');
+                const workerSource = path.resolve(__dirname, 'lib/worker-shim.js');
+                const workerDest = path.resolve(outputDir, 'worker.js');
 
-            try {
-              fs.copyFileSync(mockSource, mockDest);
-              console.log('Successfully copied worker-threads-mock.js to output directory');
-            } catch (err) {
-              console.error('Error copying worker-threads-mock.js:', err);
-            }
-          });
-        }
-      });
+                try {
+                  fs.copyFileSync(workerSource, workerDest);
+                } catch (err) {
+                  // Ignore errors for non-critical copies
+                }
+
+                const mockSource = path.resolve(__dirname, 'lib/worker-threads-mock.js');
+                const mockDest = path.resolve(outputDir, 'worker-threads-mock.js');
+
+                try {
+                  fs.copyFileSync(mockSource, mockDest);
+                } catch (err) {
+                  // Ignore errors for non-critical copies
+                }
+              });
+            });
+          }
+        });
+      }
+
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        maxInitialRequests: 10,
+        cacheGroups: {
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+            name: 'react',
+            priority: 40,
+          },
+          recharts: {
+            test: /[\\/]node_modules[\\/](recharts|d3)[\\/]/,
+            name: 'recharts',
+            priority: 30,
+          },
+          radix: {
+            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+            name: 'radix',
+            priority: 20,
+          },
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 10,
+          },
+        },
+      };
     }
-
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      maxInitialRequests: 10,
-      cacheGroups: {
-        react: {
-          test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
-          name: 'react',
-          priority: 40,
-        },
-        recharts: {
-          test: /[\\/]node_modules[\\/](recharts|d3)[\\/]/,
-          name: 'recharts',
-          priority: 30,
-        },
-        radix: {
-          test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-          name: 'radix',
-          priority: 20,
-        },
-        vendors: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          priority: 10,
-        },
-      },
-    };
 
     return config;
   },
