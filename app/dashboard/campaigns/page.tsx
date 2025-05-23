@@ -335,7 +335,7 @@ export default function CampaignsPage() {
                             {campaign.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{formatShortDate(campaign.created)}</TableCell>
+                        <TableCell>{campaign.created ? formatShortDate(campaign.created) : 'N/A'}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"

@@ -22,12 +22,11 @@ import {
   MessagesSquare,
   Phone,
   Settings,
-  Shield,
   Sparkles,
   Users,
   Webhook,
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, ViberLogo } from "@/components/channel-logos"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -45,6 +44,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
+import { RefreshCw, AlertTriangle } from "lucide-react"
 import { EnterpriseGuidedTour } from "@/components/onboarding/enterprise-guided-tour"
 import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
 import { MobileNav } from "@/components/navigation/mobile-nav"
@@ -185,6 +185,39 @@ const bottomNavItems = [
   },
 ]
 
+function DashboardErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex max-w-md flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
+          <AlertTriangle className="h-10 w-10 text-red-600" />
+        </div>
+        <h2 className="mt-6 text-xl font-semibold">Something went wrong</h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          {error.message || 'An unexpected error occurred while loading the dashboard.'}
+        </p>
+        <div className="mt-6 flex gap-2">
+          <Button onClick={resetErrorBoundary} variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try again
+          </Button>
+          <Button onClick={() => window.location.reload()}>
+            Refresh page
+          </Button>
+        </div>
+        {process.env.NODE_ENV === 'development' && (
+          <details className="mt-4 w-full">
+            <summary className="cursor-pointer text-xs text-muted-foreground">Error details</summary>
+            <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs text-left">
+              {error.stack}
+            </pre>
+          </details>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -214,7 +247,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ErrorBoundary
-      fallback={<div className="p-4 text-destructive">Critical error - please refresh</div>}
+      FallbackComponent={DashboardErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error('Dashboard Error:', error, errorInfo)
+      }}
     >
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
@@ -324,11 +360,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
                         {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
                         <span className="font-medium text-black">{item.title}</span>
-                        {item.badge && (
-                          <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -353,6 +384,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="status-dot active mr-2"></div>
                   <span className="text-sm text-muted-foreground">System: Operational</span>
                 </div>
+                <Button variant="outline" size="sm" asChild className="hidden md:flex">
+                  <Link href="/admin">Admin Panel</Link>
+                </Button>
                 <Button variant="outline" size="icon" className="relative hover:bg-muted/80 transition-colors">
                   <Bell className="h-4 w-4" />
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse-subtle">

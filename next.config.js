@@ -58,7 +58,10 @@ const nextConfig = {
         stream: false,
         http: false,
         https: false,
-        zlib: false
+        zlib: false,
+        './lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+        '../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+        '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js')
       };
 
       if (isServer) {
@@ -85,7 +88,9 @@ const nextConfig = {
               const outputDirs = [
                 path.resolve(__dirname, '.next/server/lib'),
                 path.resolve(__dirname, '.next/server/vendor-chunks/lib'),
-                path.resolve(__dirname, '.next/server/chunks/lib')
+                path.resolve(__dirname, '.next/server/chunks/lib'),
+                path.resolve(__dirname, '.next/server/vendor-chunks'),
+                path.resolve(__dirname, '.next/server/chunks')
               ];
 
               outputDirs.forEach(outputDir => {

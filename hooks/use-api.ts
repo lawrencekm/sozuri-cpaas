@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { handleError, ErrorType } from '@/lib/error-handler'
 import { toast } from 'react-hot-toast'
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { campaignTemplatesAPI, campaignAutomationsAPI, CampaignTemplate, CampaignAutomation } from "@/lib/api";
+import { campaignTemplatesAPI, campaignAutomationsAPI, campaignsAPI, CampaignTemplate, CampaignAutomation, Campaign } from "@/lib/api";
 
 interface UseApiOptions<T> {
   onSuccess?: (data: T) => void

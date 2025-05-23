@@ -25,7 +25,7 @@ import DashboardLayout from "@/components/layout/dashboard-layout"
 import { useApi, useCampaign } from "@/hooks/use-api"
 import { campaignsAPI } from "@/lib/api"
 
-export default function CampaignDetailPage({ params }: { params: { id: string } }) {
+export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams
@@ -118,7 +118,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                 <div className="flex items-center font-medium">
                   {campaign.channel === "sms" && <MessageCircle className="mr-1 h-4 w-4" />}
                   {campaign.channel === "voice" && <Phone className="mr-1 h-4 w-4" />}
-                  {campaign.channel.toUpperCase()}
+                  {campaign.channel?.toUpperCase() || 'N/A'}
                 </div>
               </div>
               <div>
@@ -134,11 +134,11 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Created</p>
-                <p className="font-medium">{formatDate(campaign.created)}</p>
+                <p className="font-medium">{campaign.created ? formatDate(campaign.created) : 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Last Updated</p>
-                <p className="font-medium">{formatDate(campaign.updated)}</p>
+                <p className="font-medium">{campaign.updated ? formatDate(campaign.updated) : 'N/A'}</p>
               </div>
             </CardContent>
           </Card>
@@ -172,27 +172,27 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div className="rounded-lg border p-3">
                     <p className="text-sm text-muted-foreground">Total Recipients</p>
-                    <p className="text-2xl font-bold">{campaign.audience.total}</p>
+                    <p className="text-2xl font-bold">{campaign.audience?.total || 0}</p>
                   </div>
                   <div className="rounded-lg border p-3">
                     <p className="text-sm text-muted-foreground">Delivered</p>
-                    <p className="text-2xl font-bold">{campaign.audience.delivered}</p>
+                    <p className="text-2xl font-bold">{campaign.audience?.delivered || 0}</p>
                     <p className="text-xs text-muted-foreground">
-                      {Math.round((campaign.audience.delivered / campaign.audience.total) * 100)}%
+                      {campaign.audience?.total ? Math.round(((campaign.audience?.delivered || 0) / campaign.audience.total) * 100) : 0}%
                     </p>
                   </div>
                   <div className="rounded-lg border p-3">
                     <p className="text-sm text-muted-foreground">Failed</p>
-                    <p className="text-2xl font-bold">{campaign.audience.failed}</p>
+                    <p className="text-2xl font-bold">{campaign.audience?.failed || 0}</p>
                     <p className="text-xs text-muted-foreground">
-                      {Math.round((campaign.audience.failed / campaign.audience.total) * 100)}%
+                      {campaign.audience?.total ? Math.round(((campaign.audience?.failed || 0) / campaign.audience.total) * 100) : 0}%
                     </p>
                   </div>
                   <div className="rounded-lg border p-3">
                     <p className="text-sm text-muted-foreground">Engagement</p>
-                    <p className="text-2xl font-bold">{campaign.audience.opened}</p>
+                    <p className="text-2xl font-bold">{campaign.audience?.opened || 0}</p>
                     <p className="text-xs text-muted-foreground">
-                      {Math.round((campaign.audience.opened / campaign.audience.delivered) * 100)}%
+                      {campaign.audience?.delivered ? Math.round(((campaign.audience?.opened || 0) / campaign.audience.delivered) * 100) : 0}%
                     </p>
                   </div>
                 </div>
@@ -220,13 +220,13 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Schedule Type</p>
-                    <p className="font-medium capitalize">{campaign.schedule.type}</p>
+                    <p className="font-medium capitalize">{campaign.schedule?.type || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Sent At</p>
                     <div className="flex items-center">
                       <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <p className="font-medium">{formatDate(campaign.schedule.sentAt)}</p>
+                      <p className="font-medium">{campaign.schedule?.sentAt ? formatDate(campaign.schedule.sentAt) : 'N/A'}</p>
                     </div>
                   </div>
                 </div>

@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/select"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { adminAPI, type LogEntry } from "@/lib/api"
-import { 
-  Download, 
-  Search, 
+import {
+  Download,
+  Search,
   Filter,
   Calendar,
   FileText,
@@ -60,7 +60,7 @@ export default function AdminLogsPage() {
       const response = await adminAPI.getLogs({
         page: currentPage,
         limit: logsPerPage,
-        level: levelFilter || undefined,
+        level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         search: searchQuery || undefined
@@ -70,7 +70,7 @@ export default function AdminLogsPage() {
       setTotalPages(Math.ceil(response.total / logsPerPage))
     } catch (error) {
       console.error('Failed to load logs:', error)
-      
+
       const mockLogs: LogEntry[] = [
         {
           id: 'log_1',
@@ -102,7 +102,7 @@ export default function AdminLogsPage() {
           context: { ip: '192.168.1.102', endpoint: '/messaging/sms' }
         }
       ]
-      
+
       setLogs(mockLogs)
       setTotalLogs(mockLogs.length)
       setTotalPages(1)
@@ -121,11 +121,11 @@ export default function AdminLogsPage() {
     try {
       setDownloading(true)
       toast.info(`Preparing ${format.toUpperCase()} download...`)
-      
+
       const blob = await adminAPI.downloadLogs({
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        level: levelFilter || undefined,
+        level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
         format
       })
 
@@ -141,17 +141,17 @@ export default function AdminLogsPage() {
       toast.success(`Logs downloaded successfully as ${format.toUpperCase()}`)
     } catch (error) {
       console.error('Failed to download logs:', error)
-      
-      const sampleData = format === 'json' 
+
+      const sampleData = format === 'json'
         ? JSON.stringify(logs, null, 2)
         : format === 'csv'
-        ? 'ID,Timestamp,Level,Message,Source\n' + logs.map(log => 
+        ? 'ID,Timestamp,Level,Message,Source\n' + logs.map(log =>
             `${log.id},${log.timestamp},${log.level},"${log.message}",${log.source}`
           ).join('\n')
-        : logs.map(log => 
+        : logs.map(log =>
             `[${log.timestamp}] ${log.level.toUpperCase()}: ${log.message}`
           ).join('\n')
-      
+
       const blob = new Blob([sampleData], { type: 'text/plain' })
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -161,7 +161,7 @@ export default function AdminLogsPage() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      
+
       toast.success(`Demo: Downloaded sample ${format.toUpperCase()} file`)
     } finally {
       setDownloading(false)
@@ -198,26 +198,26 @@ export default function AdminLogsPage() {
             <h1 className="text-3xl font-bold tracking-tight">System Logs</h1>
             <p className="text-muted-foreground">View and download system logs</p>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('json')}
               disabled={downloading}
             >
               <Download className="mr-2 h-4 w-4" />
               JSON
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('csv')}
               disabled={downloading}
             >
               <Download className="mr-2 h-4 w-4" />
               CSV
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('txt')}
               disabled={downloading}
             >
@@ -234,7 +234,7 @@ export default function AdminLogsPage() {
               Bulk Log Download
             </CardTitle>
             <CardDescription>
-              Download large volumes of logs (1-2M+ entries) in various formats. 
+              Download large volumes of logs (1-2M+ entries) in various formats.
               Use filters to narrow down the dataset before downloading.
             </CardDescription>
           </CardHeader>
@@ -274,13 +274,13 @@ export default function AdminLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <Select value={levelFilter} onValueChange={setLevelFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   <SelectItem value="debug">Debug</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warn">Warning</SelectItem>
@@ -288,7 +288,7 @@ export default function AdminLogsPage() {
                   <SelectItem value="fatal">Fatal</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <div className="relative">
                 <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -299,7 +299,7 @@ export default function AdminLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <div className="relative">
                 <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -310,7 +310,7 @@ export default function AdminLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <Button onClick={handleSearch}>
                 Search
               </Button>

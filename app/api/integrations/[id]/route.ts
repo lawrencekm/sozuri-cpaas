@@ -15,11 +15,11 @@ const mockIntegrations: IntegrationConfig[] = [
 ];
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const integration = mockIntegrations.find(int => int.id === id);
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const integrationIndex = mockIntegrations.findIndex(int => int.id === id);
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const integrationIndex = mockIntegrations.findIndex(int => int.id === id);

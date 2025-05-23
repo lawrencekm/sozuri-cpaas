@@ -10,14 +10,14 @@ const mockWebhooks: WebhookConfig[] = [
 ];
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
  * GET /api/webhooks/[id]
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const webhook = mockWebhooks.find(wh => wh.id === id);
     if (!webhook) {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  * PUT /api/webhooks/[id]
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const index = mockWebhooks.findIndex(wh => wh.id === id);
     if (index === -1) {
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  * DELETE /api/webhooks/[id]
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const index = mockWebhooks.findIndex(wh => wh.id === id);
     if (index === -1) {

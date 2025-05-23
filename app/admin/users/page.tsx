@@ -30,9 +30,9 @@ import {
 } from "@/components/ui/dialog"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { adminAPI, type User } from "@/lib/api"
-import { 
-  Users, 
-  Search, 
+import {
+  Users,
+  Search,
   Eye,
   Settings,
   Plus,
@@ -58,12 +58,12 @@ export default function AdminUsersPage() {
       setLoading(true)
       const response = await adminAPI.getAllUsers({
         search: searchQuery,
-        role: roleFilter || undefined
+        role: roleFilter && roleFilter !== 'all' ? roleFilter : undefined
       })
       setUsers(response.users)
     } catch (error) {
       console.error('Failed to load users:', error)
-      
+
       const mockUsers: User[] = [
         {
           id: 'user_2',
@@ -94,7 +94,7 @@ export default function AdminUsersPage() {
           project_id: 'proj_2'
         }
       ]
-      
+
       setUsers(mockUsers)
       toast.error('Using demo data - API connection failed')
     } finally {
@@ -106,13 +106,13 @@ export default function AdminUsersPage() {
     try {
       setTopupLoading(true)
       const response = await adminAPI.topupUserCredit(userId, amount)
-      
-      setUsers(users.map(user => 
-        user.id === userId 
+
+      setUsers(users.map(user =>
+        user.id === userId
           ? { ...user, balance: response.balance }
           : user
       ))
-      
+
       toast.success(`Successfully added $${amount} to user account`)
       setTopupAmount('')
     } catch (error) {
@@ -126,7 +126,7 @@ export default function AdminUsersPage() {
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesRole = !roleFilter || user.role === roleFilter
+    const matchesRole = !roleFilter || roleFilter === 'all' || user.role === roleFilter
     return matchesSearch && matchesRole
   })
 
@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
+                  <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="supervisor">Supervisor</SelectItem>
                   <SelectItem value="agent">Agent</SelectItem>
@@ -283,7 +283,7 @@ export default function AdminUsersPage() {
                         </TableCell>
                         <TableCell>{user.company || '-'}</TableCell>
                         <TableCell>
-                          {user.last_login 
+                          {user.last_login
                             ? new Date(user.last_login).toLocaleDateString()
                             : 'Never'
                           }
@@ -292,8 +292,8 @@ export default function AdminUsersPage() {
                           <div className="flex items-center gap-2">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   size="sm"
                                   onClick={() => setSelectedUser(user)}
                                 >

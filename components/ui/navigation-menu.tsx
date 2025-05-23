@@ -56,7 +56,7 @@ const NavigationMenuTrigger = React.forwardRef<
     className={cn(navigationMenuTriggerStyle(), "group", className)}
     role="menuitem"
     aria-haspopup="true"
-    aria-expanded={props["data-state"] === "open"}
+    aria-expanded={(props as any)["data-state"] === "open"}
     {...props}
   >
     {children}{" "}

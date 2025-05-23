@@ -432,39 +432,12 @@ export default function Dashboard() {
   // In config our app, this would be determined by checking user metadata
   const [isNewUser, setIsNewUser] = useState(true)
 
-  // This is just for demo purposes to toggle between new and returning user views
-  const toggleUserExperience = () => {
-    setIsNewUser(!isNewUser)
-  }
-
-  // We'll use the EnhancedEmptyState for completely new users who haven't set up anything yet
-  if (false) {
-    return (
-      <DashboardLayout>
-        <EnhancedEmptyState />
-      </DashboardLayout>
-    )
-  }
-
   // Get user information from localStorage or context in a real app
   const [userInfo, setUserInfo] = useState({
     name: "John",
     companyName: "Acme Corporation",
     userRole: "Platform Administrator"
   });
-
-  const showWelcomeDashboard = false;
-  if (showWelcomeDashboard) {
-    return (
-      <DashboardLayout>
-        <WelcomeDashboard
-          userName={userInfo.name}
-          companyName={userInfo.companyName}
-          userRole={userInfo.userRole}
-        />
-      </DashboardLayout>
-    )
-  }
 
   const [metrics, setMetrics] = useState({
     deliveryRate: { value: "0", change: "0%", trend: "up" as const },
@@ -479,6 +452,15 @@ export default function Dashboard() {
   })
 
   const [error, setError] = useState<Error | null>(null)
+
+  // This is just for demo purposes to toggle between new and returning user views
+  const toggleUserExperience = () => {
+    setIsNewUser(!isNewUser)
+  }
+
+  // Constants for conditional rendering
+  const showEnhancedEmptyState = false
+  const showWelcomeDashboard = false
 
   const chartData = [
     { name: "Jan", messages: 1200 },

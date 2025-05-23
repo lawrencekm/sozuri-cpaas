@@ -1,37 +1,37 @@
 "use client"
 
 import { useState } from "react"
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  Legend 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
 } from "recharts"
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Calendar, 
-  Download, 
-  MessageCircle, 
-  Phone, 
-  MessagesSquare 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Download,
+  MessageCircle,
+  Phone,
+  MessagesSquare
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -63,17 +63,19 @@ const costBreakdown = [
 
 export function CostAnalytics() {
   const [dateRange, setDateRange] = useState("last-6-months")
-  
+
   // Calculate totals
-  const currentMonthTotal = Object.values(monthlyData[5]).reduce((acc, val) => 
-    typeof val === 'number' ? acc + val : acc, 0) - monthlyData[5].month.length
-  
-  const previousMonthTotal = Object.values(monthlyData[4]).reduce((acc, val) => 
-    typeof val === 'number' ? acc + val : acc, 0) - monthlyData[4].month.length
-  
+  const currentMonthTotal = Object.entries(monthlyData[5])
+    .filter(([key]) => key !== 'month')
+    .reduce((acc, [, val]) => acc + (typeof val === 'number' ? val : 0), 0)
+
+  const previousMonthTotal = Object.entries(monthlyData[4])
+    .filter(([key]) => key !== 'month')
+    .reduce((acc, [, val]) => acc + (typeof val === 'number' ? val : 0), 0)
+
   const percentChange = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal * 100).toFixed(1)
   const isTrendUp = currentMonthTotal > previousMonthTotal
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -101,7 +103,7 @@ export function CostAnalytics() {
           </Button>
         </div>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -116,7 +118,7 @@ export function CostAnalytics() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Month-over-Month</CardTitle>
@@ -135,7 +137,7 @@ export function CostAnalytics() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">YTD Total</CardTitle>
@@ -148,7 +150,7 @@ export function CostAnalytics() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Projected Annual</CardTitle>
@@ -162,14 +164,14 @@ export function CostAnalytics() {
           </CardContent>
         </Card>
       </div>
-      
+
       <Tabs defaultValue="monthly-trend" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="monthly-trend">Monthly Trend</TabsTrigger>
           <TabsTrigger value="channel-distribution">Channel Distribution</TabsTrigger>
           <TabsTrigger value="cost-breakdown">Cost Breakdown</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="monthly-trend" className="space-y-4">
           <Card>
             <CardHeader>
@@ -194,7 +196,7 @@ export function CostAnalytics() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          
+
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
@@ -214,7 +216,7 @@ export function CostAnalytics() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -233,7 +235,7 @@ export function CostAnalytics() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -254,7 +256,7 @@ export function CostAnalytics() {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="channel-distribution" className="space-y-4">
           <Card>
             <CardHeader>
@@ -285,7 +287,7 @@ export function CostAnalytics() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="cost-breakdown" className="space-y-4">
           <Card>
             <CardHeader>
@@ -315,7 +317,7 @@ export function CostAnalytics() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {costBreakdown.map((item) => (
               <Card key={item.name}>

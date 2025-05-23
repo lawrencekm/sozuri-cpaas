@@ -119,26 +119,23 @@ export function RealTimeDashboard() {
         setMetrics(generateMockData())
         setTimeSeriesData(prev => {
           const newData = [...prev]
-        const now = new Date()
+          const now = new Date()
 
-        // Add new data point
-        newData.push({
-          time: formatTime(now),
-          sms: Math.floor(80 + Math.random() * 40),
-          whatsapp: Math.floor(60 + Math.random() * 30),
-          voice: Math.floor(30 + Math.random() * 20),
-          deliveryRate: 95 + Math.random() * 4,
-          errorRate: 0.5 + Math.random() * 1.5,
-          latency: 80 + Math.random() * 50,
-        })
+          // Add new data point
+          newData.push({
+            time: formatTime(now),
+            sms: Math.floor(80 + Math.random() * 40),
+            whatsapp: Math.floor(60 + Math.random() * 30),
+            voice: Math.floor(30 + Math.random() * 20),
+            deliveryRate: 95 + Math.random() * 4,
+            errorRate: 0.5 + Math.random() * 1.5,
+            latency: 80 + Math.random() * 50,
+          })
 
-        // Remove oldest data point to keep 24 points
-        if (newData.length > 24) {
-          newData.shift()
-        }
-
-        return newData
-      })
+          // Remove oldest data point to keep 24 points
+          if (newData.length > 24) {
+            newData.shift()
+          }
 
           return newData
         })

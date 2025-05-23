@@ -30,11 +30,11 @@ import {
 } from "@/components/ui/dialog"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { adminAPI, authAPI, type User, type Project } from "@/lib/api"
-import { 
-  Users, 
-  UserCheck, 
-  UserX, 
-  Search, 
+import {
+  Users,
+  UserCheck,
+  UserX,
+  Search,
   Download,
   Eye,
   Settings,
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
       setUsers(response.users)
     } catch (error) {
       console.error('Failed to load users:', error)
-      
+
       const mockUsers: User[] = [
         {
           id: 'user_1',
@@ -138,7 +138,7 @@ export default function AdminDashboardPage() {
           project_id: 'proj_2'
         }
       ]
-      
+
       setUsers(mockUsers)
       toast.error('Using demo data - API connection failed')
     } finally {
@@ -179,13 +179,13 @@ export default function AdminDashboardPage() {
     try {
       setTopupLoading(true)
       const response = await adminAPI.topupUserCredit(userId, amount)
-      
-      setUsers(users.map(user => 
-        user.id === userId 
+
+      setUsers(users.map(user =>
+        user.id === userId
           ? { ...user, balance: response.balance }
           : user
       ))
-      
+
       toast.success(`Successfully added $${amount} to user account`)
       setTopupAmount('')
     } catch (error) {
@@ -199,12 +199,12 @@ export default function AdminDashboardPage() {
   const handleImpersonate = async (userId: string) => {
     try {
       const response = await authAPI.impersonate(userId)
-      
+
       localStorage.setItem('token', response.token)
-      
+
       setIsImpersonating(true)
       toast.success(`Now impersonating ${response.user.name}`)
-      
+
       window.location.reload()
     } catch (error) {
       console.error('Failed to impersonate user:', error)
@@ -221,12 +221,12 @@ export default function AdminDashboardPage() {
   const handleStopImpersonation = async () => {
     try {
       const response = await authAPI.stopImpersonation()
-      
+
       localStorage.setItem('token', response.token)
-      
+
       setIsImpersonating(false)
       toast.success('Stopped impersonation')
-      
+
       window.location.reload()
     } catch (error) {
       console.error('Failed to stop impersonation:', error)
@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl font-bold tracking-tight">Super Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users, projects, and system administration</p>
           </div>
-          
+
           {isImpersonating && (
             <div className="flex items-center gap-2">
               <Badge variant="destructive" className="flex items-center gap-1">
@@ -292,7 +292,7 @@ export default function AdminDashboardPage() {
               <div className="text-2xl font-bold">{users.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
@@ -304,7 +304,7 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Credits</CardTitle>
@@ -316,7 +316,7 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Users</CardTitle>
@@ -328,7 +328,7 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Suspended</CardTitle>
@@ -342,7 +342,7 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle>System Logs</CardTitle>
@@ -357,7 +357,7 @@ export default function AdminDashboardPage() {
               </Button>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>User Management</CardTitle>
@@ -368,6 +368,21 @@ export default function AdminDashboardPage() {
                 <a href="/admin/users">
                   <Users className="mr-2 h-4 w-4" />
                   Manage Users
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Management</CardTitle>
+              <CardDescription>View and manage all projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" asChild>
+                <a href="/admin/projects">
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  Manage Projects
                 </a>
               </Button>
             </CardContent>

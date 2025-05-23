@@ -61,7 +61,7 @@ export default function AdminLogsPage() {
       const response = await adminAPI.getLogs({
         page: currentPage,
         limit: logsPerPage,
-        level: levelFilter || undefined,
+        level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         search: searchQuery || undefined
@@ -287,7 +287,7 @@ export default function AdminLogsPage() {
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   <SelectItem value="debug">Debug</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warn">Warning</SelectItem>

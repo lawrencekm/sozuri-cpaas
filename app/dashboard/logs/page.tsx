@@ -22,12 +22,11 @@ import {
 } from "@/components/ui/select"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { userAPI, type LogEntry } from "@/lib/api"
-import { 
-  Download, 
-  Search, 
+import {
+  Download,
+  Search,
   Filter,
   Calendar,
-  FileText,
   AlertCircle,
   Info,
   AlertTriangle,
@@ -35,8 +34,33 @@ import {
   Zap
 } from "lucide-react"
 import { toast } from "sonner"
+import { ErrorBoundary } from "react-error-boundary"
 
-export default function UserLogsPage() {
+// Error fallback component for logs page
+function LogsErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100/80">
+        <AlertTriangle className="h-10 w-10 text-red-600" />
+      </div>
+      <h2 className="mt-6 text-xl font-semibold">Failed to load logs</h2>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground text-center">
+        {error.message || 'An unexpected error occurred while loading your logs.'}
+      </p>
+      <div className="mt-6 flex gap-2">
+        <Button onClick={resetErrorBoundary} variant="outline">
+          <AlertCircle className="mr-2 h-4 w-4" />
+          Try Again
+        </Button>
+        <Button onClick={() => window.location.reload()}>
+          Refresh Page
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function UserLogsPageContent() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
@@ -60,7 +84,7 @@ export default function UserLogsPage() {
       const response = await userAPI.getLogs({
         page: currentPage,
         limit: logsPerPage,
-        level: levelFilter || undefined,
+        level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         search: searchQuery || undefined
@@ -70,7 +94,7 @@ export default function UserLogsPage() {
       setTotalPages(Math.ceil(response.total / logsPerPage))
     } catch (error) {
       console.error('Failed to load logs:', error)
-      
+
       const mockLogs: LogEntry[] = [
         {
           id: 'log_1',
@@ -91,7 +115,7 @@ export default function UserLogsPage() {
           requestId: 'req_124'
         }
       ]
-      
+
       setLogs(mockLogs)
       setTotalLogs(mockLogs.length)
       setTotalPages(1)
@@ -110,11 +134,11 @@ export default function UserLogsPage() {
     try {
       setDownloading(true)
       toast.info(`Preparing ${format.toUpperCase()} download...`)
-      
+
       const blob = await userAPI.downloadLogs({
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        level: levelFilter || undefined,
+        level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
         format
       })
 
@@ -130,17 +154,17 @@ export default function UserLogsPage() {
       toast.success(`Logs downloaded successfully as ${format.toUpperCase()}`)
     } catch (error) {
       console.error('Failed to download logs:', error)
-      
-      const sampleData = format === 'json' 
+
+      const sampleData = format === 'json'
         ? JSON.stringify(logs, null, 2)
         : format === 'csv'
-        ? 'ID,Timestamp,Level,Message,Source\n' + logs.map(log => 
+        ? 'ID,Timestamp,Level,Message,Source\n' + logs.map(log =>
             `${log.id},${log.timestamp},${log.level},"${log.message}",${log.source}`
           ).join('\n')
-        : logs.map(log => 
+        : logs.map(log =>
             `[${log.timestamp}] ${log.level.toUpperCase()}: ${log.message}`
           ).join('\n')
-      
+
       const blob = new Blob([sampleData], { type: 'text/plain' })
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -150,7 +174,7 @@ export default function UserLogsPage() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      
+
       toast.success(`Demo: Downloaded sample ${format.toUpperCase()} file`)
     } finally {
       setDownloading(false)
@@ -187,26 +211,26 @@ export default function UserLogsPage() {
             <h1 className="text-3xl font-bold tracking-tight">My Logs</h1>
             <p className="text-muted-foreground">View and download your application logs</p>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('json')}
               disabled={downloading}
             >
               <Download className="mr-2 h-4 w-4" />
               JSON
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('csv')}
               disabled={downloading}
             >
               <Download className="mr-2 h-4 w-4" />
               CSV
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleDownload('txt')}
               disabled={downloading}
             >
@@ -234,13 +258,13 @@ export default function UserLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <Select value={levelFilter} onValueChange={setLevelFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Log level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   <SelectItem value="debug">Debug</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warn">Warning</SelectItem>
@@ -248,7 +272,7 @@ export default function UserLogsPage() {
                   <SelectItem value="fatal">Fatal</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <div className="relative">
                 <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -259,7 +283,7 @@ export default function UserLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <div className="relative">
                 <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -270,7 +294,7 @@ export default function UserLogsPage() {
                   className="pl-8"
                 />
               </div>
-              
+
               <Button onClick={handleSearch}>
                 Search
               </Button>
@@ -369,5 +393,18 @@ export default function UserLogsPage() {
         </Card>
       </div>
     </DashboardLayout>
+  )
+}
+
+export default function UserLogsPage() {
+  return (
+    <ErrorBoundary
+      FallbackComponent={LogsErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error('Logs Page Error:', error, errorInfo)
+      }}
+    >
+      <UserLogsPageContent />
+    </ErrorBoundary>
   )
 }

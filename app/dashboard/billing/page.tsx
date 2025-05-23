@@ -33,7 +33,6 @@ interface PaymentMethod {
   expiry?: string
 }
 
-// Top-up Dialog Component
 function TopUpDialog() {
   const [amount, setAmount] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("card")
@@ -76,7 +75,7 @@ function TopUpDialog() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Top Up Account Balance</DialogTitle>
-            <DialogDescription>Add funds to your SOZURI Connect account</DialogDescription>
+            <DialogDescription>Add funds to your SOZURI account</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -141,7 +140,6 @@ function TopUpDialog() {
   )
 }
 
-// Recommended interface
 interface BillingData {
   balance: number
   currency: string
@@ -158,7 +156,6 @@ export default function BillingPage() {
 
   useEffect(() => {
     console.log("Billing page mounted")
-    // Fetch billing data
     const fetchBillingData = async () => {
       try {
         // Replace with actual API call
@@ -166,8 +163,6 @@ export default function BillingPage() {
         // if (!response.ok) throw new Error('Failed to fetch billing data');
         // const data = await response.json();
         // setBillingData(data);
-
-        // Simulate API call delay
         await new Promise((resolve) => setTimeout(resolve, 1500))
 
         // Set billing data to null to simulate empty state

@@ -15,7 +15,7 @@ import DashboardLayout from "@/components/layout/dashboard-layout"
 import { useApi, useCampaign } from "@/hooks/use-api"
 import { campaignsAPI } from "@/lib/api"
 
-export default function EditCampaignPage({ params }: { params: { id: string } }) {
+export default function EditCampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const unwrappedParams = use(params)
   const { id } = unwrappedParams

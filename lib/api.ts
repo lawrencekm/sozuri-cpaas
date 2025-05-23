@@ -135,15 +135,7 @@ export interface Project {
   currency: string;
 }
 
-export interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
-  projectId: string;
-  created: string;
-  updated: string;
-}
+
 
 export interface MessagePayload {
   to: string | string[];
@@ -272,34 +264,7 @@ export const projectsAPI = {
   ),
 }
 
-export const campaignsAPI = {
-  getAll: withErrorHandling(
-    (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
-    ErrorType.API
-  ),
 
-  getById: withErrorHandling(
-    (id: string): Promise<Campaign> => api.get(`/campaigns/${id}`).then(res => res.data),
-    ErrorType.API
-  ),
-
-  create: withErrorHandling(
-    (campaign: Omit<Campaign, 'id' | 'created' | 'updated'>): Promise<Campaign> =>
-      api.post("/campaigns", campaign).then(res => res.data),
-    ErrorType.API
-  ),
-
-  update: withErrorHandling(
-    (id: string, campaign: Partial<Omit<Campaign, 'id' | 'created' | 'updated'>>): Promise<Campaign> =>
-      api.put(`/campaigns/${id}`, campaign).then(res => res.data),
-    ErrorType.API
-  ),
-
-  delete: withErrorHandling(
-    (id: string): Promise<void> => api.delete(`/campaigns/${id}`).then(res => res.data),
-    ErrorType.API
-  ),
-}
 
 // --- Campaign Templates API ---
 export const campaignTemplatesAPI = {
@@ -311,7 +276,8 @@ export const campaignTemplatesAPI = {
   getById: withErrorHandling(
     (id: string): Promise<CampaignTemplate> =>
       api.get(`/templates/${id}`).then(res => res.data),
-    ErrorType.API
+    ErrorType.API,
+    {}
   ),
   create: withErrorHandling(
     (template: Omit<CampaignTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<CampaignTemplate> =>
@@ -384,10 +350,46 @@ export const messagingAPI = {
   ),
 }
 
+// Campaigns API with error handling
+export const campaignsAPI = {
+  getAll: withErrorHandling(
+    (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
+    ErrorType.API
+  ),
+
+  getById: withErrorHandling(
+    (id: string): Promise<Campaign> => api.get(`/campaigns/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+
+  create: withErrorHandling(
+    (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'>): Promise<Campaign> =>
+      api.post("/campaigns", campaign).then(res => res.data),
+    ErrorType.API
+  ),
+
+  update: withErrorHandling(
+    (id: string, campaign: Partial<Campaign>): Promise<Campaign> =>
+      api.put(`/campaigns/${id}`, campaign).then(res => res.data),
+    ErrorType.API
+  ),
+
+  delete: withErrorHandling(
+    (id: string): Promise<void> => api.delete(`/campaigns/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
 // Analytics API with error handling
 export const analyticsAPI = {
   getEngagement: withErrorHandling(
     (timeframe: string) => api.get(`/analytics/engagement`, { params: { timeframe } }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getMetrics: withErrorHandling(
+    (channel: string, metric: string, timeframe: string): Promise<AnalyticsMetrics> =>
+      api.get(`/analytics/metrics`, { params: { channel, metric, timeframe } }).then(res => res.data),
     ErrorType.API
   ),
 }
@@ -435,6 +437,12 @@ export const adminAPI = {
   updateProject: withErrorHandling(
     (id: string, data: Partial<Project>): Promise<Project> =>
       api.put(`/admin/projects/${id}`, data).then(res => res.data),
+    ErrorType.API
+  ),
+
+  deleteProject: withErrorHandling(
+    (id: string): Promise<void> =>
+      api.delete(`/admin/projects/${id}`).then(res => res.data),
     ErrorType.API
   ),
 
@@ -501,4 +509,50 @@ export interface LogEntry {
   source?: string;
   userId?: string;
   requestId?: string;
+}
+
+export interface AnalyticsMetrics {
+  deliveryRate: string;
+  latency: string;
+  errorRate: string;
+  cost: string;
+  throughput: string;
+  conversionRate: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
+  type?: 'sms' | 'whatsapp' | 'voice' | 'email';
+  channel?: string;
+  content?: string;
+  created_at?: string;
+  updated_at?: string;
+  created?: string;
+  updated?: string;
+  project_id?: string;
+  projectId?: string;
+  target_audience?: string;
+  message_content?: string;
+  scheduled_at?: string;
+  audience?: {
+    total: number;
+    delivered: number;
+    failed: number;
+    opened: number;
+    clicked: number;
+  };
+  schedule?: {
+    type: string;
+    sentAt: string;
+  };
+  metrics?: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    cost: number;
+  };
 }
