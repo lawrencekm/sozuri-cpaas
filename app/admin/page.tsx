@@ -177,6 +177,12 @@ export default function AdminDashboardPage() {
 
   const handleTopup = async (userId: string, amount: number) => {
     try {
+      // Validate amount before sending
+      if (!amount || isNaN(amount) || amount <= 0) {
+        toast.error('Please enter a valid amount greater than 0')
+        return
+      }
+
       setTopupLoading(true)
       const response = await adminAPI.topupUserCredit(userId, amount)
 
@@ -186,7 +192,7 @@ export default function AdminDashboardPage() {
           : user
       ))
 
-      toast.success(`Successfully added $${amount} to user account`)
+      toast.success(`Successfully added $${amount.toFixed(2)} to user account`)
       setTopupAmount('')
     } catch (error) {
       console.error('Failed to topup user:', error)

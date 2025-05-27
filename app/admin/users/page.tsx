@@ -104,6 +104,12 @@ export default function AdminUsersPage() {
 
   const handleTopup = async (userId: string, amount: number) => {
     try {
+      // Validate amount before sending
+      if (!amount || isNaN(amount) || amount <= 0) {
+        toast.error('Please enter a valid amount greater than 0')
+        return
+      }
+
       setTopupLoading(true)
       const response = await adminAPI.topupUserCredit(userId, amount)
 
@@ -113,7 +119,7 @@ export default function AdminUsersPage() {
           : user
       ))
 
-      toast.success(`Successfully added $${amount} to user account`)
+      toast.success(`Successfully added $${amount.toFixed(2)} to user account`)
       setTopupAmount('')
     } catch (error) {
       console.error('Failed to topup user:', error)
@@ -269,7 +275,14 @@ export default function AdminUsersPage() {
                                     </div>
                                     <div className="flex gap-2">
                                       <Button
-                                        onClick={() => handleTopup(user.id, parseFloat(topupAmount))}
+                                        onClick={() => {
+                                          const amount = parseFloat(topupAmount)
+                                          if (!isNaN(amount) && amount > 0) {
+                                            handleTopup(user.id, amount)
+                                          } else {
+                                            toast.error('Please enter a valid amount')
+                                          }
+                                        }}
                                         disabled={!topupAmount || topupLoading}
                                       >
                                         {topupLoading ? 'Processing...' : 'Add Credits'}

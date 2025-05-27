@@ -39,42 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
 
-// Import chart components
-import {
-  DeliveryRateMetricCard,
-  LatencyMetricCard,
-  ErrorRateMetricCard,
-  ThroughputMetricCard
-} from '@/components/metrics/advanced-metric-card/metric-cards'
-
-const EnhancedEmptyState = dynamic(
-  () => import('@/components/onboarding/enhanced-empty-state').then(mod => ({ default: mod.EnhancedEmptyState })),
-  {
-    loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />
-  }
-)
-
-const WelcomeDashboard = dynamic(
-  () => import('@/components/onboarding/welcome-dashboard').then(mod => ({ default: mod.WelcomeDashboard })),
-  {
-    loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />
-  }
-)
-
-// Lazy load other components
-const PageHierarchy = dynamic(
-  () => import('@/components/navigation/page-hierarchy').then(mod => ({ default: mod.PageHierarchy })),
-  {
-    loading: () => <div className="h-[200px] w-full animate-pulse bg-muted rounded-lg" />
-  }
-)
-
-const AISuggestionsCard = dynamic(
-  () => import('@/components/dashboard/ai-suggestions-card').then(mod => ({ default: mod.AISuggestionsCard })),
-  {
-    loading: () => <div className="h-[200px] w-full animate-pulse bg-muted rounded-lg" />
-  }
-)
+// Lazy load chart components for better performance
 
 function DashboardCard({
   title,
@@ -452,15 +417,14 @@ export default function Dashboard() {
   })
 
   const [error, setError] = useState<Error | null>(null)
+  const [currentTime, setCurrentTime] = useState<string>('')
 
   // This is just for demo purposes to toggle between new and returning user views
   const toggleUserExperience = () => {
     setIsNewUser(!isNewUser)
   }
 
-  // Constants for conditional rendering
-  const showEnhancedEmptyState = false
-  const showWelcomeDashboard = false
+
 
   const chartData = [
     { name: "Jan", messages: 1200 },
@@ -476,6 +440,18 @@ export default function Dashboard() {
     { name: "Nov", messages: 8900 },
     { name: "Dec", messages: 7800 },
   ]
+
+  useEffect(() => {
+    // Set initial time and update every minute
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString())
+    }
+
+    updateTime() // Set initial time
+    const timeInterval = setInterval(updateTime, 60000) // Update every minute
+
+    return () => clearInterval(timeInterval)
+  }, [])
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -604,7 +580,7 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-white">Systems Operational</div>
-                        <div className="text-xs text-white/70">Last checked: {new Date().toLocaleTimeString()}</div>
+                        <div className="text-xs text-white/70">Last checked: {currentTime || 'Loading...'}</div>
                       </div>
                     </div>
 

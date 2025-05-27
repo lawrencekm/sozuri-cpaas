@@ -146,6 +146,30 @@ export interface MessagePayload {
   callbackUrl?: string;
 }
 
+export interface MessageLog {
+  id: string;
+  message_id: string;
+  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  direction: 'inbound' | 'outbound';
+  sender: string;
+  recipient: string;
+  content: string;
+  status: 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+  timestamp: string;
+  cost?: number;
+  currency?: string;
+  campaign_id?: string;
+  campaign_name?: string;
+  template_id?: string;
+  template_name?: string;
+  user_id: string;
+  project_id?: string;
+  error_code?: string;
+  error_message?: string;
+  delivery_attempts?: number;
+  metadata?: Record<string, any>;
+}
+
 // --- Types for Campaign Templates & Automations ---
 export interface CampaignTemplate {
   id: string;
@@ -348,6 +372,39 @@ export const messagingAPI = {
     ErrorType.API,
     { toastMessage: "Failed to send bulk SMS messages. Please try again." }
   ),
+
+  // Message Logs
+  getMessageLogs: withErrorHandling(
+    (params?: {
+      page?: number;
+      limit?: number;
+      channel?: string;
+      direction?: string;
+      status?: string;
+      sender?: string;
+      recipient?: string;
+      startDate?: string;
+      endDate?: string;
+      search?: string;
+      campaign_id?: string;
+      template_id?: string;
+    }): Promise<{
+      logs: MessageLog[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      summary: any;
+    }> =>
+      api.get("/messaging/logs", { params }).then(res => res.data),
+    ErrorType.API
+  ),
+
+  getMessageLogById: withErrorHandling(
+    (id: string): Promise<MessageLog> =>
+      api.get(`/messaging/logs/${id}`).then(res => res.data),
+    ErrorType.API
+  ),
 }
 
 // Campaigns API with error handling
@@ -454,7 +511,21 @@ export const adminAPI = {
   ),
 
   getUserTransactions: withErrorHandling(
-    (userId: string, params?: { page?: number; limit?: number }): Promise<{ transactions: any[]; total: number }> =>
+    (userId: string, params?: {
+      page?: number;
+      limit?: number;
+      type?: string;
+      status?: string;
+      startDate?: string;
+      endDate?: string;
+    }): Promise<{
+      transactions: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      summary: any;
+    }> =>
       api.get(`/admin/users/${userId}/transactions`, { params }).then(res => res.data),
     ErrorType.API
   ),
@@ -495,6 +566,16 @@ export const adminAPI = {
       email?: string;
     }): Promise<{ exportId: string; status: string }> =>
       api.post("/admin/logs/export", params).then(res => res.data),
+    ErrorType.API
+  ),
+
+  // Real-time Metrics
+  getMetrics: withErrorHandling(
+    (params?: {
+      type?: 'overview' | 'timeseries' | 'alerts';
+      timeframe?: '1h' | '6h' | '12h' | '24h';
+    }): Promise<any> =>
+      api.get("/admin/metrics", { params }).then(res => res.data),
     ErrorType.API
   ),
 }

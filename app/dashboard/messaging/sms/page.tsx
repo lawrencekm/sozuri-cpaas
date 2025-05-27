@@ -37,11 +37,17 @@ export default function SmsPage() {
           </Button>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center justify-between">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search messages..." className="pl-8" />
           </div>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/messaging/logs">
+              <Search className="mr-2 h-4 w-4" />
+              View Message Logs
+            </Link>
+          </Button>
         </div>
 
         <Tabs defaultValue="standard" className="w-full">

@@ -89,39 +89,71 @@ export async function POST(
 
     const { id } = await params;
     const userIndex = mockUsers.findIndex(u => u.id === id);
-    
+
     if (userIndex === -1) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const body = await request.json();
+    // Check if request has a body
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json({
+        message: 'Content-Type must be application/json'
+      }, { status: 400 });
+    }
+
+    // Get the raw text first to check if body exists
+    const rawBody = await request.text();
+    if (!rawBody || rawBody.trim() === '') {
+      return NextResponse.json({
+        message: 'Request body is required'
+      }, { status: 400 });
+    }
+
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      return NextResponse.json({
+        message: 'Invalid JSON format in request body'
+      }, { status: 400 });
+    }
+
     const { amount } = body;
 
-    if (!amount || amount <= 0) {
-      return NextResponse.json({ 
-        message: 'Invalid amount. Must be greater than 0' 
+    if (amount === undefined || amount === null) {
+      return NextResponse.json({
+        message: 'Amount is required'
+      }, { status: 400 });
+    }
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      return NextResponse.json({
+        message: 'Amount must be a valid number greater than 0'
       }, { status: 400 });
     }
 
     const user = mockUsers[userIndex];
-    const newBalance = (user.balance || 0) + amount;
+    const newBalance = (user.balance || 0) + numericAmount;
     mockUsers[userIndex] = { ...user, balance: newBalance };
 
-    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     return NextResponse.json({
       balance: newBalance,
       transaction_id: transactionId,
-      amount,
+      amount: numericAmount,
       user_id: id,
       timestamp: new Date().toISOString()
     });
 
   } catch (error) {
     console.error("Failed to topup user credit:", error);
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
-    }
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      message: 'Internal Server Error',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
