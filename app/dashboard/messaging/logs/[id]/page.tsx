@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -55,13 +55,7 @@ export default function MessageLogDetailPage() {
   const [log, setLog] = useState<DetailedMessageLog | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (logId) {
-      loadMessageLog()
-    }
-  }, [logId])
-
-  const loadMessageLog = async () => {
+  const loadMessageLog = useCallback(async () => {
     try {
       setLoading(true)
       const response = await messagingAPI.getMessageLogById(logId)
@@ -72,7 +66,13 @@ export default function MessageLogDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [logId])
+
+  useEffect(() => {
+    if (logId) {
+      loadMessageLog()
+    }
+  }, [logId, loadMessageLog])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)

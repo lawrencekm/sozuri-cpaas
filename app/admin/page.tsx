@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -60,13 +60,7 @@ export default function AdminDashboardPage() {
   const [topupAmount, setTopupAmount] = useState('')
   const [topupLoading, setTopupLoading] = useState(false)
 
-  useEffect(() => {
-    loadUsers()
-    loadProjects()
-    loadCurrentUser()
-  }, [])
-
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     try {
       const user = await authAPI.getProfile()
       setCurrentUser(user)
@@ -82,9 +76,9 @@ export default function AdminDashboardPage() {
         permissions: ['read', 'write', 'admin', 'impersonate']
       })
     }
-  }
+  }, [])
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminAPI.getAllUsers({
@@ -144,9 +138,9 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery, roleFilter])
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setProjectsLoading(true)
       const response = await adminAPI.getAllProjects()
@@ -173,7 +167,13 @@ export default function AdminDashboardPage() {
     } finally {
       setProjectsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadUsers()
+    loadProjects()
+    loadCurrentUser()
+  }, [loadUsers, loadProjects, loadCurrentUser])
 
   const handleTopup = async (userId: string, amount: number) => {
     try {

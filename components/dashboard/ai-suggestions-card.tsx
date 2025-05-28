@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
-import { 
-  ArrowRight, 
-  ChevronRight, 
-  Lightbulb, 
-  Sparkles, 
-  Clock, 
-  MessageCircle, 
-  Users, 
-  Settings 
+import {
+  ArrowRight,
+  ChevronRight,
+  Lightbulb,
+  Sparkles,
+  Clock,
+  MessageCircle,
+  Users,
+  Settings
 } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -32,9 +32,9 @@ interface Suggestion {
 export function AISuggestionsCard() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  
+
   // Mock suggestions data
-  const mockSuggestions: Suggestion[] = [
+  const mockSuggestions = useMemo<Suggestion[]>(() => [
     {
       id: 1,
       title: "Optimize Send Time",
@@ -65,8 +65,8 @@ export function AISuggestionsCard() {
       impact: "medium",
       timeToImplement: "10 min"
     }
-  ]
-  
+  ], [])
+
   useEffect(() => {
     let isMounted = true; // Mounted flag
     const fetchSuggestions = async () => {
@@ -86,16 +86,16 @@ export function AISuggestionsCard() {
         }
       }
     }
-    
+
     fetchSuggestions()
-    
+
     return () => {
       isMounted = false; // Cleanup function to set flag on unmount
     };
   // If mockSuggestions is not stable (e.g., defined inside component or passed as prop without memo), add it to dependency array.
   // For this specific case, mockSuggestions is defined outside and is stable.
-  }, [])
-  
+  }, [mockSuggestions])
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "timing":
@@ -108,7 +108,7 @@ export function AISuggestionsCard() {
         return <MessageCircle className="h-4 w-4" />
     }
   }
-  
+
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case "high":
@@ -121,7 +121,7 @@ export function AISuggestionsCard() {
         return "bg-gray-100 text-gray-800"
     }
   }
-  
+
   return (
     <Card className="col-span-3 border shadow-md hover:shadow-lg transition-shadow">
       <CardHeader className="pb-2">
@@ -135,7 +135,7 @@ export function AISuggestionsCard() {
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pb-2">
         {isLoading ? (
           <div className="space-y-4">
@@ -162,7 +162,7 @@ export function AISuggestionsCard() {
                 <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-primary/10 text-primary">
                   <Lightbulb className="h-4 w-4" />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
                     <div>
@@ -174,16 +174,16 @@ export function AISuggestionsCard() {
                           <span className="capitalize">{suggestion.category}</span>
                         </Badge>
                         <Badge className={`${getImpactColor(suggestion.impact)} text-xs`}>
-                          {suggestion.impact === "high" ? "High Impact" : 
+                          {suggestion.impact === "high" ? "High Impact" :
                            suggestion.impact === "medium" ? "Medium Impact" : "Low Impact"}
                         </Badge>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       className="h-7 text-xs"
                       asChild
@@ -210,10 +210,10 @@ export function AISuggestionsCard() {
           </div>
         )}
       </CardContent>
-      
+
       <CardFooter className="pt-2 border-t">
-        <Button 
-          variant="link" 
+        <Button
+          variant="link"
           size="sm"
           className="ml-auto"
           asChild

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,11 +50,7 @@ export default function AdminLogsPage() {
 
   const logsPerPage = 50
 
-  useEffect(() => {
-    loadLogs()
-  }, [currentPage, levelFilter, startDate, endDate])
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminAPI.getLogs({
@@ -110,7 +106,12 @@ export default function AdminLogsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, levelFilter, startDate, endDate, searchQuery])
+
+  // Load logs on component mount and when filters change
+  useEffect(() => {
+    loadLogs()
+  }, [loadLogs])
 
   const handleSearch = () => {
     setCurrentPage(1)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/select"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { adminAPI } from "@/lib/api"
-import { 
+import {
   ArrowLeft,
-  Search, 
+  Search,
   Download,
   Calendar,
   DollarSign,
@@ -65,7 +65,7 @@ interface TransactionSummary {
 export default function UserTransactionsPage() {
   const params = useParams()
   const userId = params.id as string
-  
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [summary, setSummary] = useState<TransactionSummary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -79,11 +79,7 @@ export default function UserTransactionsPage() {
 
   const transactionsPerPage = 20
 
-  useEffect(() => {
-    loadTransactions()
-  }, [currentPage, typeFilter, statusFilter, startDate, endDate])
-
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminAPI.getUserTransactions(userId, {
@@ -94,7 +90,7 @@ export default function UserTransactionsPage() {
         startDate: startDate || undefined,
         endDate: endDate || undefined
       })
-      
+
       setTransactions(response.transactions)
       setSummary(response.summary)
       setTotalPages(response.totalPages || Math.ceil(response.total / transactionsPerPage))
@@ -104,7 +100,11 @@ export default function UserTransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, currentPage, typeFilter, statusFilter, startDate, endDate])
+
+  useEffect(() => {
+    loadTransactions()
+  }, [loadTransactions])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -165,7 +165,7 @@ export default function UserTransactionsPage() {
                 <div className="text-2xl font-bold">{summary.total_transactions}</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Top-ups</CardTitle>
@@ -177,7 +177,7 @@ export default function UserTransactionsPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Charges</CardTitle>
@@ -189,7 +189,7 @@ export default function UserTransactionsPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Refunds</CardTitle>
@@ -201,7 +201,7 @@ export default function UserTransactionsPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Pending Amount</CardTitle>
@@ -346,8 +346,8 @@ export default function UserTransactionsPage() {
                         </TableCell>
                         <TableCell className="font-mono">
                           <span className={
-                            transaction.type === 'topup' || transaction.type === 'refund' 
-                              ? 'text-green-600' 
+                            transaction.type === 'topup' || transaction.type === 'refund'
+                              ? 'text-green-600'
                               : 'text-red-600'
                           }>
                             {formatAmount(transaction.amount, transaction.type)}

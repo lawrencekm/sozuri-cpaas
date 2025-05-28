@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export type OnboardingStatus = 'new' | 'in_progress' | 'remind_later' | 'completed';
 
@@ -45,6 +45,27 @@ export function useOnboardingPreferences({
     loadPreferences();
   }, [storageKey]);
 
+  // Save preferences to localStorage
+  const savePreferences = useCallback((newPreferences: OnboardingPreferences) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(newPreferences));
+    } catch (error) {
+      console.error('Error saving onboarding preferences:', error);
+    }
+  }, [storageKey]);
+
+  // Update preferences
+  const updatePreferences = useCallback((updates: Partial<OnboardingPreferences>) => {
+    const newPreferences = {
+      ...preferences,
+      ...updates,
+      lastInteraction: new Date().toISOString(),
+    };
+
+    setPreferences(newPreferences);
+    savePreferences(newPreferences);
+  }, [preferences, savePreferences]);
+
   useEffect(() => {
     const determineOnboardingVisibility = () => {
       // If user has completed onboarding, don't show it
@@ -63,7 +84,7 @@ export function useOnboardingPreferences({
       if (preferences.status === 'remind_later' && preferences.remindLaterDate) {
         const remindDate = new Date(preferences.remindLaterDate);
         const now = new Date();
-        
+
         // If the remind later date has passed, show onboarding
         if (now >= remindDate) {
           setShouldShowOnboarding(true);
@@ -78,28 +99,7 @@ export function useOnboardingPreferences({
     };
 
     determineOnboardingVisibility();
-  }, [preferences]);
-
-  // Save preferences to localStorage
-  const savePreferences = (newPreferences: OnboardingPreferences) => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(newPreferences));
-    } catch (error) {
-      console.error('Error saving onboarding preferences:', error);
-    }
-  };
-
-  // Update preferences
-  const updatePreferences = (updates: Partial<OnboardingPreferences>) => {
-    const newPreferences = {
-      ...preferences,
-      ...updates,
-      lastInteraction: new Date().toISOString(),
-    };
-    
-    setPreferences(newPreferences);
-    savePreferences(newPreferences);
-  };
+  }, [preferences, updatePreferences]);
 
   // Mark onboarding as completed
   const completeOnboarding = () => {
@@ -114,12 +114,12 @@ export function useOnboardingPreferences({
   const remindLater = () => {
     const remindDate = new Date();
     remindDate.setDate(remindDate.getDate() + remindLaterDays);
-    
+
     updatePreferences({
       status: 'remind_later',
       remindLaterDate: remindDate.toISOString(),
     });
-    
+
     setShouldShowOnboarding(false);
   };
 

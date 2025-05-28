@@ -204,7 +204,7 @@ function LiveChatInboxContent() {
                       >
                         <div className="flex items-start gap-3">
                           <Avatar>
-                            <AvatarImage src={conversation.user.avatar} />
+                            <AvatarImage src={conversation.user.avatar} alt={`${conversation.user.name} avatar`} />
                             <AvatarFallback>{conversation.user.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1 space-y-1">
@@ -255,7 +255,7 @@ function LiveChatInboxContent() {
                 <div className="p-4 border-b flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar>
-                      <AvatarImage src={activeConversation.user.avatar} />
+                      <AvatarImage src={activeConversation.user.avatar} alt={`${activeConversation.user.name} avatar`} />
                       <AvatarFallback>{activeConversation.user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -364,9 +364,9 @@ function LiveChatInboxContent() {
                                 {message.attachments.map((attachment) => (
                                   <div key={attachment.id} className="rounded bg-background/50 p-2 flex items-center gap-2">
                                     {attachment.type.startsWith('image/') ? (
-                                      <Image className="h-4 w-4" />
+                                      <Image className="h-4 w-4" aria-label="Image attachment" />
                                     ) : (
-                                      <File className="h-4 w-4" />
+                                      <File className="h-4 w-4" aria-label="File attachment" />
                                     )}
                                     <span className="text-xs truncate">{attachment.name}</span>
                                   </div>

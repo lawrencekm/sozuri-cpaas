@@ -1,14 +1,15 @@
 import { ReactNode } from "react"
-import { 
-  Check, 
-  CheckCircle2, 
-  Circle, 
-  Clock, 
-  ExternalLink, 
-  FileText, 
-  Info 
+import {
+  Check,
+  CheckCircle2,
+  Circle,
+  Clock,
+  ExternalLink,
+  FileText,
+  Info
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { TourFeature, OnboardingStep } from "./types"
@@ -21,17 +22,18 @@ export interface FeaturePreviewProps {
 }
 
 export function FeaturePreview({
-  image, 
+  image,
   altText = "Feature preview",
   fallbackText = "Feature Preview Image"
 }: FeaturePreviewProps) {
   return (
-    <div className="aspect-video bg-muted rounded-lg mb-6 overflow-hidden">
+    <div className="aspect-video bg-muted rounded-lg mb-6 overflow-hidden relative">
       {image ? (
-        <img 
-          src={image} 
-          alt={altText} 
-          className="w-full h-full object-cover" 
+        <Image
+          src={image}
+          alt={altText}
+          fill
+          className="object-cover"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-primary/10">
@@ -51,11 +53,11 @@ export interface SectionHeaderProps {
   action?: ReactNode
 }
 
-export function SectionHeader({ 
-  title, 
-  description, 
-  icon, 
-  action 
+export function SectionHeader({
+  title,
+  description,
+  icon,
+  action
 }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
@@ -72,7 +74,7 @@ export function SectionHeader({
           )}
         </div>
       </div>
-      
+
       {action && <div>{action}</div>}
     </div>
   )
@@ -103,12 +105,12 @@ export function ChecklistItem({
   onToggleComplete
 }: ChecklistItemProps) {
   return (
-    <div 
+    <div
       className={`flex items-start gap-3 p-3 rounded-lg border ${
-        completed 
-          ? 'bg-primary/5 border-primary/20' 
-          : priority === "high" 
-            ? 'border-orange-200 bg-orange-50/50' 
+        completed
+          ? 'bg-primary/5 border-primary/20'
+          : priority === "high"
+            ? 'border-orange-200 bg-orange-50/50'
             : 'hover:bg-accent/50'
       }`}
     >
@@ -123,7 +125,7 @@ export function ChecklistItem({
           <Circle className="h-5 w-5 text-muted-foreground" />
         )}
       </button>
-      
+
       <div className="flex-1 space-y-1">
         <div className="flex items-center justify-between">
           <h4 className={`font-medium ${completed ? 'text-muted-foreground' : ''}`}>
@@ -146,13 +148,13 @@ export function ChecklistItem({
           )}
         </div>
         <p className="text-xs text-muted-foreground">{description}</p>
-        
+
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-3">
             {documentationLink && (
-              <Button 
-                variant="link" 
-                size="sm" 
+              <Button
+                variant="link"
+                size="sm"
                 className="h-auto p-0 text-xs"
                 asChild
               >
@@ -163,9 +165,9 @@ export function ChecklistItem({
               </Button>
             )}
           </div>
-          
-          <Button 
-            size="sm" 
+
+          <Button
+            size="sm"
             variant={completed ? "outline" : "default"}
             className="h-7 text-xs"
             asChild
@@ -182,14 +184,14 @@ export function ChecklistItem({
 }
 
 // Step Card Component
-export function StepCard({ 
-  step, 
-  isCompleted, 
-  onComplete 
-}: { 
+export function StepCard({
+  step,
+  isCompleted,
+  onComplete
+}: {
   step: OnboardingStep
   isCompleted: boolean
-  onComplete: (stepId: string) => void 
+  onComplete: (stepId: string) => void
 }) {
   return (
     <ChecklistItem
@@ -221,15 +223,15 @@ export function TourFeatureCard({ feature }: { feature: TourFeature }) {
 }
 
 // Progress Checklist Component
-export function ProgressChecklist({ 
-  items 
-}: { 
-  items: { id: string, label: string, completed: boolean }[] 
+export function ProgressChecklist({
+  items
+}: {
+  items: { id: string, label: string, completed: boolean }[]
 }) {
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <div 
+        <div
           key={item.id}
           className="flex items-center gap-3"
         >
@@ -245,4 +247,4 @@ export function ProgressChecklist({
       ))}
     </div>
   )
-} 
+}

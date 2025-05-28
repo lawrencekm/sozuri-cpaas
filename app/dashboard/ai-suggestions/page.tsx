@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatShortDate } from "@/lib/date-formatter"
@@ -68,7 +68,7 @@ export default function AISuggestionsPage() {
   const [implementedCount, setImplementedCount] = useState(0)
 
   // Simulated AI suggestions data
-  const mockSuggestions: AISuggestion[] = [
+  const mockSuggestions = useMemo<AISuggestion[]>(() => [
     {
       id: "sug-1",
       title: "Optimize Send Time for Higher Engagement",
@@ -267,7 +267,7 @@ export default function AISuggestionsPage() {
         }
       ]
     }
-  ]
+  ], [])
 
   useEffect(() => {
     // Simulate API call to fetch suggestions
@@ -286,7 +286,7 @@ export default function AISuggestionsPage() {
     }
 
     fetchSuggestions()
-  }, [])
+  }, [mockSuggestions])
 
   const filteredSuggestions = filter === "all"
     ? suggestions

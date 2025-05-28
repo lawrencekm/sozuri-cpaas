@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -79,11 +79,7 @@ export default function MessageLogsPage() {
 
   const logsPerPage = 25
 
-  useEffect(() => {
-    loadLogs()
-  }, [currentPage])
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true)
       const response = await messagingAPI.getMessageLogs({
@@ -108,7 +104,11 @@ export default function MessageLogsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, channelFilter, directionFilter, statusFilter, senderFilter, recipientFilter, startDate, endDate, searchQuery])
+
+  useEffect(() => {
+    loadLogs()
+  }, [loadLogs])
 
   const applyFilters = () => {
     setCurrentPage(1)

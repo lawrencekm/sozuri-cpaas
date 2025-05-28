@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/dialog"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { adminAPI, type Project } from "@/lib/api"
-import { 
-  FolderOpen, 
-  Search, 
+import {
+  FolderOpen,
+  Search,
   Eye,
   Trash2,
   DollarSign,
@@ -41,11 +41,7 @@ export default function AdminProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
-  useEffect(() => {
-    loadProjects()
-  }, [])
-
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setLoading(true)
       const response = await adminAPI.getAllProjects({
@@ -54,7 +50,7 @@ export default function AdminProjectsPage() {
       setProjects(response.projects)
     } catch (error) {
       console.error('Failed to load projects:', error)
-      
+
       // Mock projects data
       const mockProjects: Project[] = [
         {
@@ -100,19 +96,23 @@ export default function AdminProjectsPage() {
           currency: 'USD'
         }
       ]
-      
+
       setProjects(mockProjects)
       toast.error('Using demo data - API connection failed')
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery])
+
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
 
   const handleDeleteProject = async (projectId: string) => {
     try {
       setDeleteLoading(true)
       await adminAPI.deleteProject(projectId)
-      
+
       setProjects(projects.filter(p => p.id !== projectId))
       toast.success('Project deleted successfully')
     } catch (error) {
@@ -123,7 +123,7 @@ export default function AdminProjectsPage() {
     }
   }
 
-  const filteredProjects = projects.filter(project => 
+  const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     project.description.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -157,7 +157,7 @@ export default function AdminProjectsPage() {
               <div className="text-2xl font-bold">{projects.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
@@ -169,7 +169,7 @@ export default function AdminProjectsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
@@ -181,7 +181,7 @@ export default function AdminProjectsPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
@@ -270,8 +270,8 @@ export default function AdminProjectsPage() {
                           <div className="flex items-center gap-2">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   size="sm"
                                   onClick={() => setSelectedProject(project)}
                                 >
@@ -302,9 +302,9 @@ export default function AdminProjectsPage() {
                                 )}
                               </DialogContent>
                             </Dialog>
-                            
-                            <Button 
-                              variant="ghost" 
+
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteProject(project.id)}
                               disabled={deleteLoading}

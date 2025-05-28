@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ArrowRight, Bot, Check, Search, Star, Tag } from "lucide-react"
 
@@ -84,27 +85,27 @@ export default function ChatbotTemplatesPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  
+
   // Filter templates based on search query and selected category
   const filteredTemplates = mockTemplates.filter(template => {
-    const matchesSearch = 
+    const matchesSearch =
       template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    
+
     const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory
-    
+
     return matchesSearch && matchesCategory
   })
-  
+
   const categories = ['all', ...Array.from(new Set(mockTemplates.map(t => t.category)))]
-  
+
   const handleUseTemplate = (templateId: string) => {
     // In a real app, you would create a new bot based on the template
     // For now, just navigate to the create page
     router.push(`/dashboard/chat/bots/create?template=${templateId}`)
   }
-  
+
   return (
     <DashboardLayout>
       <div className="flex flex-col space-y-6">
@@ -148,12 +149,13 @@ export default function ChatbotTemplatesPage() {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredTemplates.map((template) => (
                   <Card key={template.id} className="overflow-hidden">
-                    <div className="aspect-video bg-muted flex items-center justify-center">
+                    <div className="aspect-video bg-muted flex items-center justify-center relative">
                       {template.image ? (
-                        <img 
-                          src={template.image} 
-                          alt={template.name} 
-                          className="h-full w-full object-cover"
+                        <Image
+                          src={template.image}
+                          alt={template.name}
+                          fill
+                          className="object-cover"
                         />
                       ) : (
                         <Bot className="h-12 w-12 text-muted-foreground/50" />
@@ -205,8 +207,8 @@ export default function ChatbotTemplatesPage() {
                 <p className="mt-2 text-sm text-muted-foreground">
                   We couldn't find any templates matching your search criteria.
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => {
                     setSearchQuery('')
