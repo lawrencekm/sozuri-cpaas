@@ -197,7 +197,7 @@ function CampaignCard({ campaign }: { campaign: any }) {
           </div>
           <div>
             <p className="text-muted-foreground">Created</p>
-            <p className="font-medium">{formatShortDate(campaign.created)}</p>
+            <p className="font-medium">{formatShortDate(campaign.created_at || campaign.created)}</p>
           </div>
         </div>
       </CardContent>
@@ -335,7 +335,7 @@ export default function CampaignsPage() {
                             {campaign.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{campaign.created ? formatShortDate(campaign.created) : 'N/A'}</TableCell>
+                        <TableCell>{formatShortDate(campaign.created_at || campaign.created)}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"

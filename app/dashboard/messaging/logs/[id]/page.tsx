@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { messagingAPI, MessageLog } from "@/lib/api"
-import { 
+import {
   ArrowLeft,
   MessageSquare,
   Phone,
@@ -51,7 +51,7 @@ interface DetailedMessageLog extends MessageLog {
 export default function MessageLogDetailPage() {
   const params = useParams()
   const logId = params.id as string
-  
+
   const [log, setLog] = useState<DetailedMessageLog | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -111,8 +111,8 @@ export default function MessageLogDetailPage() {
   }
 
   const getDirectionIcon = (direction: string) => {
-    return direction === 'inbound' ? 
-      <Inbox className="h-5 w-5 text-blue-500" /> : 
+    return direction === 'inbound' ?
+      <Inbox className="h-5 w-5 text-blue-500" /> :
       <Send className="h-5 w-5 text-green-500" />
   }
 
@@ -350,34 +350,34 @@ export default function MessageLogDetailPage() {
                   </div>
                 </div>
 
-                {log.metadata.reference_id && (
+                {log.metadata?.reference_id && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Reference ID</label>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="font-mono text-sm">{log.metadata.reference_id}</span>
-                      <Button variant="ghost" size="sm" onClick={() => copyToClipboard(log.metadata.reference_id)}>
+                      <span className="font-mono text-sm">{log.metadata?.reference_id}</span>
+                      <Button variant="ghost" size="sm" onClick={() => copyToClipboard(log.metadata?.reference_id)}>
                         <Copy className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {log.metadata.country_code && (
+                {log.metadata?.country_code && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Country</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{log.metadata.country_code}</span>
+                      <span className="font-medium">{log.metadata?.country_code}</span>
                     </div>
                   </div>
                 )}
 
-                {log.metadata.device_type && (
+                {log.metadata?.device_type && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Device Type</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Smartphone className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium capitalize">{log.metadata.device_type}</span>
+                      <span className="font-medium capitalize">{log.metadata?.device_type}</span>
                     </div>
                   </div>
                 )}
@@ -391,11 +391,11 @@ export default function MessageLogDetailPage() {
                   </div>
                 )}
 
-                {log.metadata.carrier && (
+                {log.metadata?.carrier && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Carrier</label>
                     <div className="mt-1">
-                      <span className="font-medium">{log.metadata.carrier}</span>
+                      <span className="font-medium">{log.metadata?.carrier}</span>
                     </div>
                   </div>
                 )}
@@ -419,10 +419,10 @@ export default function MessageLogDetailPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" size="sm">
+                        <Badge variant="outline" className="text-xs">
                           {message.direction}
                         </Badge>
-                        <Badge variant={getStatusBadgeVariant(message.status)} size="sm">
+                        <Badge variant={getStatusBadgeVariant(message.status)} className="text-xs">
                           {message.status}
                         </Badge>
                         <span className="text-xs font-mono text-muted-foreground">

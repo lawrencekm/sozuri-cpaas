@@ -255,20 +255,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
           <Sidebar className="border-r bg-sidebar text-sidebar-foreground">
-            <SidebarHeader className="border-b border-sidebar-muted py-4">
-              <div className="flex items-center justify-center px-4">
+            <SidebarHeader className="border-b border-gray-200 py-6 dark:border-gray-700">
+              <div className="flex items-center justify-center px-6">
                 <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
               </div>
             </SidebarHeader>
             <SidebarContent className="modern-scrollbar">
               {navGroups.map((group) => (
                 <SidebarGroup key={group.title}>
-                  <div className="px-4 pt-4 pb-1 text-xs font-bold text-blue-500 tracking-widest uppercase">
+                  <div className="px-6 pt-6 pb-3 text-xs font-bold text-blue-500 tracking-widest uppercase">
                     {group.title}
                   </div>
                   <SidebarMenu>
                     {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title} className="my-0.5 px-2 transition-colors duration-200">
+                      <SidebarMenuItem key={item.title} className="my-1 px-4 transition-colors duration-200">
                         {item.subItems ? (
                           <div className="flex flex-col">
                             <SidebarMenuButton
@@ -352,10 +352,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </SidebarGroup>
               ))}
             </SidebarContent>
-            <SidebarFooter className="border-t">
+            <SidebarFooter className="border-t border-gray-200 dark:border-gray-700">
               <SidebarMenu>
                 {bottomNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title} className="my-0.5 px-2">
+                  <SidebarMenuItem key={item.title} className="my-1 px-4">
                     <SidebarMenuButton asChild isActive={isActive(item.href)}>
                       <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
                         {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
@@ -430,13 +430,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<div className="border-b border-border bg-white shadow-sm z-10">
-  <div className="container mx-auto px-6 py-2">
+<div className="border-b border-gray-200 bg-white shadow-sm z-10 dark:border-gray-700 dark:bg-gray-900">
+  <div className="container mx-auto px-8 py-4">
     <EnhancedBreadcrumb />
   </div>
 </div>
-<main className="flex-1 p-4 md:p-6 animate-fade-in">
-  <div className="container mx-auto">
+<main className="flex-1 p-6 md:p-8 animate-fade-in">
+  <div className="container mx-auto space-y-8">
     {children}
   </div>
 </main>

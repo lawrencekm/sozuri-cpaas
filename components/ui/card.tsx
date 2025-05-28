@@ -39,9 +39,9 @@ const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex flex-col space-y-1.5 p-6",
-      withBorder && "border-b pb-4",
-      withBackground && "bg-muted/30 rounded-t-xl",
+      "flex flex-col space-y-3 p-8",
+      withBorder && "border-b border-gray-200 pb-6 dark:border-gray-700",
+      withBackground && "bg-gray-50/50 rounded-t-xl dark:bg-gray-800/50",
       className
     )}
     {...props}
@@ -80,7 +80,7 @@ const CardDescription = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-sm text-muted-foreground",
+      "text-sm text-gray-600 dark:text-gray-400 leading-relaxed",
       truncate && "truncate",
       className
     )}
@@ -92,15 +92,16 @@ CardDescription.displayName = "CardDescription"
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    padded?: boolean | "sm" | "md" | "lg"
+    padded?: boolean | "sm" | "md" | "lg" | "xl"
   }
 >(({ className, padded = true, ...props }, ref) => {
   const paddingClasses = {
-    true: "p-6 pt-0",
+    true: "p-8 pt-0",
     false: "p-0",
-    sm: "p-3 pt-0",
-    md: "p-4 pt-0",
-    lg: "p-8 pt-0"
+    sm: "p-4 pt-0",
+    md: "p-6 pt-0",
+    lg: "p-8 pt-0",
+    xl: "p-10 pt-0"
   }
 
   return (
@@ -134,8 +135,8 @@ const CardFooter = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "flex items-center p-6 pt-0",
-        withBorder && "border-t mt-4 pt-4",
+        "flex items-center p-8 pt-0",
+        withBorder && "border-t border-gray-200 mt-6 pt-6 dark:border-gray-700",
         alignClasses[align],
         className
       )}

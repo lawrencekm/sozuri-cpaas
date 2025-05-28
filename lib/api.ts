@@ -194,6 +194,29 @@ export interface CampaignAutomation {
   updated_at: string;
 }
 
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  channel: 'sms' | 'email' | 'whatsapp' | 'voice';
+  status: 'draft' | 'active' | 'paused' | 'completed';
+  created_at: string;
+  updated_at: string;
+  content?: string;
+  audience?: {
+    total: number;
+    delivered: number;
+    failed: number;
+    opened: number;
+    clicked: number;
+  };
+  schedule?: {
+    type: 'immediate' | 'scheduled' | 'recurring';
+    sentAt?: string;
+    scheduledFor?: string;
+  };
+}
+
 // Auth API with error handling
 export const authAPI = {
   login: withErrorHandling(

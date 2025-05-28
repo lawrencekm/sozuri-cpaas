@@ -20,9 +20,21 @@
     --secondary: 226 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    /* Muted elements */
+    /* Muted elements - Enhanced hierarchy */
     --muted: 220 14% 96%;
     --muted-foreground: 220 8% 46%;
+
+    /* Enhanced gray scale for better hierarchy */
+    --gray-50: 220 14% 98%;
+    --gray-100: 220 14% 96%;
+    --gray-200: 220 13% 91%;
+    --gray-300: 220 9% 84%;
+    --gray-400: 220 8% 64%;
+    --gray-500: 220 8% 46%;
+    --gray-600: 220 9% 34%;
+    --gray-700: 220 13% 26%;
+    --gray-800: 220 27% 18%;
+    --gray-900: 220 39% 11%;
 
     /* Accent elements */
     --accent: 199 89% 48%;
@@ -64,6 +76,20 @@
     --transition-fast: 150ms;
     --transition-medium: 250ms;
     --transition-slow: 350ms;
+
+    /* 8px Grid System - Render-inspired spacing */
+    --space-1: 0.25rem;  /* 4px */
+    --space-2: 0.5rem;   /* 8px - Base unit */
+    --space-3: 0.75rem;  /* 12px */
+    --space-4: 1rem;     /* 16px */
+    --space-5: 1.25rem;  /* 20px */
+    --space-6: 1.5rem;   /* 24px */
+    --space-8: 2rem;     /* 32px */
+    --space-10: 2.5rem;  /* 40px */
+    --space-12: 3rem;    /* 48px */
+    --space-16: 4rem;    /* 64px */
+    --space-20: 5rem;    /* 80px */
+    --space-24: 6rem;    /* 96px */
   }
 
   .dark {
@@ -83,9 +109,21 @@
     --secondary: 225 14% 20%;
     --secondary-foreground: 220 14% 96%;
 
-    /* Muted elements */
+    /* Muted elements - Enhanced hierarchy */
     --muted: 225 14% 10%;
     --muted-foreground: 220 8% 70%;
+
+    /* Enhanced gray scale for better hierarchy (dark mode) */
+    --gray-50: 220 39% 11%;
+    --gray-100: 220 27% 18%;
+    --gray-200: 220 13% 26%;
+    --gray-300: 220 9% 34%;
+    --gray-400: 220 8% 46%;
+    --gray-500: 220 8% 64%;
+    --gray-600: 220 9% 84%;
+    --gray-700: 220 13% 91%;
+    --gray-800: 220 14% 96%;
+    --gray-900: 220 14% 98%;
 
     /* Accent elements */
     --accent: 199 89% 48%;
@@ -182,7 +220,7 @@
 /* Enterprise card styles */
 @layer components {
   .enterprise-card {
-    @apply rounded-xl border bg-card p-6 shadow-sm transition-all duration-300;
+    @apply rounded-xl border bg-card p-8 shadow-sm transition-all duration-300;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
   }
 
@@ -195,6 +233,27 @@
   .glass-effect {
     @apply bg-white/80 backdrop-blur-md dark:bg-black/50;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Render-inspired spacing utilities */
+  .section-spacing {
+    @apply space-y-8;
+  }
+
+  .card-grid {
+    @apply grid gap-6 md:gap-8;
+  }
+
+  .content-spacing {
+    @apply space-y-6;
+  }
+
+  .tight-spacing {
+    @apply space-y-4;
+  }
+
+  .loose-spacing {
+    @apply space-y-12;
   }
 }
 

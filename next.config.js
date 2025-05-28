@@ -10,10 +10,6 @@ const nextConfig = {
           as: '*.js',
         },
       },
-      // Temporarily disable complex aliases for Turbopack compatibility
-      // resolveAlias: {
-      //   'worker_threads': false,
-      // },
     },
     webpackMemoryOptimizations: true,
     optimizeCss: true,
@@ -31,7 +27,7 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-    dirs: [],
+    dirs: ['app', 'components', 'lib', 'hooks'],
   },
   typescript: {
     ignoreBuildErrors: true,

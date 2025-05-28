@@ -62,35 +62,35 @@ function DashboardCard({
 }) {
   return (
     <Card className="dashboard-card">
-      <CardContent className="p-5">
+      <CardContent className="p-8">
         <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color} text-white`}>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${color} text-white`}>
                 {icon}
               </div>
-              <p className="text-sm font-medium">{title}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {isLoading ? (
-                <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
+                <div className="h-8 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
               ) : (
                 <>
                   <p className="text-2xl font-bold text-foreground">
                     {value}
                   </p>
                   <div
-                    className={`flex items-center gap-0.5 text-xs font-medium rounded-full px-2 py-0.5 ${
+                    className={`flex items-center gap-1 text-xs font-medium rounded-full px-3 py-1 ${
                       trend === "up" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                     }`}
                   >
-                    {trend === "up" ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                    {trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {change}
                   </div>
                 </>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">{description}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
           </div>
         </div>
       </CardContent>
@@ -135,27 +135,27 @@ function ProjectCard({
 
   return (
     <Card className="dashboard-card">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-4">
         <CardTitle className="text-lg">{project.name}</CardTitle>
         <CardDescription className="line-clamp-1">{project.description}</CardDescription>
       </CardHeader>
-      <CardContent className="p-5">
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          <div className="bg-muted/30 p-3 rounded-lg">
-            <p className="text-muted-foreground text-xs">Campaigns</p>
-            <p className="font-medium text-base">{project.campaigns}</p>
+      <CardContent className="p-8">
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
+            <p className="text-gray-600 text-xs dark:text-gray-400">Campaigns</p>
+            <p className="font-medium text-base mt-1">{project.campaigns}</p>
           </div>
-          <div className="bg-muted/30 p-3 rounded-lg">
-            <p className="text-muted-foreground text-xs">Messages</p>
-            <p className="font-medium text-base">{project.messages}</p>
+          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
+            <p className="text-gray-600 text-xs dark:text-gray-400">Messages</p>
+            <p className="font-medium text-base mt-1">{project.messages}</p>
           </div>
-          <div className="bg-muted/30 p-3 rounded-lg">
-            <p className="text-muted-foreground text-xs">Engagement</p>
-            <p className="font-medium text-base">{project.engagement}%</p>
+          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
+            <p className="text-gray-600 text-xs dark:text-gray-400">Engagement</p>
+            <p className="font-medium text-base mt-1">{project.engagement}%</p>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="border-t p-4">
+      <CardFooter withBorder>
         <Button variant="default" size="sm" className="w-full" onClick={() => onSelect(project)}>
           <Layers className="mr-2 h-4 w-4" />
           View Project
@@ -518,11 +518,11 @@ export default function Dashboard() {
     <DashboardLayout>
       <ErrorBoundary>
         <div className="space-y-8">
-          {/* Enhanced Welcome Hero Section */}
-          <div className="relative overflow-hidden rounded-xl mb-8 bg-gradient-to-r from-primary/90 to-accent/90 text-white">
+          {/* Streamlined Welcome Section */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary/90 to-accent/90 text-white">
             <div className="absolute inset-0 bg-grid-white animate-subtle-move [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.5),transparent)]"></div>
             <div className="relative z-10 p-8">
-              {/* Demo toggle for switching between new and returning user views */}
+              {/* Demo toggle - simplified */}
               <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
                 <span className="text-white/80">Demo:</span>
                 <button
@@ -544,8 +544,8 @@ export default function Dashboard() {
                   <h1 className="text-3xl font-bold tracking-tight">{getTimeBasedGreeting(userInfo.name)}</h1>
                   <p className="mt-2 text-white/80 text-lg">
                     {isNewUser
-                      ? "Welcome to your communication hub. Let's get you started with the basics."
-                      : "Your communication platform is ready. Here's what's happening today."}
+                      ? "Welcome to your communication hub. Let's get you started."
+                      : "Your communication platform is ready. Here's today's overview."}
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
@@ -561,92 +561,20 @@ export default function Dashboard() {
                         New Campaign
                       </Link>
                     </Button>
-                    {isNewUser && (
-                      <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
-                        <Link href="/dashboard/onboarding/tour">
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Quick Tour
-                        </Link>
-                      </Button>
-                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full md:w-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
-                        <CheckCircle2 className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">Systems Operational</div>
-                        <div className="text-xs text-white/70">Last checked: {currentTime || 'Loading...'}</div>
-                      </div>
+                {/* Simplified status indicators */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
+                      <CheckCircle2 className="h-4 w-4 text-white" />
                     </div>
-
-                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                        <Activity className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">5 Active Channels</div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                            <SMSLogo className="h-3 w-3 mr-1" />
-                            SMS
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                            <WhatsAppLogo className="h-3 w-3 mr-1" />
-                            WA
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                            <ViberLogo className="h-3 w-3 mr-1" />
-                            Viber
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                            <RCSLogo className="h-3 w-3 mr-1" />
-                            RCS
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
-                            <VoiceLogo className="h-3 w-3 mr-1" />
-                            Voice
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                        <Shield className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">API: Healthy</div>
-                        <div className="text-xs text-white/70">99.9% uptime this month</div>
-                      </div>
+                    <div>
+                      <div className="text-sm font-medium text-white">All Systems Operational</div>
+                      <div className="text-xs text-white/70">5 channels active</div>
                     </div>
                   </div>
-
-                  {!isNewUser && (
-                    <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium text-white">Recent Activity</h3>
-                        <Link href="/dashboard/activity" className="text-xs text-white/70 hover:text-white flex items-center">
-                          View All
-                          <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-white/70">Messages sent today</span>
-                          <span className="font-medium text-white">247</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-white/70">Open rate</span>
-                          <span className="font-medium text-white">92.4%</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -748,35 +676,20 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* What's New - Only for returning users */}
+          {/* What's New - Simplified for returning users */}
           {!isNewUser && (
             <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold">What's New</h2>
-                  <p className="text-sm text-muted-foreground">Latest features and improvements</p>
-                </div>
-                <Link
-                  href="/dashboard/whats-new"
-                  className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
-                >
-                  View all updates
-                  <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
-                </Link>
-              </div>
-              <div className="bg-gradient-to-r from-accent/5 to-transparent p-4 rounded-xl border">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
-                    <Sparkles className="h-5 w-5 text-accent" />
+              <div className="bg-gradient-to-r from-accent/5 to-transparent p-6 rounded-xl border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
+                      <Sparkles className="h-5 w-5 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium">New AI-Powered Campaign Optimization</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Automatically optimize your campaigns for better performance</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium">New AI-Powered Campaign Optimization</h3>
-                    <p className="text-xs text-muted-foreground">Released 2 days ago</p>
-                  </div>
-                  <Badge className="ml-auto bg-accent/10 text-accent hover:bg-accent/20 border-0">New</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Our new AI engine analyzes your campaign performance and automatically suggests optimizations to improve engagement and conversion rates.</p>
-                <div className="flex justify-end">
                   <Button variant="outline" size="sm" asChild>
                     <Link href="/dashboard/ai-suggestions">
                       Try It Now
@@ -788,139 +701,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Continue where you left off - Only for returning users */}
-          {!isNewUser && (
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Continue Where You Left Off</h2>
-                  <p className="text-sm text-muted-foreground">Your recent projects and activities</p>
-                </div>
-                <Link
-                  href="/dashboard/activity"
-                  className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
-                >
-                  View all activity
-                  <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="shadow-md hover:shadow-lg transition-all">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
-                          <MessageCircle className="h-4 w-4 text-blue-500" />
-                        </div>
-                        <CardTitle className="text-sm font-medium">Summer Promotion Campaign</CardTitle>
-                      </div>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        Draft
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs text-muted-foreground">Last edited 2 hours ago</p>
-                      <p className="text-xs font-medium">Step 2 of 4</p>
-                    </div>
-                    <div className="w-full h-1.5 bg-muted rounded-full mb-3">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '50%' }}></div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-4">Next step: Select target audience</p>
-                    <div className="mt-4 flex justify-end">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/dashboard/campaigns/draft-123">
-                          Continue Editing
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
 
-                <Card className="shadow-md hover:shadow-lg transition-all">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-green-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
-                          <BarChart3 className="h-4 w-4 text-green-500" />
-                        </div>
-                        <CardTitle className="text-sm font-medium">Spring Sale Campaign</CardTitle>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        Updated
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs text-muted-foreground">Updated 30 minutes ago</p>
-                      <div className="flex items-center gap-1 text-xs text-success font-medium">
-                        <TrendingUp className="h-3 w-3" />
-                        <span>+24.8%</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-muted/20 p-2 rounded-lg">
-                        <div className="text-xs text-muted-foreground">Open Rate</div>
-                        <div className="text-sm font-medium">92.4%</div>
-                      </div>
-                      <div className="bg-muted/20 p-2 rounded-lg">
-                        <div className="text-xs text-muted-foreground">Conversions</div>
-                        <div className="text-sm font-medium">1,247</div>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/dashboard/analytics/campaign-456">
-                          View Results
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-md hover:shadow-lg transition-all">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-purple-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
-                          <Users className="h-4 w-4 text-purple-500" />
-                        </div>
-                        <CardTitle className="text-sm font-medium">VIP Customer Import</CardTitle>
-                      </div>
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                        In Progress
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs text-muted-foreground">Started 15 minutes ago</p>
-                      <p className="text-xs font-medium">78% complete</p>
-                    </div>
-                    <div className="w-full mb-2">
-                      <Progress value={78} className="h-1.5" />
-                    </div>
-                    <div className="flex items-center justify-between text-xs mb-4">
-                      <span className="text-muted-foreground">1,247 of 1,600 contacts</span>
-                      <span className="text-muted-foreground">~2 min remaining</span>
-                    </div>
-                    <div className="mt-4 flex justify-between">
-                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                        Pause
-                      </Button>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/dashboard/contacts/import-789">
-                          View Details
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
 
           {/* Suggested Next Steps - Only for new users */}
           {isNewUser && (
@@ -1009,208 +790,87 @@ export default function Dashboard() {
             </Suspense>
           </div>
 
-          {/* Key Performance Metrics */}
+          {/* Essential Performance Metrics */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-lg font-semibold">Performance Metrics</h2>
-                <p className="text-sm text-muted-foreground">Real-time communication metrics across all channels</p>
+                <h2 className="text-lg font-semibold">Performance Overview</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Key metrics across all communication channels</p>
               </div>
               <Link
                 href="/dashboard/analytics"
                 className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
               >
-                View analytics
+                View detailed analytics
                 <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Suspense fallback={
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Card key={i} variant="flat" className="h-[120px] animate-pulse">
-                      <CardContent className="p-6">
-                        <div className="h-4 w-3/4 bg-muted rounded mb-3"></div>
-                        <div className="h-6 w-1/2 bg-muted rounded mb-2"></div>
-                        <div className="h-3 w-1/3 bg-muted rounded"></div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              }>
-                <Card variant="interactive" className="shadow-md">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-green-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">
-                        Delivery Rate
-                      </CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.deliveryRate.value}%`}</div>
-                    <div className="flex items-center text-xs text-success mt-1">
-                      <ArrowUp className="h-3 w-3 mr-1" />
-                      <span>{metrics.deliveryRate.change} from last period</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Success</div>
-                          <div className="font-medium">98.7%</div>
-                        </div>
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Failed</div>
-                          <div className="font-medium">1.3%</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card variant="interactive" className="shadow-md">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">
-                        Average Latency
-                      </CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.latency.value} ms`}</div>
-                    <div className="flex items-center text-xs text-success mt-1">
-                      <ArrowDownRight className="h-3 w-3 mr-1" />
-                      <span>{metrics.latency.change} from last period</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">SMS</div>
-                          <div className="font-medium">65 ms</div>
-                        </div>
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">WhatsApp</div>
-                          <div className="font-medium">112 ms</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card variant="interactive" className="shadow-md">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-amber-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">
-                        Error Rate
-                      </CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.errorRate.value}%`}</div>
-                    <div className="flex items-center text-xs text-success mt-1">
-                      <ArrowDownRight className="h-3 w-3 mr-1" />
-                      <span>{metrics.errorRate.change} from last period</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Network</div>
-                          <div className="font-medium">0.3%</div>
-                        </div>
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Invalid</div>
-                          <div className="font-medium">0.5%</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card variant="interactive" className="shadow-md">
-                  <CardHeader className="pb-2 bg-gradient-to-r from-purple-500/5 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">
-                        Throughput
-                      </CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
-                        <Zap className="h-4 w-4 text-purple-500" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold">{isLoading ? "..." : `${metrics.throughput.value}`}</div>
-                    <div className="flex items-center text-xs text-success mt-1">
-                      <ArrowUp className="h-3 w-3 mr-1" />
-                      <span>{metrics.throughput.change} from last period</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Peak</div>
-                          <div className="font-medium">210/sec</div>
-                        </div>
-                        <div className="bg-muted/20 p-2 rounded-lg">
-                          <div className="text-muted-foreground">Average</div>
-                          <div className="font-medium">156/sec</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Suspense>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <DashboardCard
+                title="Delivery Rate"
+                value={isLoading ? "..." : `${metrics.deliveryRate.value}%`}
+                change={metrics.deliveryRate.change}
+                trend={metrics.deliveryRate.trend}
+                description="Messages successfully delivered"
+                icon={<CheckCircle2 className="h-5 w-5" />}
+                color="bg-green-500"
+                isLoading={isLoading}
+              />
+              <DashboardCard
+                title="Average Latency"
+                value={isLoading ? "..." : `${metrics.latency.value}ms`}
+                change={metrics.latency.change}
+                trend={metrics.latency.trend}
+                description="Response time across channels"
+                icon={<Clock className="h-5 w-5" />}
+                color="bg-blue-500"
+                isLoading={isLoading}
+              />
+              <DashboardCard
+                title="Error Rate"
+                value={isLoading ? "..." : `${metrics.errorRate.value}%`}
+                change={metrics.errorRate.change}
+                trend={metrics.errorRate.trend}
+                description="Failed message attempts"
+                icon={<AlertTriangle className="h-5 w-5" />}
+                color="bg-amber-500"
+                isLoading={isLoading}
+              />
+              <DashboardCard
+                title="Throughput"
+                value={isLoading ? "..." : `${metrics.throughput.value}/sec`}
+                change={metrics.throughput.change}
+                trend={metrics.throughput.trend}
+                description="Messages processed per second"
+                icon={<Zap className="h-5 w-5" />}
+                color="bg-purple-500"
+                isLoading={isLoading}
+              />
             </div>
           </div>
 
-          {/* Analytics Chart Section */}
+          {/* Message Volume Chart */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-lg font-semibold">Message Volume</h2>
-                <p className="text-sm text-muted-foreground">Monthly message delivery across all channels</p>
+                <h2 className="text-lg font-semibold">Message Volume Trends</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Monthly delivery performance across all channels</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Select defaultValue="year">
-                  <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg">
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="month">Last 30 days</SelectItem>
-                    <SelectItem value="quarter">Last quarter</SelectItem>
-                    <SelectItem value="year">Last 12 months</SelectItem>
-                    <SelectItem value="custom">Custom range</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select defaultValue="year">
+                <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="month">Last 30 days</SelectItem>
+                  <SelectItem value="quarter">Last quarter</SelectItem>
+                  <SelectItem value="year">Last 12 months</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Card variant="interactive" className="shadow-md">
-              <CardHeader className="px-6 py-4 border-b flex flex-row justify-between items-center bg-muted/10">
-                <div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-primary"></span>
-                      <span className="text-xs font-medium">Total Messages</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-success"></span>
-                      <span className="text-xs font-medium">Delivery Rate</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium bg-primary/10 px-3 py-1 rounded-full">
-                  Total: 56,234
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="w-full h-[300px]">
-                  <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />}>
+            <Card className="shadow-sm">
+              <CardContent className="p-8">
+                <div className="w-full h-[320px]">
+                  <Suspense fallback={<div className="h-[320px] w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg" />}>
                     <ClientSideChart data={chartData} />
                   </Suspense>
                 </div>
@@ -1218,131 +878,24 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Insights Grid */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-lg font-semibold">Platform Insights</h2>
-                <p className="text-sm text-muted-foreground">Key metrics and channel performance</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card variant="interactive" className="shadow-md">
-                <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-transparent">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium">
-                      Message Delivery
-                    </CardTitle>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                      <Mail className="h-4 w-4 text-primary" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-semibold">24,234</div>
-                  <div className="flex items-center text-xs text-success mt-1">
-                    <ArrowUp className="h-3 w-3 mr-1" />
-                    <span>12.3% from last month</span>
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-muted/20 p-2 rounded-lg">
-                        <div className="text-muted-foreground">Delivered</div>
-                        <div className="font-medium">23,945</div>
-                      </div>
-                      <div className="bg-muted/20 p-2 rounded-lg">
-                        <div className="text-muted-foreground">Failed</div>
-                        <div className="font-medium">289</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card variant="interactive" className="shadow-md">
-                <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium">
-                      Active Channels
-                    </CardTitle>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
-                      <BarChartIcon className="h-4 w-4 text-blue-500" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="text-2xl font-semibold">5</div>
-                    <div className="text-xs text-muted-foreground ml-2">of 8 available</div>
-                  </div>
-                  <div className="mt-2 w-full">
-                    <Progress value={62} className="h-1.5" />
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex flex-wrap gap-1.5">
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-md">
-                        <SMSLogo size={12} />
-                        <span className="text-xs font-medium">SMS</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-md">
-                        <WhatsAppLogo size={12} />
-                        <span className="text-xs font-medium">WhatsApp</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-100 rounded-md">
-                        <ViberLogo size={12} />
-                        <span className="text-xs font-medium">Viber</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-100 rounded-md">
-                        <VoiceLogo size={12} />
-                        <span className="text-xs font-medium">Voice</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded-md">
-                        <RCSLogo size={12} />
-                        <span className="text-xs font-medium">RCS</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <AIMetricsCard
-                title="AI Performance"
-                metrics={metrics.ai}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
 
           {/* AI Recommendations */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-lg font-semibold">AI Recommendations</h2>
-                <p className="text-sm text-muted-foreground">Smart suggestions to optimize your communications</p>
+                <h2 className="text-lg font-semibold">AI Insights</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Smart recommendations to improve performance</p>
               </div>
               <Link
                 href="/dashboard/ai-suggestions"
                 className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
               >
-                View all suggestions
+                View all insights
                 <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
               </Link>
             </div>
-            <Suspense fallback={
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1, 2].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardHeader>
-                      <div className="h-6 w-3/4 bg-muted rounded"></div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-16 bg-muted rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            }>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Optimize Send Time Card */}
                 <Card className="shadow-md border-l-4 border-l-blue-500 hover:shadow-lg transition-all">
                   <CardHeader className="pb-2 bg-gradient-to-r from-blue-500/5 to-transparent">
@@ -1414,8 +967,7 @@ export default function Dashboard() {
                     </Button>
                   </CardFooter>
                 </Card>
-              </div>
-            </Suspense>
+            </div>
           </div>
 
           {/* Projects & Resources Section */}

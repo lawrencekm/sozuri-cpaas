@@ -8,9 +8,18 @@
  * @param dateString ISO date string or Date object
  * @returns Formatted date string in a consistent format
  */
-export function formatDate(dateString: string | Date): string {
+export function formatDate(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+
   // Use explicit formatting options to ensure consistency
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -28,9 +37,18 @@ export function formatDate(dateString: string | Date): string {
  * @param dateString ISO date string or Date object
  * @returns Formatted date string (date only)
  */
-export function formatShortDate(dateString: string | Date): string {
+export function formatShortDate(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: '2-digit',
@@ -43,9 +61,18 @@ export function formatShortDate(dateString: string | Date): string {
  * @param dateString ISO date string or Date object
  * @returns Formatted time string
  */
-export function formatTime(dateString: string | Date): string {
+export function formatTime(dateString: string | Date | null | undefined): string {
+  if (!dateString) {
+    return 'N/A';
+  }
+
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Time';
+  }
+
   return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
