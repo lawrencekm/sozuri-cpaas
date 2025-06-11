@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // Opt out of prerendering
+
 import React from 'react';
 
 export default function ChatInboxPage() {
