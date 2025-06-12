@@ -1,6 +1,5 @@
 "use client"
 export const dynamic = 'force-dynamic'; // Opt out of prerendering
-export const revalidate = false;
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
