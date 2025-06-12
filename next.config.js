@@ -3,6 +3,7 @@ const path = require('path');
 
 const nextConfig = {
   experimental: {
+    missingSuspenseWithCSRBailout: false,
     turbo: {
       rules: {
         '*.svg': {
