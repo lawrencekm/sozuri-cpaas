@@ -65,6 +65,19 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // WebSocket connection status
   const [isConnected, setIsConnected] = useState(false);
 
+  // Mark message as read
+  const markMessageAsRead = useCallback((messageId: string) => {
+    // Send read receipt via WebSocket
+    websocketService.sendReadReceipt(messageId);
+
+    // Update message status locally
+    setMessages(prev => prev.map(message =>
+      message.id === messageId
+        ? { ...message, status: 'read' }
+        : message
+    ));
+  }, []);
+
   // Load conversations
   const loadConversations = useCallback(async (status?: string) => {
     setConversationsLoading(true);
@@ -186,19 +199,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setTyping = useCallback((conversationId: string, isTyping: boolean) => {
     // Send typing indicator via WebSocket
     websocketService.sendTypingIndicator(conversationId, isTyping);
-  }, []);
-
-  // Mark message as read
-  const markMessageAsRead = useCallback((messageId: string) => {
-    // Send read receipt via WebSocket
-    websocketService.sendReadReceipt(messageId);
-
-    // Update message status locally
-    setMessages(prev => prev.map(message =>
-      message.id === messageId
-        ? { ...message, status: 'read' }
-        : message
-    ));
   }, []);
 
   // Handle WebSocket events
