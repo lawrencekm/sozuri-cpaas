@@ -1,3 +1,29 @@
+ Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/89) ...
+   Generating static pages (22/89) 
+Error occurred prerendering page "/dashboard/chat/live/inbox". Read more: https://nextjs.org/docs/messages/prerender-error
+ReferenceError: Cannot access 'I' before initialization
+    at D (/vercel/path0/.next/server/app/dashboard/chat/live/inbox/page.js:1:11264)
+    at nL (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:46773)
+    at nF (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:48548)
+    at nq (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:67434)
+    at nH (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:65009)
+    at nU (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:47125)
+    at nF (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:48594)
+    at nq (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:67434)
+    at nH (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:65009)
+    at nU (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:47125)
+Export encountered an error on /dashboard/chat/live/inbox/page: /dashboard/chat/live/inbox, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null
+Error: Command "npm run build" exited with 1
+Exiting build container
+
+
+
 # SOZURI CPaaS Portal
 
 ## Key Features
