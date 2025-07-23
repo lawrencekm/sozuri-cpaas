@@ -1,30 +1,5 @@
- Creating an optimized production build ...
- ✓ Compiled successfully
-   Skipping validation of types
-   Skipping linting
-   Collecting page data ...
-   Generating static pages (0/89) ...
-   Generating static pages (22/89) 
-Error occurred prerendering page "/dashboard/chat/live/inbox". Read more: https://nextjs.org/docs/messages/prerender-error
-ReferenceError: Cannot access 'I' before initialization
-    at D (/vercel/path0/.next/server/app/dashboard/chat/live/inbox/page.js:1:11264)
-    at nL (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:46773)
-    at nF (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:48548)
-    at nq (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:67434)
-    at nH (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:65009)
-    at nU (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:47125)
-    at nF (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:48594)
-    at nq (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:67434)
-    at nH (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:65009)
-    at nU (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:76:47125)
-Export encountered an error on /dashboard/chat/live/inbox/page: /dashboard/chat/live/inbox, exiting the build.
- ⨯ Next.js build worker exited with code: 1 and signal: null
-Error: Command "npm run build" exited with 1
-Exiting build container
-
-
-
 # SOZURI CPaaS Portal
+
 
 ## Key Features
 
@@ -82,16 +57,170 @@ The Portal is designed to work with a RESTful API backend. This section outlines
 API Structure
 The frontend expects the following API endpoints:
 
-Authentication
+## 🔐 Authentication System
 
+The SOZURI CPaaS Portal features a robust authentication system built with NextAuth.js, providing secure user authentication and authorization.
+### Key Authentication Features
 
-POST /api/auth/login: User login
+- **Multiple Authentication Methods**
+  - Email/Password authentication
+  - Social login (Google, GitHub)
+  - Secure session management with JWT
+  - Passwordless authentication support
 
-POST /api/auth/register: User registration
+- **User Management**
+  - User registration with email verification
+  - Password reset functionality
+  - Role-based access control (RBAC)
+  - Account security features
 
-POST /api/auth/logout: User logout
+- **Security**
+  - CSRF protection
+  - Secure password hashing with bcrypt
+  - HTTPS-only cookies
+  - Rate limiting on authentication endpoints
 
-GET /api/auth/me: Get current user information
+## 🚀 Getting Started with Authentication
+
+### Prerequisites
+
+- Node.js 16.8 or later
+- npm or yarn
+- PostgreSQL database
+- Google OAuth credentials (for social login)
+- GitHub OAuth credentials (for social login)
+- Resend API key (for email functionality)
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/sozuri_cpaas?schema=public"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"  # Generate with: openssl rand -base64 32
+
+# OAuth Providers (optional)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_ID=""
+GITHUB_SECRET=""
+
+# Email (for password reset)
+RESEND_API_KEY=""
+EMAIL_FROM="no-reply@yourdomain.com"
+
+# Application
+NODE_ENV="development"
+```
+
+### Installation
+
+1. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+2. Set up the database:
+   ```bash
+   npx prisma migrate dev --name init
+   # or
+   yarn prisma migrate dev --name init
+   ```
+
+3. Generate Prisma client:
+   ```bash
+   npx prisma generate
+   # or
+   yarn prisma generate
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+## 🔑 Authentication Endpoints
+
+### User Registration
+- `POST /api/auth/register` - Register a new user
+- `GET /auth/verify-email` - Verify email address
+
+### Authentication
+- `POST /api/auth/signin` - Sign in with email/password
+- `POST /api/auth/signout` - Sign out
+- `GET /api/auth/session` - Get current session
+
+### Password Management
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password
+
+### Social Authentication
+- `GET /api/auth/signin/google` - Sign in with Google
+- `GET /api/auth/signin/github` - Sign in with GitHub
+
+## 🛡️ Protected Routes
+
+- `/dashboard/**` - Requires authentication
+- `/admin/**` - Requires admin role
+- `/api/**` - Protected API routes
+
+## 📚 Authentication Utilities
+
+### Server Components
+
+```typescript
+import { getCurrentUser, requireAuth, requireAdmin } from '@/lib/auth';
+
+// Get current user (returns null if not authenticated)
+const user = await getCurrentUser();
+
+// Require authentication (redirects to signin if not authenticated)
+const user = await requireAuth();
+
+// Require admin role (redirects to dashboard if not admin)
+const adminUser = await requireAdmin();
+```
+
+### Client Components
+
+```typescript
+'use client';
+
+import { useSession } from 'next-auth/react';
+
+export default function Profile() {
+  const { data: session, status } = useSession();
+  
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+  
+  if (!session) {
+    return <div>Please sign in</div>;
+  }
+  
+  return <div>Welcome {session.user.name}!</div>;
+}
+```
+
+## 🔄 Available Scripts
+
+- `dev` - Start development server
+- `build` - Build for production
+- `start` - Start production server
+- `lint` - Run ESLint
+- `db:generate` - Generate Prisma client
+- `db:migrate` - Run database migrations
+- `db:studio` - Open Prisma Studio
+- `test` - Run tests
 
 
 Projects
