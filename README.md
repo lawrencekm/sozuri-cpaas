@@ -139,13 +139,15 @@ NODE_ENV="development"
    # or
    yarn prisma generate
    ```
+   npx prisma studio
+   ```
 
 4. Start the development server:
    ```bash
    npm run dev
    # or
    yarn dev
-   ```
+   ```   
 
 ## 🔑 Authentication Endpoints
 
