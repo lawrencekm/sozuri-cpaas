@@ -117,6 +117,8 @@ export function ProductTour() {
                       {productTourSteps.map((_, index) => (
                         <button
                           key={index}
+                          aria-label={`Go to step ${index + 1}`}
+                          title={`Step ${index + 1}`}
                           className={`w-2.5 h-2.5 rounded-full ${
                             index === currentStep ? 'bg-primary' : 'bg-muted'
                           }`}

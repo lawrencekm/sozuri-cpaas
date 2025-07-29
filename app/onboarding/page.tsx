@@ -25,10 +25,7 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     businessName: "",
     industry: "",
-    size: "small",
-    name: "",
-    email: "",
-    password: "",
+    size: "small"
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,9 +68,7 @@ export default function OnboardingPage() {
       setIsSubmitting(false)
     }
   }
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  }
+
 
   const toggleChannel = (channelName: string) => {
     setSelectedChannels(prev =>
@@ -126,11 +121,8 @@ export default function OnboardingPage() {
               <span className="ml-2 text-lg font-bold text-foreground tracking-tight hidden md:inline">SOZURI Connect</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-sm text-primary hover:text-primary/80 transition-colors font-medium">
-                Sign in
-              </Link>
               <Button size="sm" variant="outline" className="font-medium shadow-sm" asChild>
-                <Link href="/">
+                <Link href="/support">
                   Help
                 </Link>
               </Button>
@@ -145,13 +137,15 @@ export default function OnboardingPage() {
               {/* Progress bar connecting steps */}
               <div className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 bg-muted">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+                  className={cn(
+                    "h-full bg-primary transition-all duration-300",
+                    `progress-bar-width-step-${currentStep}`
+                  )}
                 />
               </div>
               
               {/* Step circles */}
-              {[1, 2, 3].map((step) => (
+              {[1, 2].map((step) => (
                 <div
                   key={step}
                   className={cn(
@@ -248,73 +242,6 @@ export default function OnboardingPage() {
             )}
 
             {currentStep === 2 && (
-              <Card className="onboarding-card">
-                <CardHeader className="space-y-2 pb-6">
-                  <CardTitle className="text-2xl">Create your account</CardTitle>
-                  <CardDescription className="text-base">
-                    You'll use these credentials to access the platform
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Full name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Work email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="your.name@company.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className={cn(
-                          formData.email && !isValidEmail(formData.email) && "border-destructive"
-                        )}
-                        required
-                      />
-                      {formData.email && !isValidEmail(formData.email) && (
-                        <p className="text-xs text-destructive mt-1">Please enter a valid email address</p>
-                      )}
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="password">Create password</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Create a secure password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(3)}
-                    disabled={!formData.name || !formData.email || !formData.password}
-                  >
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-
-            {currentStep === 3 && (
               <Card className="onboarding-card">
                 <CardHeader className="space-y-2 pb-6">
                   <CardTitle className="text-2xl">Select communication channels</CardTitle>
@@ -445,7 +372,7 @@ export default function OnboardingPage() {
                   </Tabs>
                 </CardContent>
                 <CardFooter className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting}>
+                  <Button variant="outline" onClick={() => setCurrentStep(1)} disabled={isSubmitting}>
                     Back
                   </Button>
                   <Button

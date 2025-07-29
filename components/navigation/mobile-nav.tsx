@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import {
   Home,
   LayoutDashboard,
@@ -116,6 +116,7 @@ const navGroups: NavGroup[] = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
   const pathname = usePathname()
 
   const isActive = (href: string) => pathname === href
@@ -202,7 +203,17 @@ export function MobileNav() {
           <div className="border-t border-sidebar-muted p-4">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium text-sidebar-foreground">John Doe</div>
-              <Button variant="outline" size="sm" className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50">Logout</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50"
+                onClick={async () => {
+                  await fetch('/api/auth/logout')
+                  router.push('/')
+                }}
+              >
+                Logout
+              </Button>
             </div>
           </div>
         </div>

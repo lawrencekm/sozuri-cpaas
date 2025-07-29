@@ -108,7 +108,11 @@ function WalkthroughTooltip({
             {currentStep + 1} of {totalSteps}
           </span>
         </div>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+        <button 
+          onClick={onClose} 
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Close walkthrough"
+          title="Close">
           <X className="h-4 w-4" />
         </button>
       </div>
