@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Shield, User, Settings, Database } from "lucide-react"
@@ -11,31 +12,25 @@ export default function AdminAccessPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('token')
-    if (token?.includes('Bearer')) {
-      router.push('/admin')
-    }
+    // Check if user is already logged in via NextAuth
+    // This will be handled by the session provider
   }, [router])
 
   const handleQuickLogin = async (email: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
 
-      const data = await response.json()
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token)
-        router.push("/admin")
+      if (result?.error) {
+        console.error("Quick login failed:", result.error);
+      } else {
+        router.push("/admin");
       }
     } catch (error) {
-      console.error("Quick login failed:", error)
+      console.error("Quick login failed:", error);
     }
   }
 

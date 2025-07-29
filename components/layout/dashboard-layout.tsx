@@ -430,7 +430,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<div className="border-b border-gray-200 bg-white shadow-sm z-10 dark:border-gray-700 dark:bg-gray-900">
+<div className="sticky top-16 z-10 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
   <div className="container mx-auto px-8 py-4">
     <EnhancedBreadcrumb />
   </div>
