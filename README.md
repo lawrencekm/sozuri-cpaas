@@ -509,6 +509,78 @@ VOICE_API_KEY=your-voice-api-key
 
 Database (if using direct database connection)
 DATABASE_URL=your-database-connection-string
+```
+
+## 🗄️ Database Schema
+
+The SOZURI CPaaS Portal uses a comprehensive PostgreSQL database schema designed for scalability and performance. The schema has been thoroughly analyzed and updated to support all platform features.
+
+### Core Database Models
+
+#### **Authentication & User Management**
+- `User` - Core user entity with balance tracking and role management
+- `Account` - OAuth provider accounts (Google, GitHub, etc.)
+- `Session` - User session management
+- `VerificationToken` - Email verification and password reset tokens
+
+#### **Project & Campaign Management**
+- `Project` - Central organizing entity for campaigns and resources
+- `Campaign` - Marketing campaigns with comprehensive metrics tracking
+- `CampaignTemplate` - Reusable message templates with variable support
+- `CampaignAutomation` - Automated campaign triggers and workflows
+
+#### **Messaging System**
+- `MessageLog` - Complete message tracking across all channels (SMS, WhatsApp, Voice, Email, Viber, RCS)
+- `Contact` - Customer/contact database with custom fields and tagging
+
+#### **Integration & Webhooks**
+- `Webhook` - Webhook configurations with event filtering
+- `WebhookDelivery` - Delivery tracking with retry logic and status monitoring
+- `Integration` - Third-party integrations (Zapier, Salesforce, HubSpot, etc.)
+
+#### **Security & API Management**
+- `ApiKey` - API key management with granular permissions
+- `LogEntry` - System logs with proper indexing for performance
+
+#### **Billing & Finance**
+- `Transaction` - Financial transaction tracking (topups, deductions, refunds)
+- Balance management at both user and project levels
+
+### Key Relationships
+
+```
+User (1:N) → Projects → Campaigns → MessageLogs
+User (1:N) → Transactions, ApiKeys, Contacts
+Project (1:N) → Webhooks, Integrations, CampaignTemplates
+CampaignTemplate (1:N) → CampaignAutomations
+Webhook (1:N) → WebhookDeliveries
+```
+
+### Database Features
+
+- ✅ **Multi-channel Support**: SMS, WhatsApp, Voice, Email, Viber, RCS
+- ✅ **Campaign Metrics**: Real-time tracking of delivery, opens, clicks, costs
+- ✅ **Financial Tracking**: Comprehensive transaction and balance management
+- ✅ **Webhook System**: Event-driven integrations with retry logic
+- ✅ **Contact Management**: Flexible contact system with custom fields
+- ✅ **Audit Logging**: Complete system activity tracking
+- ✅ **Performance Optimized**: Proper indexing for high-volume operations
+
+### Database Commands
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Apply schema changes
+npx prisma db push
+
+# Run migrations
+npx prisma migrate dev
+
+# View database in browser
+npx prisma studio
+```
 
 Updated Installation Steps
 

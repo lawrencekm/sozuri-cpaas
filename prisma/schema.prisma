@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Authentication Models
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -34,22 +35,32 @@ model Session {
 }
 
 model User {
-  id                 String    @id @default(cuid())
+  id                 String         @id @default(cuid())
   name               String?
-  email              String?   @unique
+  email              String?        @unique
   emailVerified      DateTime?
-  image             String?
-  password          String?   // Only for email/password auth
-  role              String    @default("user")
-  status            String    @default("active")
-  company           String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  lastLogin         DateTime?
-  accounts          Account[]
-  sessions          Session[]
-  resetToken        String?
-  resetTokenExpiry  DateTime?
+  image              String?
+  password           String?        // Only for email/password auth
+  role               String         @default("user") // admin, supervisor, agent, user
+  status             String         @default("active") // active, inactive, suspended
+  company            String?
+  balance            Decimal        @default(0.00) @db.Decimal(10, 2)
+  currency           String         @default("USD")
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  lastLogin          DateTime?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  
+  // Relations
+  accounts           Account[]
+  sessions           Session[]
+  projects           Project[]
+  messageLogs        MessageLog[]
+  transactions       Transaction[]
+  apiKeys            ApiKey[]
+  contacts           Contact[]
+  logEntries         LogEntry[]
 }
 
 model VerificationToken {
@@ -58,4 +69,240 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Project Management
+model Project {
+  id                 String              @id @default(cuid())
+  name               String
+  description        String?
+  status             String              @default("active") // active, inactive, suspended
+  balance            Decimal             @default(0.00) @db.Decimal(10, 2)
+  currency           String              @default("USD")
+  userId             String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  
+  // Relations
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns          Campaign[]
+  campaignTemplates  CampaignTemplate[]
+  campaignAutomations CampaignAutomation[]
+  messageLogs        MessageLog[]
+  webhooks           Webhook[]
+  integrations       Integration[]
+  contacts           Contact[]
+}
+
+// Campaign Management
+model Campaign {
+  id                 String      @id @default(cuid())
+  name               String
+  description        String?
+  channel            String      // sms, email, whatsapp, voice, viber, rcs
+  status             String      @default("draft") // draft, scheduled, active, completed, paused
+  content            String?     @db.Text
+  targetAudience     String?
+  scheduledAt        DateTime?
+  projectId          String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  
+  // Metrics
+  totalMessages      Int         @default(0)
+  sentMessages       Int         @default(0)
+  deliveredMessages  Int         @default(0)
+  failedMessages     Int         @default(0)
+  openedMessages     Int         @default(0)
+  clickedMessages    Int         @default(0)
+  totalCost          Decimal     @default(0.00) @db.Decimal(10, 2)
+  
+  // Relations
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messageLogs        MessageLog[]
+}
+
+model CampaignTemplate {
+  id                 String              @id @default(cuid())
+  projectId          String
+  name               String
+  channel            String              // sms, whatsapp, viber, rcs, voice
+  content            String              @db.Text
+  type               String              // transactional, marketing, notification, reminder
+  variables          String[]            // Array of variable names
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  
+  // Relations
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  automations        CampaignAutomation[]
+  messageLogs        MessageLog[]
+}
+
+model CampaignAutomation {
+  id                 String           @id @default(cuid())
+  projectId          String
+  name               String
+  triggerEvent       String
+  campaignTemplateId String
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  // Relations
+  project            Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaignTemplate   CampaignTemplate @relation(fields: [campaignTemplateId], references: [id], onDelete: Cascade)
+}
+
+// Messaging
+model MessageLog {
+  id                 String           @id @default(cuid())
+  messageId          String           @unique
+  channel            String           // sms, whatsapp, viber, rcs, voice
+  direction          String           // inbound, outbound
+  sender             String
+  recipient          String
+  content            String           @db.Text
+  status             String           // pending, sent, delivered, failed, read
+  cost               Decimal?         @db.Decimal(10, 4)
+  currency           String?
+  userId             String
+  projectId          String?
+  campaignId         String?
+  templateId         String?
+  errorCode          String?
+  errorMessage       String?
+  deliveryAttempts   Int              @default(1)
+  metadata           Json?
+  createdAt          DateTime         @default(now())
+  
+  // Relations
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project            Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  campaign           Campaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  template           CampaignTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+}
+
+// Contact Management
+model Contact {
+  id                 String      @id @default(cuid())
+  firstName          String?
+  lastName           String?
+  email              String?
+  phoneNumber        String?
+  company            String?
+  tags               String[]
+  customFields       Json?
+  userId             String
+  projectId          String?
+  isActive           Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  
+  // Relations
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project            Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@unique([email, userId])
+  @@unique([phoneNumber, userId])
+}
+
+// Webhooks
+model Webhook {
+  id                 String      @id @default(cuid())
+  url                String
+  description        String?
+  events             String[]    // Array of event types
+  isActive           Boolean     @default(true)
+  secret             String?
+  projectId          String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  
+  // Relations
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliveries         WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id                 String      @id @default(cuid())
+  webhookId          String
+  eventType          String
+  payload            Json
+  status             String      // pending, success, failed, retrying
+  responseCode       Int?
+  responseBody       String?
+  attempts           Int         @default(1)
+  nextRetryAt        DateTime?
+  createdAt          DateTime    @default(now())
+  
+  // Relations
+  webhook            Webhook     @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
+
+// Integrations
+model Integration {
+  id                 String      @id @default(cuid())
+  type               String      // zapier, salesforce, hubspot, custom
+  name               String
+  config             Json        // Integration-specific configuration
+  isConnected        Boolean     @default(false)
+  projectId          String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  
+  // Relations
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// API Keys
+model ApiKey {
+  id                 String      @id @default(cuid())
+  name               String
+  keyHash            String      @unique // Hashed version of the key
+  permissions        String[]    // Array of permissions
+  isActive           Boolean     @default(true)
+  lastUsedAt         DateTime?
+  expiresAt          DateTime?
+  userId             String
+  createdAt          DateTime    @default(now())
+  
+  // Relations
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Billing & Transactions
+model Transaction {
+  id                 String      @id @default(cuid())
+  type               String      // topup, deduction, refund
+  amount             Decimal     @db.Decimal(10, 2)
+  currency           String      @default("USD")
+  status             String      // pending, completed, failed, cancelled
+  description        String?
+  reference          String?     // External reference ID
+  metadata           Json?
+  userId             String
+  createdAt          DateTime    @default(now())
+  
+  // Relations
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// System Logs
+model LogEntry {
+  id                 String      @id @default(cuid())
+  level              String      // debug, info, warn, error, fatal
+  message            String      @db.Text
+  context            Json?
+  source             String?
+  userId             String?
+  requestId          String?
+  createdAt          DateTime    @default(now())
+  
+  // Relations
+  user               User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([level])
+  @@index([createdAt])
+  @@index([userId])
 }
