@@ -34,33 +34,122 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Role-Based Access Control
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  detail      String?
+  isActive    Boolean      @default(true)
+  isArchived  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  detail    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  
+  // Relations
+  roles     RolePermission[]
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
+  isActive  Boolean  @default(true)
+  isArchived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  
+  // Relations
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, permissionId])
+}
+
 model User {
   id                 String         @id @default(cuid())
+  nickname           String?
   name               String?
+  avatar             String?
+  social             String?
+  fname              String?
+  mname              String?
+  lname              String?
+  mobile             String?        @unique
+  address            String?
+  postalCode         String?
+  city               String?
+  country            String?
   email              String?        @unique
-  emailVerified      DateTime?
+  about              String?        @db.Text
+  nationalId         String?        @unique
+  password           String?
+  passwordSalt       String?
+  apiToken           String?        @unique
+  signature          String?
   image              String?
-  password           String?        // Only for email/password auth
-  role               String         @default("user") // admin, supervisor, agent, user
-  status             String         @default("active") // active, inactive, suspended
-  company            String?
-  balance            Decimal        @default(0.00) @db.Decimal(10, 2)
-  currency           String         @default("USD")
+  lastLogin          DateTime?
+  lastLoginIp        String?
+  isClerk            Boolean        @default(false)
+  isOfficer          Boolean        @default(false)
+  isManager          Boolean        @default(false)
+  isAdmin            Boolean        @default(false)
+  isGlobalClerk      Boolean        @default(false)
+  isGlobalOfficer    Boolean        @default(false)
+  isGlobalManager    Boolean        @default(false)
+  isGlobalAdmin      Boolean        @default(false)
+  detail             String?
+  otp                String?
+  otp2               String?
+  otpVerified        Boolean        @default(false)
+  multiFactor        Boolean        @default(false)
+  emailVerified      DateTime?
+  referralCode       String?
+  receiveMessages    Boolean        @default(true)
+  createdBy          String?
+  updatedBy          String?
+  edited             DateTime?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
-  lastLogin          DateTime?
-  resetToken         String?
-  resetTokenExpiry   DateTime?
   
   // Relations
   accounts           Account[]
   sessions           Session[]
-  projects           Project[]
+  userRoles          UserRole[]
+  projects           Project[]      @relation("ProjectOwner")
+  createdUsers       User[]         @relation("UserCreatedBy")
+  updatedUsers       User[]         @relation("UserUpdatedBy")
+  createdProjects    Project[]      @relation("ProjectCreatedBy")
+  updatedProjects    Project[]      @relation("ProjectUpdatedBy")
   messageLogs        MessageLog[]
   transactions       Transaction[]
   apiKeys            ApiKey[]
   contacts           Contact[]
   logEntries         LogEntry[]
+  creator            User?          @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  updater            User?          @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
 }
 
 model VerificationToken {
@@ -74,90 +163,175 @@ model VerificationToken {
 // Project Management
 model Project {
   id                 String              @id @default(cuid())
-  name               String
-  description        String?
-  status             String              @default("active") // active, inactive, suspended
-  balance            Decimal             @default(0.00) @db.Decimal(10, 2)
-  currency           String              @default("USD")
+  name               String              @unique
+  trial              Boolean             @default(true)
+  code               String?             @unique
   userId             String
+  apiToken           String?             @unique
+  apiKey             String?
+  shortcode          String?             @unique
+  minBalance         String              @default("0")
+  minBalanceEmail    String?
+  minBalanceTel      String?
+  credits            Decimal             @default(0.00) @db.Decimal(20, 2)
+  maxCredit          Decimal             @default(0.00) @db.Decimal(10, 2)
+  maxMonthlyCredit   Decimal             @default(0.00) @db.Decimal(10, 2)
+  industry           String?
+  contactAddress     String?
+  companyReg         String?
+  taxId              String?
+  mobile             String?
+  line1              String?
+  line2              String?
+  email1             String?
+  email2             String?
+  streetAddress      String?
+  postcode           String?
+  city               String?
+  country            String?
+  detail             String?
+  hatewords          String?             @db.Text
+  hatewordsActive    Boolean             @default(false)
+  isTrial            Boolean?
+  isActive           Boolean             @default(true)
+  isArchived         Boolean             @default(false)
+  createdBy          String?
+  updatedBy          String?
+  details            String?
+  accountType        String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   
   // Relations
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                @relation("ProjectOwner", fields: [userId], references: [id])
+  creator            User?               @relation("ProjectCreatedBy", fields: [createdBy], references: [id])
+  updater            User?               @relation("ProjectUpdatedBy", fields: [updatedBy], references: [id])
   campaigns          Campaign[]
-  campaignTemplates  CampaignTemplate[]
-  campaignAutomations CampaignAutomation[]
+  templates          Template[]
   messageLogs        MessageLog[]
   webhooks           Webhook[]
   integrations       Integration[]
   contacts           Contact[]
+  contactLists       ContactList[]
+  transactions       Transaction[]
+  topups             Topup[]
 }
 
 // Campaign Management
 model Campaign {
   id                 String      @id @default(cuid())
-  name               String
-  description        String?
-  channel            String      // sms, email, whatsapp, voice, viber, rcs
-  status             String      @default("draft") // draft, scheduled, active, completed, paused
-  content            String?     @db.Text
-  targetAudience     String?
-  scheduledAt        DateTime?
   projectId          String
+  name               String
+  goal               String?
+  maxBudget          Decimal?    @db.Decimal(20, 2)
+  minBudget          Decimal?    @db.Decimal(20, 2)
+  budget             Decimal?    @db.Decimal(20, 2)
+  targetMessages     BigInt?
+  targetSms          BigInt?
+  targetWhatsapp     BigInt?
+  counter            BigInt?
+  sponsor            String?
+  demographics       String?
+  start              DateTime?
+  end                DateTime?
+  detail             String?
+  delivery           Json?
+  isActive           Boolean?
+  isArchived         Boolean?
+  createdBy          String?
+  updatedBy          String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   
-  // Metrics
-  totalMessages      Int         @default(0)
-  sentMessages       Int         @default(0)
-  deliveredMessages  Int         @default(0)
-  failedMessages     Int         @default(0)
-  openedMessages     Int         @default(0)
-  clickedMessages    Int         @default(0)
-  totalCost          Decimal     @default(0.00) @db.Decimal(10, 2)
+  // Relations
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messageLogs        MessageLog[]
+  topups             Topup[]
+}
+
+// Template System
+model Template {
+  id                 String      @id @default(cuid())
+  projectId          String
+  name               String
+  message            String      @db.Text
+  isActive           Boolean     @default(true)
+  isArchived         Boolean     @default(false)
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
   
   // Relations
   project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   messageLogs        MessageLog[]
 }
 
-model CampaignTemplate {
-  id                 String              @id @default(cuid())
+// Contact Management
+model ContactList {
+  id                 String      @id @default(cuid())
   projectId          String
   name               String
-  channel            String              // sms, whatsapp, viber, rcs, voice
-  content            String              @db.Text
-  type               String              // transactional, marketing, notification, reminder
-  variables          String[]            // Array of variable names
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  description        String?
+  isActive           Boolean     @default(true)
+  isArchived         Boolean     @default(false)
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
   
   // Relations
-  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  automations        CampaignAutomation[]
-  messageLogs        MessageLog[]
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contacts           Contact[]
 }
 
-model CampaignAutomation {
-  id                 String           @id @default(cuid())
-  projectId          String
-  name               String
-  triggerEvent       String
-  campaignTemplateId String
-  isActive           Boolean          @default(true)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+model Contact {
+  id                 String      @id @default(cuid())
+  projectId          String?
+  userId             String
+  name               String?
+  fname              String?
+  mname              String?
+  lname              String?
+  mobile             String
+  email              String?
+  type               String?
+  job                String?
+  company            String?
+  city               String?
+  isStar             Boolean     @default(false)
+  isSpam             Boolean     @default(false)
+  optedOut           Boolean     @default(false)
+  optOut             DateTime?
+  optOutReason       String?
+  isHidden           Boolean     @default(false)
+  exclude            Boolean     @default(false)
+  detail             String?
+  contactListId      String?
+  isActive           Boolean     @default(true)
+  isArchived         Boolean     @default(false)
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
   
   // Relations
-  project            Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  campaignTemplate   CampaignTemplate @relation(fields: [campaignTemplateId], references: [id], onDelete: Cascade)
+  project            Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactList        ContactList? @relation(fields: [contactListId], references: [id], onDelete: SetNull)
+  
+  @@unique([email, userId])
+  @@unique([mobile, userId])
 }
 
-// Messaging
+// Messaging System
 model MessageLog {
   id                 String           @id @default(cuid())
-  messageId          String           @unique
+  messageId          String?          @unique
+  projectId          String?
+  campaignId         String?
+  templateId         String?
+  userId             String
   channel            String           // sms, whatsapp, viber, rcs, voice
   direction          String           // inbound, outbound
   sender             String
@@ -166,10 +340,6 @@ model MessageLog {
   status             String           // pending, sent, delivered, failed, read
   cost               Decimal?         @db.Decimal(10, 4)
   currency           String?
-  userId             String
-  projectId          String?
-  campaignId         String?
-  templateId         String?
   errorCode          String?
   errorMessage       String?
   deliveryAttempts   Int              @default(1)
@@ -177,34 +347,104 @@ model MessageLog {
   createdAt          DateTime         @default(now())
   
   // Relations
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   project            Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   campaign           Campaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  template           CampaignTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  template           Template?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
 }
 
-// Contact Management
-model Contact {
+// Transaction System
+model TransactionType {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  detail      String?
+  isActive    Boolean      @default(true)
+  isArchived  Boolean      @default(false)
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  transactions Transaction[]
+}
+
+model Transaction {
   id                 String      @id @default(cuid())
-  firstName          String?
-  lastName           String?
-  email              String?
-  phoneNumber        String?
-  company            String?
-  tags               String[]
-  customFields       Json?
-  userId             String
   projectId          String?
+  userId             String
+  transactionTypeId  String
+  description        String?
+  detail             String?
+  amount             Decimal?    @db.Decimal(8, 2)
+  currency           String?
+  status             String?
   isActive           Boolean     @default(true)
+  isArchived         Boolean     @default(false)
+  credits            Decimal?    @db.Decimal(8, 2)
+  createdBy          String?
+  updatedBy          String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   
   // Relations
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   project            Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionType    TransactionType @relation(fields: [transactionTypeId], references: [id], onDelete: Cascade)
+}
+
+// Topup System
+model Topup {
+  id                 String      @id @default(cuid())
+  projectId          String
+  campaignId         String?
+  terminalNumber     String?
+  methodName         String?
+  sessionId          String?
+  requestUniqueId    String?
+  transactionKey     String?
+  referralNumber     String?
+  name               String?
+  amount             Decimal?    @db.Decimal(20, 2)
+  fromAni            String?
+  email              String?
+  responseCode       String?
+  responseDescription String?
+  confirmationCode   String?
+  auditNo            String?
+  operatorRequestId  String?
+  providerResponse   String?
+  authorizeKey       String?
+  systemServiceId    String?
+  systemServiceName  String?
+  productId          String?
+  productName        String?
+  productDescription String?
+  productType        String?
+  productCode        String?
+  productInfo        String?
+  batchId            String?
+  batchName          String?
+  batchType          String?
+  batchDescription   String?
+  minimumValue       Decimal?    @db.Decimal(20, 2)
+  maximumValue       Decimal?    @db.Decimal(20, 2)
+  imageUrl           String?
+  country            String?
+  fieldInfo          String?     @db.Text
+  telco              String?
+  notificationInfo   String?
+  allowMinorCurrency String?
+  surchargeType      String?
+  surchargeValue     Decimal?    @db.Decimal(20, 2)
+  status             String?
+  createdBy          String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
   
-  @@unique([email, userId])
-  @@unique([phoneNumber, userId])
+  // Relations
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign           Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 }
 
 // Webhooks
@@ -264,23 +504,6 @@ model ApiKey {
   isActive           Boolean     @default(true)
   lastUsedAt         DateTime?
   expiresAt          DateTime?
-  userId             String
-  createdAt          DateTime    @default(now())
-  
-  // Relations
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// Billing & Transactions
-model Transaction {
-  id                 String      @id @default(cuid())
-  type               String      // topup, deduction, refund
-  amount             Decimal     @db.Decimal(10, 2)
-  currency           String      @default("USD")
-  status             String      // pending, completed, failed, cancelled
-  description        String?
-  reference          String?     // External reference ID
-  metadata           Json?
   userId             String
   createdAt          DateTime    @default(now())
   
