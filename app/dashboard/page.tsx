@@ -16,6 +16,7 @@ import { handleError, ErrorType } from "@/lib/error-handler"
 import { ErrorBoundary } from "@/components/error-handling/error-boundary"
 import dynamic from 'next/dynamic'
 import { getTimeBasedGreeting } from "@/lib/greeting-utils"
+import { useSession } from "next-auth/react";
 
 // Add CSS for background grid pattern
 import "@/styles/dashboard-patterns.css"
@@ -397,12 +398,12 @@ export default function Dashboard() {
   // In config our app, this would be determined by checking user metadata
   const [isNewUser, setIsNewUser] = useState(true)
 
-  // Get user information from localStorage or context in a real app
-  const [userInfo, setUserInfo] = useState({
-    name: "John",
-    companyName: "Acme Corporation",
-    userRole: "Platform Administrator"
-  });
+  const { data: session } = useSession();
+  const userInfo = {
+    name: session?.user?.name || "",
+    companyName: session?.user?.company || "",
+    userRole: session?.user?.role || ""
+  };
 
   const [metrics, setMetrics] = useState({
     deliveryRate: { value: "0", change: "0%", trend: "up" as const },

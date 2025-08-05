@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -221,9 +222,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const router = useRouter()
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const toggleMenu = (title: string) => {
-    setOpenMenus((prev) => ({
+    setOpenMenus((prev: Record<string, boolean>) => ({
       ...prev,
       [title]: !prev[title],
     }))
@@ -396,9 +399,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        JD
+                        {user?.name ? user.name.split(' ').map((n: string) => n?.[0] || '').join('').toUpperCase() : 'JD'}
                       </div>
-                      <span className="hidden md:block">John Doe</span>
+                      <span className="hidden md:block">
+                        {user?.name || 'John Doe'}
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
