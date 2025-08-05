@@ -102,6 +102,9 @@ model User {
   postalCode         String?
   city               String?
   country            String?
+  company            String?
+  role               String?
+  status             String?
   email              String?        @unique
   about              String?        @db.Text
   nationalId         String?        @unique

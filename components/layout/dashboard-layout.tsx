@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
 import { RefreshCw, AlertTriangle } from "lucide-react"
-import { EnterpriseGuidedTour } from "@/components/onboarding/enterprise-guided-tour"
 import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
 import { MobileNav } from "@/components/navigation/mobile-nav"
 import { ProductTour } from "@/components/onboarding/product-tour"
@@ -443,7 +442,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </SidebarProvider>
-      <EnterpriseGuidedTour />
       <ProductTour />
     </ErrorBoundary>
   )
