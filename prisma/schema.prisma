@@ -7,7 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Authentication Models
+// ============================================================================
+// AUTHENTICATION & USER MANAGEMENT
+// ============================================================================
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -34,127 +37,6 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Role-Based Access Control
-model Role {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  detail      String?
-  isActive    Boolean      @default(true)
-  isArchived  Boolean      @default(false)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  
-  // Relations
-  users       UserRole[]
-  permissions RolePermission[]
-}
-
-model Permission {
-  id        String         @id @default(cuid())
-  name      String         @unique
-  detail    String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  
-  // Relations
-  roles     RolePermission[]
-}
-
-model UserRole {
-  id        String   @id @default(cuid())
-  userId    String
-  roleId    String
-  isActive  Boolean  @default(true)
-  isArchived Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, roleId])
-}
-
-model RolePermission {
-  id           String     @id @default(cuid())
-  roleId       String
-  permissionId String
-  
-  // Relations
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  @@unique([roleId, permissionId])
-}
-
-model User {
-  id                 String         @id @default(cuid())
-  nickname           String?
-  name               String?
-  avatar             String?
-  social             String?
-  fname              String?
-  mname              String?
-  lname              String?
-  mobile             String?        @unique
-  address            String?
-  postalCode         String?
-  city               String?
-  country            String?
-  company            String?
-  role               String?
-  status             String?
-  email              String?        @unique
-  about              String?        @db.Text
-  nationalId         String?        @unique
-  password           String?
-  passwordSalt       String?
-  apiToken           String?        @unique
-  signature          String?
-  image              String?
-  lastLogin          DateTime?
-  lastLoginIp        String?
-  isClerk            Boolean        @default(false)
-  isOfficer          Boolean        @default(false)
-  isManager          Boolean        @default(false)
-  isAdmin            Boolean        @default(false)
-  isGlobalClerk      Boolean        @default(false)
-  isGlobalOfficer    Boolean        @default(false)
-  isGlobalManager    Boolean        @default(false)
-  isGlobalAdmin      Boolean        @default(false)
-  detail             String?
-  otp                String?
-  otp2               String?
-  otpVerified        Boolean        @default(false)
-  multiFactor        Boolean        @default(false)
-  emailVerified      DateTime?
-  referralCode       String?
-  receiveMessages    Boolean        @default(true)
-  createdBy          String?
-  updatedBy          String?
-  edited             DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  
-  // Relations
-  accounts           Account[]
-  sessions           Session[]
-  userRoles          UserRole[]
-  projects           Project[]      @relation("ProjectOwner")
-  createdUsers       User[]         @relation("UserCreatedBy")
-  updatedUsers       User[]         @relation("UserUpdatedBy")
-  createdProjects    Project[]      @relation("ProjectCreatedBy")
-  updatedProjects    Project[]      @relation("ProjectUpdatedBy")
-  messageLogs        MessageLog[]
-  transactions       Transaction[]
-  apiKeys            ApiKey[]
-  contacts           Contact[]
-  logEntries         LogEntry[]
-  creator            User?          @relation("UserCreatedBy", fields: [createdBy], references: [id])
-  updater            User?          @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -163,372 +45,1364 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Project Management
+// ============================================================================
+// ROLE-BASED ACCESS CONTROL
+// ============================================================================
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  isArchived  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  resource    String // e.g., 'sms', 'contacts', 'campaigns'
+  action      String // e.g., 'create', 'read', 'update', 'delete'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  roles RolePermission[]
+
+  @@unique([resource, action])
+}
+
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  roleId     String
+  isActive   Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  nickname      String?
+  name          String?
+  firstName     String?
+  middleName    String?
+  lastName      String?
+  avatar        String?
+  socialProfile String?
+  mobile        String?   @unique
+  address       String?
+  postalCode    String?
+  city          String?
+  country       String?   @default("Kenya")
+  email         String?   @unique
+  about         String?   @db.Text
+  nationalId    String?   @unique
+  password      String?
+  passwordSalt  String?
+  apiToken      String?   @unique
+  signature     String?
+  profileImage  String?
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+
+  // Role flags (legacy support)
+  isClerk         Boolean @default(false)
+  isOfficer       Boolean @default(false)
+  isManager       Boolean @default(false)
+  isAdmin         Boolean @default(false)
+  isGlobalClerk   Boolean @default(false)
+  isGlobalOfficer Boolean @default(false)
+  isGlobalManager Boolean @default(false)
+  isGlobalAdmin   Boolean @default(false)
+
+  // Security & Verification
+  otp             String?
+  otpSecondary    String?
+  otpVerified     Boolean   @default(false)
+  multiFactor     Boolean   @default(false)
+  emailVerified   DateTime?
+  referralCode    String?   @unique
+  receiveMessages Boolean   @default(true)
+
+  // Metadata
+  details    String?
+  isActive   Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  roles          UserRole[]
+  projects       Project[]       @relation("ProjectOwner")
+  contacts       Contact[]
+  messageLogs    MessageLog[]
+  transactions   Transaction[]
+  apiKeys        ApiKey[]
+  logEntries     LogEntry[]
+  referrals      Referral[]      @relation("ReferralUser")
+  referredBy     Referral[]      @relation("ReferredUser")
+  collaborations Collaboration[]
+  assignments    Assignment[]
+  automations    Automation[]
+
+  // Self-referencing relations
+  creator      User?  @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  updater      User?  @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
+
+  @@index([email])
+  @@index([mobile])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PROJECT MANAGEMENT (Multi-tenant)
+// ============================================================================
+
 model Project {
-  id                 String              @id @default(cuid())
-  name               String              @unique
-  trial              Boolean             @default(true)
-  code               String?             @unique
-  userId             String
-  apiToken           String?             @unique
-  apiKey             String?
-  shortcode          String?             @unique
-  minBalance         String              @default("0")
-  minBalanceEmail    String?
-  minBalanceTel      String?
-  credits            Decimal             @default(0.00) @db.Decimal(20, 2)
-  maxCredit          Decimal             @default(0.00) @db.Decimal(10, 2)
-  maxMonthlyCredit   Decimal             @default(0.00) @db.Decimal(10, 2)
-  industry           String?
-  contactAddress     String?
-  companyReg         String?
-  taxId              String?
-  mobile             String?
-  line1              String?
-  line2              String?
-  email1             String?
-  email2             String?
-  streetAddress      String?
-  postcode           String?
-  city               String?
-  country            String?
-  detail             String?
-  hatewords          String?             @db.Text
-  hatewordsActive    Boolean             @default(false)
-  isTrial            Boolean?
-  isActive           Boolean             @default(true)
-  isArchived         Boolean             @default(false)
-  createdBy          String?
-  updatedBy          String?
-  details            String?
-  accountType        String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String? @db.Text
+  code        String? @unique
+  userId      String
+
+  // Business Configuration
+  isTrial        Boolean   @default(true)
+  trialExpiresAt DateTime?
+  accountType    String?   @default("basic") // basic, premium, enterprise
+
+  // Credits & Billing
+  smsCredits      Decimal @default(0) @db.Decimal(20, 2)
+  whatsappCredits Decimal @default(0) @db.Decimal(20, 2)
+  voiceCredits    Decimal @default(0) @db.Decimal(20, 2)
+
+  // Telco Configuration for Kenya
+  safaricomCredits Decimal @default(0) @db.Decimal(20, 2)
+  airtelCredits    Decimal @default(0) @db.Decimal(20, 2)
+  telkomCredits    Decimal @default(0) @db.Decimal(20, 2)
+
+  // Settings
+  timezone        String  @default("Africa/Nairobi")
+  currency        String  @default("KES")
+  defaultSenderId String?
+  webhookUrl      String?
+  webhookSecret   String?
+
+  // Status
+  isActive         Boolean @default(true)
+  isArchived       Boolean @default(false)
+  isSuspended      Boolean @default(false)
+  suspensionReason String?
+
+  // Metadata
+  details   String?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  user               User                @relation("ProjectOwner", fields: [userId], references: [id])
-  creator            User?               @relation("ProjectCreatedBy", fields: [createdBy], references: [id])
-  updater            User?               @relation("ProjectUpdatedBy", fields: [updatedBy], references: [id])
-  campaigns          Campaign[]
-  templates          Template[]
-  messageLogs        MessageLog[]
-  webhooks           Webhook[]
-  integrations       Integration[]
-  contacts           Contact[]
-  contactLists       ContactList[]
-  transactions       Transaction[]
-  topups             Topup[]
+  user              User               @relation("ProjectOwner", fields: [userId], references: [id])
+  campaigns         Campaign[]
+  templates         Template[]
+  messageLogs       MessageLog[]
+  webhooks          Webhook[]
+  integrations      Integration[]
+  contacts          Contact[]
+  contactLists      ContactList[]
+  transactions      Transaction[]
+  topups            Topup[]
+  smsMessages       SmsMessage[]
+  scheduledSms      ScheduledSms[]
+  whatsappMessages  WhatsappMessage[]
+  whatsappAccounts  WhatsappAccount[]
+  payments          Payment[]
+  mpesaTransactions MpesaTransaction[]
+  shortCodes        ShortCode[]
+  alphanumerics     Alphanumeric[]
+  collaborations    Collaboration[]
+  assignments       Assignment[]
+  automations       Automation[]
+  paybillAccounts   PaybillAccount[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([isTrial])
+  @@index([createdAt])
 }
 
-// Campaign Management
-model Campaign {
-  id                 String      @id @default(cuid())
-  projectId          String
-  name               String
-  goal               String?
-  maxBudget          Decimal?    @db.Decimal(20, 2)
-  minBudget          Decimal?    @db.Decimal(20, 2)
-  budget             Decimal?    @db.Decimal(20, 2)
-  targetMessages     BigInt?
-  targetSms          BigInt?
-  targetWhatsapp     BigInt?
-  counter            BigInt?
-  sponsor            String?
-  demographics       String?
-  start              DateTime?
-  end                DateTime?
-  detail             String?
-  delivery           Json?
-  isActive           Boolean?
-  isArchived         Boolean?
-  createdBy          String?
-  updatedBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+// ============================================================================
+// MESSAGING INFRASTRUCTURE
+// ============================================================================
+
+model ShortCode {
+  id          String   @id @default(cuid())
+  projectId   String
+  code        String   @unique
+  description String?
+  provider    String // safaricom, airtel, telkom
+  type        String // premium, standard
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  messageLogs        MessageLog[]
-  topups             Topup[]
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  smsMessages  SmsMessage[]
+  scheduledSms ScheduledSms[]
+
+  @@index([projectId])
+  @@index([provider])
 }
 
-// Template System
-model Template {
-  id                 String      @id @default(cuid())
-  projectId          String
-  name               String
-  message            String      @db.Text
-  isActive           Boolean     @default(true)
-  isArchived         Boolean     @default(false)
-  createdBy          String?
-  updatedBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+model Alphanumeric {
+  id          String   @id @default(cuid())
+  projectId   String
+  senderId    String   @unique
+  description String?
+  provider    String // safaricom, airtel, telkom, international
+  status      String   @default("pending") // pending, approved, rejected
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  messageLogs        MessageLog[]
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  smsMessages  SmsMessage[]
+  scheduledSms ScheduledSms[]
+
+  @@index([projectId])
+  @@index([provider])
+  @@index([status])
 }
 
-// Contact Management
+// ============================================================================
+// SMS MESSAGING
+// ============================================================================
+
+model SmsMessage {
+  id             String  @id @default(cuid())
+  messageId      String  @unique
+  projectId      String
+  campaignId     String?
+  templateId     String?
+  alphanumericId String?
+  shortCodeId    String?
+
+  // Message Details
+  from         String
+  to           String
+  message      String @db.Text
+  messageType  String @default("text") // text, unicode, binary
+  messageParts Int    @default(1)
+
+  // Routing & Provider
+  channel     String  @default("sms")
+  provider    String // safaricom, airtel, telkom, international
+  telco       String? // detected telco
+  networkCode String?
+
+  // Delivery Tracking
+  status              String  @default("pending") // pending, sent, delivered, failed, expired
+  statusCode          String?
+  deliveryStatus      String?
+  deliveryDescription String?
+  direction           String  @default("outbound") // outbound, inbound
+
+  // Provider Response
+  providerMessageId String?
+  providerResponse  String?   @db.Text
+  providerTimestamp DateTime?
+
+  // Delivery Receipt
+  deliveredAt   DateTime?
+  failureReason String?
+  retryCount    Int       @default(0)
+
+  // Pricing
+  cost      Decimal? @db.Decimal(10, 4)
+  price     Decimal? @db.Decimal(10, 4)
+  priceUnit String?  @default("KES")
+
+  // Scheduling
+  scheduledAt DateTime?
+  sentAt      DateTime?
+
+  // Metadata
+  bulkId        String?
+  groupId       String?
+  correlationId String?
+  traceId       String?
+  apiVersion    String?
+  userAgent     String?
+  sourceIp      String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign     Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  template     Template?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  alphanumeric Alphanumeric? @relation(fields: [alphanumericId], references: [id], onDelete: SetNull)
+  shortCode    ShortCode?    @relation(fields: [shortCodeId], references: [id], onDelete: SetNull)
+  callbacks    SmsCallback[]
+
+  @@index([messageId])
+  @@index([projectId])
+  @@index([status])
+  @@index([deliveryStatus])
+  @@index([provider])
+  @@index([to])
+  @@index([from])
+  @@index([createdAt])
+  @@index([scheduledAt])
+  @@index([sentAt])
+}
+
+model ScheduledSms {
+  id             String  @id @default(cuid())
+  messageId      String  @unique
+  projectId      String
+  campaignId     String?
+  templateId     String?
+  alphanumericId String?
+  shortCodeId    String?
+
+  // Message Details
+  from         String
+  to           String
+  message      String @db.Text
+  messageType  String @default("text")
+  messageParts Int    @default(1)
+
+  // Scheduling
+  scheduledAt DateTime
+  timezone    String   @default("Africa/Nairobi")
+
+  // Routing & Provider
+  channel     String  @default("sms")
+  provider    String
+  telco       String?
+  networkCode String?
+
+  // Status
+  status     String  @default("scheduled") // scheduled, processing, sent, failed, cancelled
+  statusCode String?
+
+  // Provider Response (when executed)
+  providerMessageId String?
+  providerResponse  String?   @db.Text
+  providerTimestamp DateTime?
+
+  // Execution
+  executedAt    DateTime?
+  failureReason String?
+  retryCount    Int       @default(0)
+
+  // Pricing
+  cost      Decimal? @db.Decimal(10, 4)
+  price     Decimal? @db.Decimal(10, 4)
+  priceUnit String?  @default("KES")
+
+  // Metadata
+  bulkId        String?
+  groupId       String?
+  correlationId String?
+  apiVersion    String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign     Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  template     Template?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  alphanumeric Alphanumeric? @relation(fields: [alphanumericId], references: [id], onDelete: SetNull)
+  shortCode    ShortCode?    @relation(fields: [shortCodeId], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([projectId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([provider])
+  @@index([to])
+  @@index([createdAt])
+}
+
+model SmsCallback {
+  id           String @id @default(cuid())
+  smsMessageId String
+
+  // Callback Details
+  callbackType      String // delivery_receipt, mo_message
+  providerMessageId String?
+  status            String?
+  statusCode        String?
+  description       String?
+
+  // Network Information
+  networkCode String?
+  telco       String?
+
+  // Timing
+  receivedAt        DateTime  @default(now())
+  providerTimestamp DateTime?
+
+  // Raw Data
+  rawData Json?
+
+  // Relations
+  smsMessage SmsMessage @relation(fields: [smsMessageId], references: [id], onDelete: Cascade)
+
+  @@index([smsMessageId])
+  @@index([providerMessageId])
+  @@index([receivedAt])
+}
+
+// ============================================================================
+// WHATSAPP MESSAGING
+// ============================================================================
+
+model WhatsappAccount {
+  id                         String  @id @default(cuid())
+  projectId                  String
+  accountId                  String  @unique
+  name                       String
+  status                     String  @default("pending") // pending, approved, restricted, disabled
+  businessVerificationStatus String?
+
+  // Configuration
+  webhookUrl         String?
+  webhookVerifyToken String?
+  accessToken        String
+
+  // Metadata
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project      Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phoneNumbers WhatsappPhoneNumber[]
+  messages     WhatsappMessage[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model WhatsappPhoneNumber {
+  id                String @id @default(cuid())
+  whatsappAccountId String
+  phoneNumberId     String @unique
+  phoneNumber       String @unique
+  displayName       String
+  status            String @default("pending")
+
+  // Verification
+  isVerified         Boolean @default(false)
+  verificationStatus String?
+
+  // Configuration
+  webhookUrl String?
+
+  // Metadata
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  whatsappAccount WhatsappAccount    @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  messages        WhatsappMessage[]
+  templates       WhatsappTemplate[]
+
+  @@index([whatsappAccountId])
+  @@index([phoneNumber])
+}
+
+model WhatsappTemplate {
+  id            String @id @default(cuid())
+  phoneNumberId String
+  templateId    String @unique
+  name          String
+  language      String @default("en")
+  category      String // marketing, utility, authentication
+  status        String @default("pending") // pending, approved, rejected, disabled
+
+  // Template Content
+  headerType String? // text, image, video, document
+  headerText String?
+  bodyText   String  @db.Text
+  footerText String?
+
+  // Buttons
+  buttons Json? // Array of button objects
+
+  // Metadata
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  phoneNumber WhatsappPhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
+  messages    WhatsappMessage[]
+
+  @@index([phoneNumberId])
+  @@index([status])
+  @@index([category])
+}
+
+model WhatsappMessage {
+  id                String  @id @default(cuid())
+  messageId         String  @unique
+  projectId         String
+  whatsappAccountId String
+  phoneNumberId     String
+  templateId        String?
+
+  // Message Details
+  from      String
+  to        String
+  direction String // inbound, outbound
+
+  // Message Content
+  messageType String // text, image, video, audio, document, location, contacts, template, interactive
+  content     Json // Flexible content structure
+
+  // Template Message
+  templateName       String?
+  templateLanguage   String?
+  templateParameters Json?
+
+  // Media
+  mediaId       String?
+  mediaUrl      String?
+  mediaCaption  String?
+  mediaFilename String?
+  mediaMimeType String?
+
+  // Location
+  latitude        String?
+  longitude       String?
+  locationName    String?
+  locationAddress String?
+
+  // Status & Delivery
+  status            String  @default("pending") // pending, sent, delivered, read, failed
+  statusCode        String?
+  statusDescription String?
+
+  // Provider Response
+  providerMessageId String?
+  providerResponse  Json?
+  providerTimestamp DateTime?
+
+  // Pricing
+  pricingCategory String? // business_initiated, user_initiated
+  cost            Decimal? @db.Decimal(10, 4)
+  whatsappFee     Decimal? @db.Decimal(10, 4)
+  platformFee     Decimal? @db.Decimal(10, 4)
+  totalCost       Decimal? @db.Decimal(10, 4)
+  currency        String?  @default("USD")
+
+  // Conversation
+  conversationId     String?
+  conversationOrigin String?
+  contextMessageId   String? // For replies
+
+  // Metadata
+  expirationTimestamp String?
+  isBillable          Boolean @default(true)
+
+  // Timestamps
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  whatsappAccount WhatsappAccount     @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  phoneNumber     WhatsappPhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
+  template        WhatsappTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([projectId])
+  @@index([whatsappAccountId])
+  @@index([phoneNumberId])
+  @@index([status])
+  @@index([direction])
+  @@index([messageType])
+  @@index([to])
+  @@index([from])
+  @@index([createdAt])
+  @@index([sentAt])
+}
+
+// ============================================================================
+// CONTACT MANAGEMENT
+// ============================================================================
+
 model ContactList {
-  id                 String      @id @default(cuid())
-  projectId          String
-  name               String
-  description        String?
-  isActive           Boolean     @default(true)
-  isArchived         Boolean     @default(false)
-  createdBy          String?
-  updatedBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+  id          String  @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+
+  // Metadata
+  totalContacts Int      @default(0)
+  isActive      Boolean  @default(true)
+  isArchived    Boolean  @default(false)
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contacts           Contact[]
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contacts Contact[]
+
+  @@index([projectId])
+  @@index([isActive])
 }
 
 model Contact {
-  id                 String      @id @default(cuid())
-  projectId          String?
-  userId             String
-  name               String?
-  fname              String?
-  mname              String?
-  lname              String?
-  mobile             String
-  email              String?
-  type               String?
-  job                String?
-  company            String?
-  city               String?
-  isStar             Boolean     @default(false)
-  isSpam             Boolean     @default(false)
-  optedOut           Boolean     @default(false)
-  optOut             DateTime?
-  optOutReason       String?
-  isHidden           Boolean     @default(false)
-  exclude            Boolean     @default(false)
-  detail             String?
-  contactListId      String?
-  isActive           Boolean     @default(true)
-  isArchived         Boolean     @default(false)
-  createdBy          String?
-  updatedBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+  id            String  @id @default(cuid())
+  projectId     String
+  userId        String
+  contactListId String?
+
+  // Personal Information
+  firstName  String?
+  middleName String?
+  lastName   String?
+  fullName   String?
+  mobile     String
+  email      String?
+
+  // Professional Information
+  jobTitle   String?
+  company    String?
+  department String?
+
+  // Location
+  city       String?
+  state      String?
+  country    String? @default("Kenya")
+  address    String?
+  postalCode String?
+
+  // Contact Preferences
+  preferredLanguage String? @default("en")
+  timezone          String? @default("Africa/Nairobi")
+
+  // Opt-out Management
+  isOptedOut   Boolean   @default(false)
+  optedOutAt   DateTime?
+  optOutReason String?
+  optOutMethod String? // sms, email, web, api
+
+  // Contact Quality
+  isStarred  Boolean @default(false)
+  isSpam     Boolean @default(false)
+  isHidden   Boolean @default(false)
+  isExcluded Boolean @default(false)
+
+  // Validation
+  mobileVerified Boolean @default(false)
+  emailVerified  Boolean @default(false)
+
+  // Custom Fields
+  customFields Json?
+  tags         String[]
+
+  // Metadata
+  notes      String?  @db.Text
+  source     String? // import, api, manual, web
+  isActive   Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   // Relations
-  project            Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contactList        ContactList? @relation(fields: [contactListId], references: [id], onDelete: SetNull)
-  
-  @@unique([email, userId])
-  @@unique([mobile, userId])
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contactList ContactList? @relation(fields: [contactListId], references: [id], onDelete: SetNull)
+
+  @@unique([mobile, projectId])
+  @@unique([email, projectId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([mobile])
+  @@index([email])
+  @@index([isOptedOut])
+  @@index([isActive])
+  @@index([createdAt])
 }
 
-// Messaging System
-model MessageLog {
-  id                 String           @id @default(cuid())
-  messageId          String?          @unique
-  projectId          String?
-  campaignId         String?
-  templateId         String?
-  userId             String
-  channel            String           // sms, whatsapp, viber, rcs, voice
-  direction          String           // inbound, outbound
-  sender             String
-  recipient          String
-  content            String           @db.Text
-  status             String           // pending, sent, delivered, failed, read
-  cost               Decimal?         @db.Decimal(10, 4)
-  currency           String?
-  errorCode          String?
-  errorMessage       String?
-  deliveryAttempts   Int              @default(1)
-  metadata           Json?
-  createdAt          DateTime         @default(now())
-  
+// ============================================================================
+// CAMPAIGN MANAGEMENT
+// ============================================================================
+
+model Campaign {
+  id          String  @id @default(cuid())
+  projectId   String
+  name        String
+  description String? @db.Text
+
+  // Campaign Type
+  type String  @default("sms") // sms, whatsapp, voice, email
+  goal String? // awareness, conversion, retention
+
+  // Targeting
+  audience       String? // all, list, segment, custom
+  contactListIds String[] // Array of contact list IDs
+  filters        Json? // Audience filters
+
+  // Budget & Limits
+  maxBudget   Decimal? @db.Decimal(20, 2)
+  maxMessages Int?
+  dailyLimit  Int?
+
+  // Scheduling
+  scheduledAt DateTime?
+  timezone    String    @default("Africa/Nairobi")
+
+  // Status
+  status String @default("draft") // draft, scheduled, running, paused, completed, cancelled
+
+  // Performance Tracking
+  totalSent      Int     @default(0)
+  totalDelivered Int     @default(0)
+  totalFailed    Int     @default(0)
+  totalCost      Decimal @default(0) @db.Decimal(20, 2)
+
+  // Metadata
+  isActive   Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   // Relations
-  project            Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  campaign           Campaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  template           Template?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messageLogs  MessageLog[]
+  smsMessages  SmsMessage[]
+  scheduledSms ScheduledSms[]
+  topups       Topup[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledAt])
+  @@index([createdAt])
 }
 
-// Transaction System
+// ============================================================================
+// TEMPLATE SYSTEM
+// ============================================================================
+
+model Template {
+  id          String  @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+
+  // Template Content
+  messageType String   @default("sms") // sms, whatsapp, email
+  subject     String? // For email templates
+  content     String   @db.Text
+  variables   String[] // Array of variable names
+
+  // Template Category
+  category String? // marketing, transactional, notification
+  language String  @default("en")
+
+  // Validation
+  isValidated      Boolean  @default(false)
+  validationErrors String[]
+
+  // Usage Statistics
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
+
+  // Metadata
+  isActive   Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messageLogs  MessageLog[]
+  smsMessages  SmsMessage[]
+  scheduledSms ScheduledSms[]
+
+  @@index([projectId])
+  @@index([messageType])
+  @@index([category])
+  @@index([isActive])
+}
+
+// ============================================================================
+// PAYMENT & BILLING SYSTEM
+// ============================================================================
+
+model PaymentMethod {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  type          String // mpesa, card, bank, airtel_money, tkash
+  provider      String // safaricom, airtel, telkom, flutterwave
+  isActive      Boolean  @default(true)
+  configuration Json? // Provider-specific config
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  payments Payment[]
+}
+
+model PaymentStatus {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  payments Payment[]
+}
+
+model Payment {
+  id              String  @id @default(cuid())
+  projectId       String
+  transactionId   String?
+  paymentMethodId String
+  paymentStatusId String
+
+  // Payment Details
+  amount      Decimal @db.Decimal(20, 2)
+  currency    String  @default("KES")
+  description String?
+
+  // Telco-specific amounts (for multi-telco top-ups)
+  safaricomAmount     Decimal? @db.Decimal(20, 2)
+  airtelAmount        Decimal? @db.Decimal(20, 2)
+  telkomAmount        Decimal? @db.Decimal(20, 2)
+  internationalAmount Decimal? @db.Decimal(20, 2)
+
+  // Credit allocation
+  creditsAllocated Decimal? @db.Decimal(20, 2)
+  unitCost         Decimal? @db.Decimal(20, 4)
+  packageId        String?
+  creditType       String? // transactional, promotional
+
+  // Payment Processing
+  transactionRef  String? @unique
+  providerRef     String?
+  status          String  @default("pending") // pending, completed, failed, cancelled
+  responseCode    String?
+  responseMessage String?
+
+  // Provider Response Data
+  providerResponse Json?
+
+  // Dates
+  expiryDate  DateTime?
+  processedAt DateTime?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transaction   Transaction?  @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+  paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([transactionRef])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// MPESA INTEGRATION (Kenya Mobile Money)
+// ============================================================================
+
+model PaybillAccount {
+  id                String  @id @default(cuid())
+  projectId         String
+  businessShortCode String  @unique
+  accountNumber     String?
+  accountName       String
+  type              String // paybill, till
+
+  // Configuration
+  consumerKey    String
+  consumerSecret String
+  passkey        String?
+
+  // Status
+  isActive   Boolean @default(true)
+  isVerified Boolean @default(false)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project           Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mpesaTransactions MpesaTransaction[]
+
+  @@index([projectId])
+  @@index([businessShortCode])
+}
+
+model MpesaTransaction {
+  id               String  @id @default(cuid())
+  projectId        String
+  paybillAccountId String?
+
+  // Transaction Details
+  transactionType String // C2B, B2C, B2B, STK_PUSH
+  transactionId   String   @unique // MPesa transaction ID
+  transactionTime DateTime
+  amount          Decimal  @db.Decimal(20, 2)
+
+  // Parties
+  businessShortCode String?
+  phoneNumber       String // MSISDN
+  accountReference  String? // For paybill transactions
+  billRefNumber     String? // MPesa receipt number
+
+  // Customer Details
+  firstName  String?
+  middleName String?
+  lastName   String?
+
+  // STK Push specific
+  merchantRequestId String?
+  checkoutRequestId String?
+
+  // Response Details
+  resultCode          String?
+  resultDescription   String?
+  responseCode        String?
+  responseDescription String?
+  customerMessage     String?
+
+  // Account Balance
+  orgAccountBalance Decimal? @db.Decimal(20, 2)
+
+  // Credit Management
+  creditBalance       Decimal? @db.Decimal(20, 2)
+  sozuriCreditBalance Decimal? @db.Decimal(20, 2)
+  autoRecharge        Boolean  @default(false)
+
+  // Status
+  status   String  @default("pending") // pending, completed, failed, cancelled
+  isParent Boolean @default(false)
+
+  // Metadata
+  rawData   Json? // Store complete callback data
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  paybillAccount PaybillAccount? @relation(fields: [paybillAccountId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([transactionId])
+  @@index([phoneNumber])
+  @@index([status])
+  @@index([transactionTime])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// TRANSACTION MANAGEMENT
+// ============================================================================
+
 model TransactionType {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  detail      String?
-  isActive    Boolean      @default(true)
-  isArchived  Boolean      @default(false)
-  createdBy   String?
-  updatedBy   String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  isArchived  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
   transactions Transaction[]
 }
 
 model Transaction {
-  id                 String      @id @default(cuid())
-  projectId          String?
-  userId             String
-  transactionTypeId  String
-  description        String?
-  detail             String?
-  amount             Decimal?    @db.Decimal(8, 2)
-  currency           String?
-  status             String?
-  isActive           Boolean     @default(true)
-  isArchived         Boolean     @default(false)
-  credits            Decimal?    @db.Decimal(8, 2)
-  createdBy          String?
-  updatedBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+  id                String @id @default(cuid())
+  projectId         String
+  userId            String
+  transactionTypeId String
+
+  // Transaction Details
+  amount      Decimal @db.Decimal(20, 2)
+  currency    String  @default("KES")
+  description String?
+  reference   String? @unique
+
+  // Credit Details
+  creditsAmount Decimal? @db.Decimal(20, 2)
+  creditType    String? // sms, whatsapp, voice
+
+  // Status
+  status String @default("pending") // pending, completed, failed, cancelled
+
+  // Metadata
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  project            Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactionType    TransactionType @relation(fields: [transactionTypeId], references: [id], onDelete: Cascade)
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionType TransactionType @relation(fields: [transactionTypeId], references: [id], onDelete: Cascade)
+  payments        Payment[]
+  topups          Topup[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
-// Topup System
+// ============================================================================
+// TOPUP SYSTEM
+// ============================================================================
+
+model TopupProduct {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  description  String?
+  creditAmount Decimal  @db.Decimal(20, 2)
+  price        Decimal  @db.Decimal(20, 2)
+  currency     String   @default("KES")
+  creditType   String // sms, whatsapp, voice
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  topups Topup[]
+}
+
 model Topup {
-  id                 String      @id @default(cuid())
-  projectId          String
-  campaignId         String?
-  terminalNumber     String?
-  methodName         String?
-  sessionId          String?
-  requestUniqueId    String?
-  transactionKey     String?
-  referralNumber     String?
-  name               String?
-  amount             Decimal?    @db.Decimal(20, 2)
-  fromAni            String?
-  email              String?
-  responseCode       String?
-  responseDescription String?
-  confirmationCode   String?
-  auditNo            String?
-  operatorRequestId  String?
-  providerResponse   String?
-  authorizeKey       String?
-  systemServiceId    String?
-  systemServiceName  String?
-  productId          String?
-  productName        String?
-  productDescription String?
-  productType        String?
-  productCode        String?
-  productInfo        String?
-  batchId            String?
-  batchName          String?
-  batchType          String?
-  batchDescription   String?
-  minimumValue       Decimal?    @db.Decimal(20, 2)
-  maximumValue       Decimal?    @db.Decimal(20, 2)
-  imageUrl           String?
-  country            String?
-  fieldInfo          String?     @db.Text
-  telco              String?
-  notificationInfo   String?
-  allowMinorCurrency String?
-  surchargeType      String?
-  surchargeValue     Decimal?    @db.Decimal(20, 2)
-  status             String?
-  createdBy          String?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+  id             String  @id @default(cuid())
+  projectId      String
+  campaignId     String?
+  transactionId  String?
+  topupProductId String
+
+  // Topup Details
+  amount        Decimal @db.Decimal(20, 2)
+  creditsAmount Decimal @db.Decimal(20, 2)
+  currency      String  @default("KES")
+
+  // Status
+  status String @default("pending") // pending, completed, failed
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  campaign           Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign     Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  transaction  Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  topupProduct TopupProduct @relation(fields: [topupProductId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
 }
 
-// Webhooks
-model Webhook {
-  id                 String      @id @default(cuid())
-  url                String
-  description        String?
-  events             String[]    // Array of event types
-  isActive           Boolean     @default(true)
-  secret             String?
-  projectId          String
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+// ============================================================================
+// MESSAGE LOGS & TRACKING
+// ============================================================================
+
+model MessageLog {
+  id         String  @id @default(cuid())
+  messageId  String? @unique
+  projectId  String?
+  campaignId String?
+  templateId String?
+  userId     String
+
+  // Message Details
+  messageType String // sms, whatsapp, email, voice
+  from        String
+  to          String
+  content     String @db.Text
+
+  // Status & Delivery
+  status         String  @default("pending")
+  deliveryStatus String?
+
+  // Pricing
+  cost     Decimal? @db.Decimal(10, 4)
+  currency String?  @default("KES")
+
+  // Timestamps
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  deliveries         WebhookDelivery[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  template Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([messageType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// WEBHOOKS & INTEGRATIONS
+// ============================================================================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  projectId   String
+  url         String
+  description String?
+  events      String[] // Array of event types
+  isActive    Boolean  @default(true)
+  secret      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([projectId])
 }
 
 model WebhookDelivery {
-  id                 String      @id @default(cuid())
-  webhookId          String
-  eventType          String
-  payload            Json
-  status             String      // pending, success, failed, retrying
-  responseCode       Int?
-  responseBody       String?
-  attempts           Int         @default(1)
-  nextRetryAt        DateTime?
-  createdAt          DateTime    @default(now())
-  
+  id           String    @id @default(cuid())
+  webhookId    String
+  eventType    String
+  payload      Json
+  status       String // pending, success, failed, retrying
+  responseCode Int?
+  responseBody String?
+  attempts     Int       @default(1)
+  nextRetryAt  DateTime?
+  createdAt    DateTime  @default(now())
+
   // Relations
-  webhook            Webhook     @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
 }
 
-// Integrations
 model Integration {
-  id                 String      @id @default(cuid())
-  type               String      // zapier, salesforce, hubspot, custom
-  name               String
-  config             Json        // Integration-specific configuration
-  isConnected        Boolean     @default(false)
-  projectId          String
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  
+  id          String   @id @default(cuid())
+  projectId   String
+  type        String // zapier, salesforce, hubspot, custom
+  name        String
+  config      Json // Integration-specific configuration
+  isConnected Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
-  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
 }
 
-// API Keys
+// ============================================================================
+// SYSTEM UTILITIES
+// ============================================================================
+
 model ApiKey {
-  id                 String      @id @default(cuid())
-  name               String
-  keyHash            String      @unique // Hashed version of the key
-  permissions        String[]    // Array of permissions
-  isActive           Boolean     @default(true)
-  lastUsedAt         DateTime?
-  expiresAt          DateTime?
-  userId             String
-  createdAt          DateTime    @default(now())
-  
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  keyHash     String    @unique // Hashed version of the key
+  permissions String[] // Array of permissions
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
   // Relations
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
 }
 
-// System Logs
 model LogEntry {
-  id                 String      @id @default(cuid())
-  level              String      // debug, info, warn, error, fatal
-  message            String      @db.Text
-  context            Json?
-  source             String?
-  userId             String?
-  requestId          String?
-  createdAt          DateTime    @default(now())
-  
+  id        String   @id @default(cuid())
+  level     String // debug, info, warn, error, fatal
+  message   String   @db.Text
+  context   Json?
+  source    String?
+  userId    String?
+  requestId String?
+  createdAt DateTime @default(now())
+
   // Relations
-  user               User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([level])
   @@index([createdAt])
   @@index([userId])
+}
+
+model Referral {
+  id             String    @id @default(cuid())
+  referrerId     String
+  referredUserId String
+  referralCode   String
+  status         String    @default("pending") // pending, completed, expired
+  reward         Decimal?  @db.Decimal(20, 2)
+  rewardType     String? // credits, cash, discount
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  // Relations
+  referrer     User @relation("ReferralUser", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referredUserId])
+  @@index([status])
+}
+
+model Collaboration {
+  id          String    @id @default(cuid())
+  projectId   String
+  userId      String
+  role        String // viewer, editor, admin
+  permissions String[] // Array of specific permissions
+  isActive    Boolean   @default(true)
+  invitedAt   DateTime  @default(now())
+  acceptedAt  DateTime?
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+  projectId   String
+  userId      String
+  taskType    String // campaign, message, review
+  taskId      String
+  status      String    @default("pending") // pending, in_progress, completed, cancelled
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Automation {
+  id          String  @id @default(cuid())
+  projectId   String
+  userId      String
+  name        String
+  description String?
+
+  // Trigger Configuration
+  triggerType   String // webhook, schedule, event
+  triggerConfig Json
+
+  // Action Configuration
+  actionType   String // send_sms, send_whatsapp, update_contact
+  actionConfig Json
+
+  // Status
+  isActive       Boolean   @default(true)
+  lastTriggered  DateTime?
+  executionCount Int       @default(0)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([isActive])
 }
