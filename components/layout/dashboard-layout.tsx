@@ -72,7 +72,7 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     title: "",
-    id: "communications",
+    id: "main",
     items: [
       {
         title: "Dashboard",
@@ -110,16 +110,20 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/chat",
         icon: MessageCircle,
       },
-    ],
-  },
-  {
-    title: "",
-    id: "data-insights",
-    items: [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
         icon: BarChart3,
+      },
+      {
+        title: "Logs",
+        href: "/dashboard/logs",
+        icon: FileText,
+      },
+      {
+        title: "Webhooks",
+        href: "/dashboard/webhooks",
+        icon: Webhook,
       },
       {
         title: "Campaigns",
@@ -137,22 +141,6 @@ const navGroups: NavGroup[] = [
         icon: Users,
       },
       {
-        title: "Logs",
-        href: "/dashboard/logs",
-        icon: FileText,
-      },
-    ],
-  },
-  {
-    title: "",
-    id: "integrations-api",
-    items: [
-      {
-        title: "Webhooks",
-        href: "/dashboard/webhooks",
-        icon: Webhook,
-      },
-      {
         title: "API Keys",
         href: "/dashboard/api-keys",
         icon: KeyRound,
@@ -163,7 +151,7 @@ const navGroups: NavGroup[] = [
         icon: LinkIcon,
       },
     ],
-  },
+  }
 ]
 
 const bottomNavItems = [
