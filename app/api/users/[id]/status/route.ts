@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function GET(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Only allow users to check their own status or admins to check any user
     if (session.user.id !== userId && session.user.role !== 'admin') {
@@ -30,19 +30,24 @@ export async function GET(
     }
 
     // Check if user has any projects
-    const projectCount = await prisma.project?.count({
+    const projectCount = await prisma.project.count({
       where: { userId }
-    }) || 0;
+    });
 
     // Check if user has any other data that indicates they're not new
     // You can add more checks here based on your data model
-    const hasContacts = await prisma.contact?.count({
+    const hasContacts = await prisma.contact.count({
       where: { userId }
-    }) || 0;
+    });
 
-    const hasCampaigns = await prisma.campaign?.count({
-      where: { userId }
-    }) || 0;
+    // Check campaigns through projects (campaigns belong to projects, not directly to users)
+    const hasCampaigns = await prisma.campaign.count({
+      where: { 
+        project: {
+          userId: userId
+        }
+      }
+    });
 
     // Consider user as having data if they have any projects, contacts, or campaigns
     const hasData = projectCount > 0 || hasContacts > 0 || hasCampaigns > 0;
@@ -59,10 +64,13 @@ export async function GET(
   } catch (error) {
     console.error('Error checking user status:', error);
     
+    // Get userId for error response
+    const { id: userId } = await params;
+    
     // Fallback: if we can't check the database, assume they're a new user
     // This ensures the flow continues even if there's a DB issue
     return NextResponse.json({
-      userId: params.id,
+      userId,
       projectCount: 0,
       hasContacts: false,
       hasCampaigns: false,

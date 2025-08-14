@@ -57,7 +57,8 @@ const nextConfig = {
         zlib: false,
         './lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
         '../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
-        '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js')
+        '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+        'lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js')
       };
 
       if (isServer) {
@@ -67,6 +68,7 @@ const nextConfig = {
           './lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
           '../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
           '../../lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
+          'lib/worker.js': path.resolve(__dirname, 'lib/worker-shim.js'),
         };
 
         config.plugins = config.plugins.filter(plugin =>
@@ -90,26 +92,28 @@ const nextConfig = {
               ];
 
               outputDirs.forEach(outputDir => {
-                if (!fs.existsSync(outputDir)) {
-                  fs.mkdirSync(outputDir, { recursive: true });
-                }
-
-                const workerSource = path.resolve(__dirname, 'lib/worker-shim.js');
-                const workerDest = path.resolve(outputDir, 'worker.js');
-
                 try {
-                  fs.copyFileSync(workerSource, workerDest);
-                } catch (err) {
-                  // Ignore errors for non-critical copies
-                }
+                  if (!fs.existsSync(outputDir)) {
+                    fs.mkdirSync(outputDir, { recursive: true });
+                  }
 
-                const mockSource = path.resolve(__dirname, 'lib/worker-threads-mock.js');
-                const mockDest = path.resolve(outputDir, 'worker-threads-mock.js');
+                  const workerSource = path.resolve(__dirname, 'lib/worker-shim.js');
+                  const workerDest = path.resolve(outputDir, 'worker.js');
 
-                try {
-                  fs.copyFileSync(mockSource, mockDest);
+                  if (fs.existsSync(workerSource)) {
+                    fs.copyFileSync(workerSource, workerDest);
+                    console.log(`Copied worker.js to ${workerDest}`);
+                  }
+
+                  const mockSource = path.resolve(__dirname, 'lib/worker-threads-mock.js');
+                  const mockDest = path.resolve(outputDir, 'worker-threads-mock.js');
+
+                  if (fs.existsSync(mockSource)) {
+                    fs.copyFileSync(mockSource, mockDest);
+                    console.log(`Copied worker-threads-mock.js to ${mockDest}`);
+                  }
                 } catch (err) {
-                  // Ignore errors for non-critical copies
+                  console.warn(`Failed to copy worker files to ${outputDir}:`, err.message);
                 }
               });
             });

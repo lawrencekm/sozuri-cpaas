@@ -34,6 +34,7 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [company, setCompany] = useState('');
 
+
   useEffect(() => {
     // Check for OAuth errors
     const error = searchParams?.get('error');

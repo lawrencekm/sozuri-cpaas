@@ -65,23 +65,34 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid password');
         }
 
-        if (user.status !== 'active') {
+        if (!user.isActive) {
           throw new Error('Your account is not active. Please contact support.');
         }
 
         // Update last login
         await prisma.user.update({
           where: { id: user.id },
-          data: { lastLogin: new Date() }
+          data: { lastLoginAt: new Date() }
         });
+
+        // Determine role from boolean flags
+        let role = 'user';
+        if (user.isGlobalAdmin) role = 'global-admin';
+        else if (user.isAdmin) role = 'admin';
+        else if (user.isGlobalManager) role = 'global-manager';
+        else if (user.isManager) role = 'manager';
+        else if (user.isGlobalOfficer) role = 'global-officer';
+        else if (user.isOfficer) role = 'officer';
+        else if (user.isGlobalClerk) role = 'global-clerk';
+        else if (user.isClerk) role = 'clerk';
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
-          status: user.status,
-          company: user.company
+          role: role,
+          status: user.isActive ? 'active' : 'inactive',
+          company: undefined // User model doesn't have company field
         };
       }
     }),
