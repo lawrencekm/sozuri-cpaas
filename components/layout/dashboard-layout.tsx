@@ -19,7 +19,7 @@ import {
   Layers,
   LayoutDashboard,
   Link as LinkIcon,
-  MessageCircle,
+
   MessagesSquare,
   Phone,
   Settings,
@@ -105,11 +105,7 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/voice",
         icon: Phone,
       },
-      {
-        title: "Chat Apps",
-        href: "/dashboard/chat",
-        icon: MessageCircle,
-      },
+
       {
         title: "Analytics",
         href: "/dashboard/analytics",

@@ -53,26 +53,6 @@ const contextualNavMap: Record<string, { title: string; links: RelatedLink[] }> 
       },
     ],
   },
-  "/dashboard/chat": {
-    title: "Chat Resources",
-    links: [
-      {
-        title: "Chatbots",
-        href: "/dashboard/chat/bots",
-        description: "Manage automated chat assistants",
-      },
-      {
-        title: "Live Chat",
-        href: "/dashboard/chat/live",
-        description: "Handle real-time customer conversations",
-      },
-      {
-        title: "Chat Analytics",
-        href: "/dashboard/analytics/chat",
-        description: "View chat engagement metrics",
-      },
-    ],
-  },
   "/dashboard/analytics": {
     title: "Analytics Resources",
     links: [

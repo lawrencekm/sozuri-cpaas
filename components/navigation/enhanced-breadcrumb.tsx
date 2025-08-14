@@ -20,7 +20,6 @@ const routeTitles: Record<string, string> = {
   viber: "Viber",
   rcs: "RCS",
   voice: "Voice",
-  chat: "Chat",
   projects: "Projects",
   campaigns: "Campaigns",
   templates: "Templates",

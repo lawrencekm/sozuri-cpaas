@@ -94,25 +94,6 @@ export const VoiceLogo = ({ size = 24, ...props }: LogoProps) => (
 );
 
 
-export const ChatLogo = ({ size = 24, ...props }: LogoProps) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path
-      d="M20 2H4C2.9 2 2.01 2.9 2.01 4L2 22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z"
-      fill="#8B5CF6"
-    />
-    <path
-      d="M12 15H14V13H16V11H14V9H12V11H10V13H12V15ZM9 9H7V11H9V9ZM9 13H7V15H9V13ZM17 9H15V11H17V9ZM17 13H15V15H17V13Z"
-      fill="#8B5CF6"
-    />
-  </svg>
-);
 
 export const EmailLogo = ({ size = 24, ...props }: LogoProps) => (
   <svg

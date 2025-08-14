@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import '../styles/dashboard-patterns.css';
+
 @layer base {
   :root {
     /* Base colors */
@@ -56,12 +58,14 @@
     --ring: 226 64% 40%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors */
+    /* Sidebar specific colors and dimensions */
     --sidebar: 224 71% 4%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 225 14% 20%;
     --sidebar-muted-foreground: 220 8% 85%;
     --sidebar-accent: 199 89% 48%;
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
 
     /* Chart colors - Professional palette */
     --chart-1: 226 64% 40%;

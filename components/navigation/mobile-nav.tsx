@@ -18,7 +18,7 @@ import {
   X,
   Layers
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -64,11 +64,6 @@ const navGroups: NavGroup[] = [
         title: "Voice",
         href: "/dashboard/voice",
         icon: VoiceLogo,
-      },
-      {
-        title: "Chat Apps",
-        href: "/dashboard/chat",
-        icon: ChatLogo,
       },
     ],
   },
