@@ -65,18 +65,19 @@ interface NavItem {
 
 interface NavGroup {
   title: string;
+  id: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    title: "COMMUNICATIONS",
+    title: "",
+    id: "communications",
     items: [
       {
         title: "Dashboard",
         href: "/dashboard",
         icon: Home,
-        badge: "New",
       },
       {
         title: "Projects",
@@ -112,7 +113,8 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: "DATA & INSIGHTS",
+    title: "",
+    id: "data-insights",
     items: [
       {
         title: "Analytics",
@@ -128,7 +130,6 @@ const navGroups: NavGroup[] = [
         title: "AI Suggestions",
         href: "/dashboard/ai-suggestions",
         icon: Sparkles,
-        badge: "New",
       },
       {
         title: "Contacts",
@@ -143,7 +144,8 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: "INTEGRATIONS & API",
+    title: "",
+    id: "integrations-api",
     items: [
       {
         title: "Webhooks",
@@ -262,15 +264,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
               </div>
             </SidebarHeader>
-            <SidebarContent className="modern-scrollbar">
-              {navGroups.map((group) => (
-                <SidebarGroup key={group.title}>
-                  <div className="px-6 pt-6 pb-3 text-xs font-bold text-blue-500 tracking-widest uppercase">
-                    {group.title}
-                  </div>
-                  <SidebarMenu>
+            <SidebarContent className="modern-scrollbar py-1">
+              {navGroups.map((group, index) => (
+                <SidebarGroup key={group.id} className={index !== 0 ? "mt-1" : ""}>
+                  {group.title && (
+                    <div className="px-6 py-1 text-xs font-bold text-blue-500 tracking-widest uppercase">
+                      {group.title}
+                    </div>
+                  )}
+                  <SidebarMenu className="py-0.5">
                     {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title} className="my-1 px-4 transition-colors duration-200">
+                      <SidebarMenuItem key={item.title} className="px-4 transition-colors duration-200">
                         {item.subItems ? (
                           <div className="flex flex-col">
                             <SidebarMenuButton
@@ -324,7 +328,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         ) : (
                           <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                            <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
+                            <Link href={item.href} className="flex items-center gap-3 rounded-md py-1.5 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
                               {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
                               <span className="font-medium text-black">{item.title}</span>
                               {item.channels && (
