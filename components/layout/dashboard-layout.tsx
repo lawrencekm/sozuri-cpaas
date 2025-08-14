@@ -374,13 +374,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <h1 className="hidden text-xl font-semibold sm:block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SOZURI Connect</h1>
               </div>
               <div className="flex items-center gap-4">
-                <div className="hidden md:flex items-center mr-2">
-                  <div className="status-dot active mr-2"></div>
-                  <span className="text-sm text-muted-foreground">System: Operational</span>
-                </div>
-                <Button variant="outline" size="sm" asChild className="hidden md:flex">
-                  <Link href="/admin">Admin Panel</Link>
-                </Button>
                 <Button variant="outline" size="icon" className="relative hover:bg-muted/80 transition-colors">
                   <Bell className="h-4 w-4" />
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse-subtle">
