@@ -4,12 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import {
-  Home,
-  LayoutDashboard,
   MessagesSquare,
   Phone,
   MessageCircle,
-  BarChart3,
   Users,
   Webhook,
   Settings,
@@ -18,6 +15,7 @@ import {
   X,
   Layers
 } from "lucide-react"
+import Image from "next/image"
 import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -42,12 +40,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Dashboard",
         href: "/dashboard",
-        icon: Home,
+        icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={20} height={20} {...props} />,
       },
       {
         title: "Projects",
         href: "/dashboard/projects",
-        icon: LayoutDashboard,
+        icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={20} height={20} {...props} />,
       },
       {
         title: "Messaging",
@@ -73,7 +71,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        icon: BarChart3,
+        icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={20} height={20} {...props} />,
       },
       {
         title: "Campaigns",

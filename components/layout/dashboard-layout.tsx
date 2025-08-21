@@ -8,16 +8,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
-  BarChart3,
   Bell,
   ChevronDown,
   FileText,
   Globe,
   HelpCircle,
-  Home,
   KeyRound,
   Layers,
-  LayoutDashboard,
   Link as LinkIcon,
 
   MessagesSquare,
@@ -77,12 +74,13 @@ const navGroups: NavGroup[] = [
       {
         title: "Dashboard",
         href: "/dashboard",
-        icon: Home,
+        // use svg from public/images
+        icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={18} height={18} {...props} />,
       },
       {
         title: "Projects",
         href: "/dashboard/projects",
-        icon: LayoutDashboard,
+        icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={18} height={18} {...props} />,
       },
       {
         title: "Messaging",
@@ -109,7 +107,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        icon: BarChart3,
+        icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={18} height={18} {...props} />,
       },
       {
         title: "Logs",
