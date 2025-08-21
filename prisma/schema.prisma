@@ -145,6 +145,9 @@ model User {
   isGlobalManager Boolean @default(false)
   isGlobalAdmin   Boolean @default(false)
 
+  // Onboarding Status
+  onboardingCompleted Boolean @default(false)
+
   // Security & Verification
   otp             String?
   otpSecondary    String?
