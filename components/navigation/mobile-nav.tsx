@@ -3,18 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
-import {
-  MessagesSquare,
-  Phone,
-  MessageCircle,
-  Users,
-  Webhook,
-  Settings,
-  HelpCircle,
-  Menu,
-  X,
-  Layers
-} from "lucide-react"
+import { MessagesSquare, Menu, X } from "lucide-react"
 import Image from "next/image"
 import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
@@ -83,6 +72,11 @@ const navGroups: NavGroup[] = [
         href: "/dashboard/contacts",
   icon: (props: any) => <Image src="/images/contacts.svg" alt="Contacts" width={20} height={20} {...props} />,
       },
+      {
+        title: "Logs",
+        href: "/dashboard/logs",
+        icon: (props: any) => <Image src="/images/logs.svg" alt="Logs" width={20} height={20} {...props} />,
+      },
     ],
   },
   {
@@ -102,6 +96,16 @@ const navGroups: NavGroup[] = [
         title: "Help",
         href: "/dashboard/support",
   icon: (props: any) => <Image src="/images/help.svg" alt="Help" width={20} height={20} {...props} />,
+      },
+      {
+        title: "Developers",
+        href: "/dashboard/developers",
+        icon: (props: any) => <Image src="/images/developers.svg" alt="Developers" width={20} height={20} {...props} />,
+      },
+      {
+        title: "Billing",
+        href: "/dashboard/billing",
+        icon: (props: any) => <Image src="/images/billing.svg" alt="Billing" width={20} height={20} {...props} />,
       },
     ],
   },
