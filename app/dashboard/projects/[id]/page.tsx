@@ -47,12 +47,15 @@ import { useCampaignTemplates, useCreateCampaignTemplate, useDeleteCampaignTempl
 
 // New Campaign Dialog
 function NewCampaignDialog() {
+  const router = useRouter()
+  const { id: projectId } = useParams()
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     channel: "",
   })
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -63,10 +66,32 @@ function NewCampaignDialog() {
     setFormData((prev) => ({ ...prev, channel: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Creating campaign:", formData)
-    setOpen(false)
+    if (!projectId) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/v1/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          name: formData.name,
+          description: formData.description,
+          channel: formData.channel, // will be mapped to `type` on the server
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create campaign')
+      }
+      setOpen(false)
+      router.refresh()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -213,7 +238,15 @@ function NewTemplateDialog({ onCreate }: { onCreate: (template: any) => void }) 
             </div>
             <div className="grid gap-2">
               <Label htmlFor="content">Content</Label>
-              <textarea id="content" name="content" value={formData.content} onChange={handleChange} className="border rounded p-2 min-h-[80px]" required />
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                placeholder="Enter content"
+                className="border rounded p-2 min-h-[80px]"
+                required
+              />
             </div>
           </div>
           <DialogFooter>

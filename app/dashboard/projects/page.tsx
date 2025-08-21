@@ -57,24 +57,27 @@ function NewProjectDialog() {
     setIsSubmitting(true)
 
     try {
-      // Replace with actual API call
-      // const response = await fetch('/api/projects', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData),
-      // });
+      const response = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          // map UI type to an optional accountType if desired
+          accountType: formData.type || undefined,
+        }),
+      })
 
-      // if (!response.ok) throw new Error('Failed to create project');
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create project')
+      }
 
       setOpen(false)
       router.refresh()
     } catch (error) {
-      console.error("Error creating project:", error)
+      console.error('Error creating project:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setIsSubmitting(false)
     }
@@ -250,19 +253,26 @@ export default function ProjectsPage() {
     // Fetch projects data
     const fetchProjects = async () => {
       try {
-        // Replace with actual API call
-        // const response = await fetch('/api/projects');
-        // if (!response.ok) throw new Error('Failed to fetch projects');
-        // const data = await response.json();
+        const response = await fetch('/api/v1/projects')
+        if (!response.ok) throw new Error('Failed to fetch projects')
+        const data = await response.json()
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Map API to UI fields
+        const mapped = (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          type: p.accountType || 'marketing',
+          campaigns: p._count?.campaigns ?? 0,
+          messages: p._count?.messageLogs ?? 0,
+          engagement: 0,
+          updated: new Date(p.updatedAt).toLocaleDateString(),
+        }))
 
-        // Placeholder empty data
-        setProjects([])
+        setProjects(mapped)
       } catch (error) {
-        console.error("Error fetching projects:", error)
-        toast.error("Failed to load projects")
+        console.error('Error fetching projects:', error)
+        toast.error('Failed to load projects')
         Sentry.captureException(error)
       } finally {
         setIsLoading(false)
