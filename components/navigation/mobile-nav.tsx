@@ -96,12 +96,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Settings",
         href: "/dashboard/settings",
-        icon: Settings,
+  icon: (props: any) => <Image src="/images/settings.svg" alt="Settings" width={20} height={20} {...props} />,
       },
       {
         title: "Help",
         href: "/dashboard/support",
-        icon: HelpCircle,
+  icon: (props: any) => <Image src="/images/help.svg" alt="Help" width={20} height={20} {...props} />,
       },
     ],
   },

@@ -127,7 +127,7 @@ const navGroups: NavGroup[] = [
       {
         title: "AI Suggestions",
         href: "/dashboard/ai-suggestions",
-        icon: Sparkles,
+  icon: (props: any) => <Image src="/images/ai%20suggestions.svg" alt="AI Suggestions" width={18} height={18} {...props} />,
       },
       {
         title: "Contacts",
@@ -142,7 +142,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Integrations",
         href: "/dashboard/integrations",
-        icon: LinkIcon,
+  icon: (props: any) => <Image src="/images/integrations.svg" alt="Integrations" width={18} height={18} {...props} />,
       },
     ],
   }
@@ -152,12 +152,12 @@ const bottomNavItems = [
   {
     title: "Settings",
     href: "/dashboard/settings",
-    icon: Settings,
+  icon: (props: any) => <Image src="/images/settings.svg" alt="Settings" width={18} height={18} {...props} />,
   },
   {
     title: "Help",
     href: "/dashboard/support",
-    icon: HelpCircle,
+  icon: (props: any) => <Image src="/images/help.svg" alt="Help" width={18} height={18} {...props} />,
   },
   {
     title: "Developers",
