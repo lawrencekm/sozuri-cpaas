@@ -112,7 +112,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Logs",
         href: "/dashboard/logs",
-        icon: FileText,
+  icon: (props: any) => <Image src="/images/logs.svg" alt="Logs" width={18} height={18} {...props} />,
       },
       {
         title: "Webhooks",
@@ -161,11 +161,13 @@ const bottomNavItems = [
   },
   {
     title: "Developers",
-    href: "/dashboard/developers",
+  href: "/dashboard/developers",
+  icon: (props: any) => <Image src="/images/developers.svg" alt="Developers" width={18} height={18} {...props} />,
   },
   {
-    title: "Billing",
-    href: "/dashboard/billing",
+  title: "Billing",
+  href: "/dashboard/billing",
+  icon: (props: any) => <Image src="/images/billing.svg" alt="Billing" width={18} height={18} {...props} />,
   },
 ]
 
