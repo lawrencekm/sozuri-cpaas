@@ -85,7 +85,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Messaging",
         href: "/dashboard/messaging",
-        icon: MessagesSquare,
+  icon: (props: any) => <Image src="/images/messaging.svg" alt="Messaging" width={18} height={18} {...props} />,
         channels: [
           { name: "SMS", logo: SMSLogo },
           { name: "WhatsApp", logo: WhatsAppLogo },
@@ -101,7 +101,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Voice",
         href: "/dashboard/voice",
-        icon: Phone,
+  icon: (props: any) => <Image src="/images/voice.svg" alt="Voice" width={18} height={18} {...props} />,
       },
 
       {
@@ -117,12 +117,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Webhooks",
         href: "/dashboard/webhooks",
-        icon: Webhook,
+  icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={18} height={18} {...props} />,
       },
       {
         title: "Campaigns",
         href: "/dashboard/campaigns",
-        icon: Layers,
+  icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
       },
       {
         title: "AI Suggestions",
@@ -132,12 +132,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Contacts",
         href: "/dashboard/contacts",
-        icon: Users,
+  icon: (props: any) => <Image src="/images/contacts.svg" alt="Contacts" width={18} height={18} {...props} />,
       },
       {
         title: "API Keys",
         href: "/dashboard/api-keys",
-        icon: KeyRound,
+  icon: (props: any) => <Image src="/images/api-keys.svg" alt="API Keys" width={18} height={18} {...props} />,
       },
       {
         title: "Integrations",

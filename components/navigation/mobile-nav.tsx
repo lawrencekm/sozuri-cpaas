@@ -40,12 +40,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Dashboard",
         href: "/dashboard",
-        icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={20} height={20} {...props} />,
+  icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={20} height={20} {...props} />,
       },
       {
         title: "Projects",
         href: "/dashboard/projects",
-        icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={20} height={20} {...props} />,
+  icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={20} height={20} {...props} />,
       },
       {
         title: "Messaging",
@@ -61,7 +61,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Voice",
         href: "/dashboard/voice",
-        icon: VoiceLogo,
+  icon: (props: any) => <Image src="/images/voice.svg" alt="Voice" width={20} height={20} {...props} />,
       },
     ],
   },
@@ -71,17 +71,17 @@ const navGroups: NavGroup[] = [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={20} height={20} {...props} />,
+  icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={20} height={20} {...props} />,
       },
       {
         title: "Campaigns",
         href: "/dashboard/campaigns",
-        icon: Layers,
+  icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
       },
       {
         title: "Contacts",
         href: "/dashboard/contacts",
-        icon: Users,
+  icon: (props: any) => <Image src="/images/contacts.svg" alt="Contacts" width={20} height={20} {...props} />,
       },
     ],
   },
@@ -91,7 +91,7 @@ const navGroups: NavGroup[] = [
       {
         title: "Webhooks",
         href: "/dashboard/webhooks",
-        icon: Webhook,
+  icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={20} height={20} {...props} />,
       },
       {
         title: "Settings",
