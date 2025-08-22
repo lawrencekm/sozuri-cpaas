@@ -696,58 +696,7 @@ export default function Dashboard() {
 
 
 
-          {/* Suggested Next Steps - Only for new users */}
-          {isNewUser && (
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Suggested Next Steps</h2>
-                  <p className="text-sm text-muted-foreground">Recommended actions to explore the platform</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-primary">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium mb-1">Explore AI-Powered Features</h3>
-                        <p className="text-xs text-muted-foreground mb-3">Discover how our AI can help optimize your messaging campaigns and improve engagement.</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
-                          <Link href="/dashboard/ai-suggestions">
-                            Learn More
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-accent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 flex-shrink-0">
-                        <MessageCircle className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium mb-1">Send Your First Test Message</h3>
-                        <p className="text-xs text-muted-foreground mb-3">Try sending a test message to yourself to see how the platform works in real-time.</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-accent" asChild>
-                          <Link href="/dashboard/messaging">
-                            Send Test Message
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
+          {/* Suggested Next Steps removed */}
 
           {/* Quick Navigation */}
           <div className="mb-8">
