@@ -1,17 +1,30 @@
 import pino from 'pino';
 
-// Check if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
 
-// Create a browser-safe logger that doesn't try to write to the file system
 const browserLogger = {
   info: (...args: any[]) => console.info(...args),
   error: (obj: any, ...args: any[]) => {
-    // Handle both object format and simple strings
-    if (typeof obj === 'object') {
-      console.error('Error:', obj.message || 'Unknown error', obj);
-    } else {
-      console.error(obj, ...args);
+    try {
+      if (obj instanceof Error) {
+        const meta: any = {}
+        if ((obj as any).code) meta.code = (obj as any).code
+        if ((obj as any).response) meta.status = (obj as any).response?.status
+        if ((obj as any).config) meta.url = (obj as any).config?.url
+
+        console.error('Error:', obj.message || 'Unknown error', meta, ...args)
+        if (obj.stack) console.error(obj.stack)
+      } else if (typeof obj === 'object' && obj !== null) {
+        const message = (obj as any).message || JSON.stringify(obj)
+        const meta: any = { ...obj }
+        delete meta.message
+        console.error('Error:', message, meta, ...args)
+      } else {
+        console.error(obj, ...args)
+      }
+    } catch (e) {
+      // Fallback in case of unexpected formatting issues
+      console.error('Error: (logging-failure)', obj, ...args)
     }
   },
   warn: (...args: any[]) => console.warn(...args),

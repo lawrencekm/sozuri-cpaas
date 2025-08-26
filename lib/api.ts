@@ -33,9 +33,16 @@ api.interceptors.response.use(
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
+    // Mark error as handled by API layer so downstream wrappers don't duplicate reporting
+    try {
+      ;(error as any)._handledByApi = true
+    } catch (e) {
+      // ignore
+    }
+
     // Handle authentication errors
     if (error.response?.status === 401) {
-      handleError(error, ErrorType.AUTHENTICATION, {
+  handleError(error, ErrorType.AUTHENTICATION, {
         toastMessage: "Your session has expired. Please sign in again.",
         context: { requestUrl, method }
       })
@@ -46,7 +53,7 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Handle rate limiting
+  // Handle rate limiting
     if (error.response?.status === 429) {
       handleError(error, ErrorType.API, {
         toastMessage: "Rate limit exceeded. Please try again later.",
@@ -64,8 +71,8 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Handle all other API errors
-    handleError(error, ErrorType.API, {
+  // Handle all other API errors
+  handleError(error, ErrorType.API, {
       context: {
         requestUrl,
         method,
@@ -88,13 +95,17 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
     try {
       return await fn(...args);
     } catch (error) {
-      handleError(error, errorType, {
-        toastMessage: options.toastMessage,
-        context: {
-          source: fn.name || 'api_call', // Use function name if available
-          ...(options.context || {}),
-        },
-      });
+      // If the error was already handled by the API interceptors, skip duplicate reporting
+      const errAny = error as any
+      if (!errAny?._handledByApi) {
+        handleError(error, errorType, {
+          toastMessage: options.toastMessage,
+          context: {
+            source: fn.name || 'api_call', // Use function name if available
+            ...(options.context || {}),
+          },
+        });
+      }
       throw error;
     }
   };
@@ -199,11 +210,19 @@ export interface Campaign {
   id: string;
   name: string;
   description: string;
-  channel: 'sms' | 'email' | 'whatsapp' | 'voice';
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  created_at: string;
-  updated_at: string;
+ 
+  channel?: 'sms' | 'email' | 'whatsapp' | 'voice' | string;
+  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
+  created_at?: string;
+  updated_at?: string;
+  created?: string;
+  updated?: string;
   content?: string;
+  project_id?: string;
+  projectId?: string;
+  target_audience?: string;
+  message_content?: string;
+  scheduled_at?: string;
   audience?: {
     total: number;
     delivered: number;
@@ -212,9 +231,16 @@ export interface Campaign {
     clicked: number;
   };
   schedule?: {
-    type: 'immediate' | 'scheduled' | 'recurring';
+    type?: 'immediate' | 'scheduled' | 'recurring' | string;
     sentAt?: string;
     scheduledFor?: string;
+  };
+  metrics?: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    cost: number;
   };
 }
 
@@ -625,39 +651,3 @@ export interface AnalyticsMetrics {
   conversionRate: string;
 }
 
-export interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
-  type?: 'sms' | 'whatsapp' | 'voice' | 'email';
-  channel?: string;
-  content?: string;
-  created_at?: string;
-  updated_at?: string;
-  created?: string;
-  updated?: string;
-  project_id?: string;
-  projectId?: string;
-  target_audience?: string;
-  message_content?: string;
-  scheduled_at?: string;
-  audience?: {
-    total: number;
-    delivered: number;
-    failed: number;
-    opened: number;
-    clicked: number;
-  };
-  schedule?: {
-    type: string;
-    sentAt: string;
-  };
-  metrics?: {
-    sent: number;
-    delivered: number;
-    opened: number;
-    clicked: number;
-    cost: number;
-  };
-}
