@@ -226,6 +226,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return false
   }
 
+  // Show breadcrumb on dashboard sub-pages but hide it on the dashboard root page
+  const showBreadcrumb = pathname && !["/dashboard", "/dashboard/"].includes(pathname)
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout')
     router.push('/auth/signin')
@@ -413,11 +416,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<div className="sticky top-16 z-10 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-  <div className="container mx-auto px-8 py-4">
-    <EnhancedBreadcrumb />
-  </div>
-</div>
+            {showBreadcrumb && (
+              <div className="sticky top-16 z-10 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <div className="container mx-auto px-8 py-4">
+                  <EnhancedBreadcrumb />
+                </div>
+              </div>
+            )}
 <main className="flex-1 p-6 md:p-8 animate-fade-in">
   <div className="container mx-auto space-y-8">
     {children}
