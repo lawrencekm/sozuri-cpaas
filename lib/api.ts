@@ -1,9 +1,10 @@
 import axios, { AxiosError } from "axios"
 import { handleError, ErrorType } from './error-handler'
 
+const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT || '15000') // ms
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
-  timeout: 5000, // 5 seconds timeout for faster fallback
+  timeout: API_TIMEOUT,
 })
 
 api.interceptors.request.use(

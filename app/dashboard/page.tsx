@@ -39,6 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
+import { projectsAPI, campaignsAPI, campaignTemplatesAPI, Project as ApiProject, Campaign as ApiCampaign, CampaignTemplate } from "@/lib/api"
 
 // Lazy load chart components for better performance
 
@@ -393,7 +394,9 @@ const ClientSideChart = ({ data }: { data: Array<{ name: string; messages: numbe
 export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState<any[]>([])
+  const [projects, setProjects] = useState<ApiProject[]>([])
+  const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
+  const [templates, setTemplates] = useState<CampaignTemplate[]>([])
   // For demo purposes, we'll set this to true to show the new user experience
   // In config our app, this would be determined by checking user metadata
   const [isNewUser, setIsNewUser] = useState(true)
@@ -453,11 +456,34 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Fetch projects, campaigns, and templates in parallel
+        const [projectsData, campaignsData] = await Promise.all([
+          projectsAPI.getAll(),
+          campaignsAPI.getAll(),
+        ])
 
-        // Placeholder empty data
-        setProjects([])
+        const mappedProjects = (projectsData || []).map((p: any) => ({
+          ...p,
+          campaigns: p?._count?.campaigns ?? p.campaigns ?? 0,
+          messages: p?._count?.messageLogs ?? p.messages ?? 0,
+          engagement: p?.engagement ?? 0,
+        }))
+        setProjects(mappedProjects)
+        setCampaigns(campaignsData || [])
+
+        // If you want templates across projects, call without project filter (adjust API if needed)
+        // Here we attempt to load for the first project as a sample
+        if ((projectsData?.length || 0) > 0) {
+          try {
+            const tpl = await campaignTemplatesAPI.getAll(projectsData[0].id)
+            setTemplates(tpl || [])
+          } catch (_) {
+            setTemplates([])
+          }
+        } else {
+          setTemplates([])
+        }
+
         setMetrics({
           ai: {
             accuracy: 92,
@@ -803,32 +829,107 @@ export default function Dashboard() {
                     )}
                   </TabsContent>
                   <TabsContent value="campaigns" className="m-0">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <MessageCircle className="h-8 w-8 text-primary" />
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="border rounded-lg p-4 animate-pulse">
+                            <div className="h-5 w-1/2 bg-muted rounded mb-3"></div>
+                            <div className="h-4 w-3/4 bg-muted rounded mb-4"></div>
+                            <div className="h-8 bg-muted rounded"></div>
+                          </div>
+                        ))}
                       </div>
-                      <h3 className="text-lg font-medium mb-2">Campaign Management</h3>
-                      <p className="text-sm text-muted-foreground max-w-md mb-6">
-                        Create and manage your communication campaigns across multiple channels
-                      </p>
-                      <Button asChild className="rounded-lg">
-                        <Link href="/dashboard/campaigns">Manage Campaigns</Link>
-                      </Button>
-                    </div>
+                    ) : campaigns.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {campaigns.slice(0, 6).map((c) => (
+                          <Card key={c.id} className="dashboard-card">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-lg">{c.name}</CardTitle>
+                              <CardDescription className="line-clamp-1">{c.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 text-sm">
+                              <div className="flex justify-between">
+                                <div>
+                                  <p className="text-muted-foreground">Channel</p>
+                                  <p className="font-medium capitalize">{c.channel}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Status</p>
+                                  <p className="font-medium capitalize">{c.status}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Created</p>
+                                  <p className="font-medium">{new Date(c.created_at).toLocaleDateString()}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button asChild variant="ghost" size="sm" className="w-full rounded-lg">
+                                <Link href={`/dashboard/campaigns/${c.id}`}>View Campaign</Link>
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <MessageCircle className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No campaigns yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create and manage your communication campaigns across multiple channels
+                        </p>
+                        <Button asChild className="rounded-lg">
+                          <Link href="/dashboard/campaigns">Manage Campaigns</Link>
+                        </Button>
+                      </div>
+                    )}
                   </TabsContent>
                   <TabsContent value="templates" className="m-0">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <MessageCircle className="h-8 w-8 text-primary" />
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="border rounded-lg p-4 animate-pulse">
+                            <div className="h-5 w-2/3 bg-muted rounded mb-3"></div>
+                            <div className="h-4 w-1/2 bg-muted rounded mb-2"></div>
+                            <div className="h-8 bg-muted rounded"></div>
+                          </div>
+                        ))}
                       </div>
-                      <h3 className="text-lg font-medium mb-2">Message Templates</h3>
-                      <p className="text-sm text-muted-foreground max-w-md mb-6">
-                        Create reusable message templates for consistent communication
-                      </p>
-                      <Button asChild className="rounded-lg">
-                        <Link href="/dashboard/messaging/templates">Manage Templates</Link>
-                      </Button>
-                    </div>
+                    ) : templates.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {templates.slice(0, 6).map((t) => (
+                          <Card key={t.id} className="dashboard-card">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-lg">{t.name}</CardTitle>
+                              <CardDescription className="line-clamp-1">{t.type} • {t.channel.toUpperCase()}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 text-sm">
+                              <div className="line-clamp-2 text-muted-foreground">{t.content}</div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button asChild variant="ghost" size="sm" className="w-full rounded-lg">
+                                <Link href="/dashboard/messaging/templates">Manage Templates</Link>
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <MessageCircle className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No templates yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create reusable message templates for consistent communication
+                        </p>
+                        <Button asChild className="rounded-lg">
+                          <Link href="/dashboard/messaging/templates">Manage Templates</Link>
+                        </Button>
+                      </div>
+                    )}
                   </TabsContent>
                 </div>
               </Tabs>
