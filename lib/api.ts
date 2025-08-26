@@ -90,8 +90,8 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   errorType: ErrorType,
   options: { toastMessage?: string; context?: Record<string, any> } = {}
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
-  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>> {
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await fn(...args);
     } catch (error) {
@@ -101,7 +101,7 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
         handleError(error, errorType, {
           toastMessage: options.toastMessage,
           context: {
-            source: fn.name || 'api_call', // Use function name if available
+            source: fn.name || 'api_call',
             ...(options.context || {}),
           },
         });

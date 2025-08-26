@@ -45,6 +45,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { useApi, useCampaigns } from "@/hooks/use-api"
 import { campaignsAPI, Campaign } from "@/lib/api"
+import { useQuery } from "@tanstack/react-query"
 
 // New Campaign Dialog
 function NewCampaignDialog() {
@@ -57,12 +58,16 @@ function NewCampaignDialog() {
     projectId: ""
   })
   const [open, setOpen] = useState(false)
+  const { data: projects } = useQuery<Array<{ id: string; name: string }>>({ 
+    queryKey: ['projects'], 
+    queryFn: () => fetch('/api/v1/projects').then(res => res.json()) 
+  })
 
-  const { execute: createCampaign, isLoading } = useApi(campaignsAPI.create, {
+  const { execute: createCampaign, isLoading } = useApi<Campaign>(campaignsAPI.create, {
     successMessage: "Campaign created successfully",
-    onSuccess: () => {
+    onSuccess: (campaign) => {
       setOpen(false)
-      router.refresh()
+      router.push(`/dashboard/projects/${formData.projectId}/campaigns/${campaign.id}`)
     }
   })
 
@@ -116,6 +121,19 @@ function NewCampaignDialog() {
               />
             </div>
             <div className="grid gap-2">
+              <Label htmlFor="project">Project</Label>
+              <Select onValueChange={(value) => handleSelectChange("projectId", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects?.map((project: any) => (
+                    <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="channel">Channel</Label>
               <Select onValueChange={(value) => handleSelectChange("channel", value)}>
                 <SelectTrigger>
@@ -159,10 +177,10 @@ function CampaignCard({ campaign }: { campaign: any }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}>
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}`)}>
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/campaigns/${campaign.id}/edit`)}>
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}/edit`)}>
                 Edit Campaign
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -206,7 +224,7 @@ function CampaignCard({ campaign }: { campaign: any }) {
           variant="ghost"
           size="sm"
           className="w-full"
-          onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
+          onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}`)}
         >
           View Campaign <ArrowRight className="ml-1 h-3 w-3" />
         </Button>
