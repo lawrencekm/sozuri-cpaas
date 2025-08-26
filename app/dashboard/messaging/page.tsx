@@ -23,13 +23,7 @@ export default function MessagingPage() {
       color: "bg-green-100 text-green-700",
       href: "/dashboard/messaging/whatsapp",
     },
-    {
-      title: "Viber",
-      description: "Create immersive brand experiences with Viber's multimedia messaging capabilities",
-      icon: <ViberLogo size={24} />,
-      color: "bg-purple-100 text-purple-700",
-      href: "/dashboard/messaging/viber",
-    },
+
     {
       title: "RCS",
       description: "Transform SMS with Rich Communication Services for app-like experiences in messaging",

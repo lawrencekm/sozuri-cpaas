@@ -9,7 +9,7 @@ import {
   ArrowRight
 } from "lucide-react"
 import Image from "next/image"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 
 interface HierarchyItem {
   title: string
@@ -32,12 +32,7 @@ const hierarchyMap: Record<string, HierarchyItem[]> = {
       icon: <WhatsAppLogo size={20} />,
       description: "Send and manage WhatsApp messages",
     },
-    {
-      title: "Viber",
-      href: "/dashboard/messaging/viber",
-      icon: <ViberLogo size={20} />,
-      description: "Send and manage Viber messages",
-    },
+
     {
       title: "RCS",
       href: "/dashboard/messaging/rcs",

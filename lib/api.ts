@@ -149,7 +149,7 @@ export interface MessagePayload {
 export interface MessageLog {
   id: string;
   message_id: string;
-  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  channel: 'sms' | 'whatsapp' | 'rcs' | 'voice';
   direction: 'inbound' | 'outbound';
   sender: string;
   recipient: string;
@@ -175,7 +175,7 @@ export interface CampaignTemplate {
   id: string;
   project_id: string;
   name: string;
-  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  channel: 'sms' | 'whatsapp' | 'rcs' | 'voice';
   content: string;
   type: 'transactional' | 'marketing' | 'notification' | 'reminder';
   variables: string[];

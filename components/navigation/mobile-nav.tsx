@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { MessagesSquare, Menu, X } from "lucide-react"
 import Image from "next/image"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -43,7 +43,6 @@ const navGroups: NavGroup[] = [
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms", icon: SMSLogo },
           { title: "WhatsApp", href: "/dashboard/messaging/whatsapp", icon: WhatsAppLogo },
-          { title: "Viber", href: "/dashboard/messaging/viber", icon: ViberLogo },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },

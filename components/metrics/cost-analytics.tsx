@@ -189,7 +189,6 @@ export function CostAnalytics() {
                   <Bar dataKey="sms" name="SMS" stackId="a" fill="#2563eb" />
                   <Bar dataKey="whatsapp" name="WhatsApp" stackId="a" fill="#22c55e" />
                   <Bar dataKey="voice" name="Voice" stackId="a" fill="#f97316" />
-                  <Bar dataKey="viber" name="Viber" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="rcs" name="RCS" stackId="a" fill="#64748b" />
                   <Bar dataKey="chat" name="Chat" stackId="a" fill="#ec4899" />
                 </BarChart>

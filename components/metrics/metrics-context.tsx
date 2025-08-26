@@ -39,7 +39,6 @@ export interface ChannelMetrics {
 export interface MetricsData {
   sms: ChannelMetrics
   whatsapp: ChannelMetrics
-  viber: ChannelMetrics
   rcs: ChannelMetrics
   voice: ChannelMetrics
   chat: ChannelMetrics
@@ -92,7 +91,6 @@ const createDefaultMetrics = (): MetricsData => {
   return {
     sms: createDefaultChannelMetrics(),
     whatsapp: createDefaultChannelMetrics(),
-    viber: createDefaultChannelMetrics(),
     rcs: createDefaultChannelMetrics(),
     voice: createDefaultChannelMetrics(),
     chat: createDefaultChannelMetrics(),
@@ -157,7 +155,6 @@ const createMockMetrics = (): MetricsData => {
   return {
     sms: createMockChannelMetrics(95, 80, 0.8, 1200, 150, 8),
     whatsapp: createMockChannelMetrics(97, 60, 0.4, 950, 120, 10),
-    viber: createMockChannelMetrics(96, 70, 0.6, 850, 100, 9),
     rcs: createMockChannelMetrics(94, 90, 1.0, 750, 80, 7),
     voice: createMockChannelMetrics(98, 40, 0.3, 2000, 90, 12),
     chat: createMockChannelMetrics(99, 30, 0.2, 600, 70, 15),

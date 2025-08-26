@@ -24,7 +24,7 @@ import {
   Users,
   Webhook,
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo } from "@/components/channel-logos"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -89,12 +89,10 @@ const navGroups: NavGroup[] = [
         channels: [
           { name: "SMS", logo: SMSLogo },
           { name: "WhatsApp", logo: WhatsAppLogo },
-          { name: "Viber", logo: ViberLogo },
         ],
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms" },
           { title: "WhatsApp", href: "/dashboard/messaging/whatsapp" },
-          { title: "Viber", href: "/dashboard/messaging/viber" },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },

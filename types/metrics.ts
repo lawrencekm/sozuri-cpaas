@@ -45,7 +45,6 @@ export interface OverallMetrics {
 export interface MetricsData {
   sms: ChannelMetrics
   whatsapp: ChannelMetrics
-  viber: ChannelMetrics
   rcs: ChannelMetrics
   voice: ChannelMetrics
   chat: ChannelMetrics

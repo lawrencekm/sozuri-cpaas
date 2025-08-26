@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo } from "@/components/channel-logos"
 
 // Animation variants
 const container = {
@@ -95,7 +95,6 @@ export function WelcomeDashboard({ userName, companyName, userRole }: WelcomeDas
   const channels = [
     { name: "SMS", icon: <SMSLogo size={24} />, href: "/dashboard/messaging/sms" },
     { name: "WhatsApp", icon: <WhatsAppLogo size={24} />, href: "/dashboard/messaging/whatsapp" },
-    { name: "Viber", icon: <ViberLogo size={24} />, href: "/dashboard/messaging/viber" },
     { name: "RCS", icon: <RCSLogo size={24} />, href: "/dashboard/messaging/rcs" }
   ];
 
