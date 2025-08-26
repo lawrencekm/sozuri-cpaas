@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+type Params = { id: string }
+
 function toClient(a: any) {
   return {
     id: a.id,
@@ -40,22 +42,25 @@ function toPrisma(body: any) {
 }
 
 // GET /api/v1/automations/:id
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const automation = await prisma.automation.findUnique({ where: { id: params.id } })
+export async function GET(_: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
+  const automation = await prisma.automation.findUnique({ where: { id } })
   if (!automation) return NextResponse.json({ message: 'Not found' }, { status: 404 })
   return NextResponse.json(toClient(automation))
 }
 
 // PUT /api/v1/automations/:id
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
   const body = await request.json()
   const data = toPrisma(body)
-  const automation = await prisma.automation.update({ where: { id: params.id }, data })
+  const automation = await prisma.automation.update({ where: { id }, data })
   return NextResponse.json(toClient(automation))
 }
 
 // DELETE /api/v1/automations/:id
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await prisma.automation.delete({ where: { id: params.id } })
-  return NextResponse.json({ deleted: true, id: params.id })
+export async function DELETE(_: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
+  await prisma.automation.delete({ where: { id } })
+  return NextResponse.json({ deleted: true, id })
 }

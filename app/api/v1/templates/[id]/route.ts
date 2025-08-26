@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+type Params = { id: string }
+
 function toClient(t: any) {
   return {
     id: t.id,
@@ -33,22 +35,25 @@ function toPrisma(body: any) {
 }
 
 // GET /api/v1/templates/:id
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const template = await prisma.template.findUnique({ where: { id: params.id } })
+export async function GET(_: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
+  const template = await prisma.template.findUnique({ where: { id } })
   if (!template) return NextResponse.json({ message: 'Not found' }, { status: 404 })
   return NextResponse.json(toClient(template))
 }
 
 // PUT /api/v1/templates/:id
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
   const body = await request.json()
   const data = toPrisma(body)
-  const template = await prisma.template.update({ where: { id: params.id }, data })
+  const template = await prisma.template.update({ where: { id }, data })
   return NextResponse.json(toClient(template))
 }
 
 // DELETE /api/v1/templates/:id
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await prisma.template.delete({ where: { id: params.id } })
-  return NextResponse.json({ deleted: true, id: params.id })
+export async function DELETE(_: Request, { params }: { params: Promise<Params> }) {
+  const { id } = await params
+  await prisma.template.delete({ where: { id } })
+  return NextResponse.json({ deleted: true, id })
 }
