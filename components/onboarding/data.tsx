@@ -115,7 +115,7 @@ export const productTourSteps: TourStep[] = [
     id: "messaging",
     title: "Unified Messaging Platform",
     description: "Connect with your customers across multiple channels from a single platform. Send SMS, WhatsApp, Viber, and RCS messages with consistent delivery and tracking.",
-    image: "/images/tour/messaging-platform.jpg",
+  image: "/images/tour/messaging-platform.svg",
     features: [
       {
         title: "Multi-Channel Messaging",
