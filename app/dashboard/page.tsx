@@ -936,34 +936,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Message Volume Chart */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Message Volume Trends</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Monthly delivery performance across all channels</p>
-              </div>
-              <Select defaultValue="year">
-                <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg">
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="month">Last 30 days</SelectItem>
-                  <SelectItem value="quarter">Last quarter</SelectItem>
-                  <SelectItem value="year">Last 12 months</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Card className="shadow-sm">
-              <CardContent className="p-8">
-                <div className="w-full h-[320px]">
-                  <Suspense fallback={<div className="h-[320px] w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg" />}>
-                    <ClientSideChart data={chartData} />
-                  </Suspense>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+
 
 
 

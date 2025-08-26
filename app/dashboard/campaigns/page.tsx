@@ -221,7 +221,7 @@ export default function CampaignsPage() {
   const { data: campaignsData, isLoading, error } = useCampaigns()
 
   // Use sample data if API call fails or is loading
-  const campaigns = campaignsData || [
+  const campaigns: Campaign[] = campaignsData ?? ([
     {
       id: "1",
       name: "Welcome Message",
@@ -258,7 +258,7 @@ export default function CampaignsPage() {
       created: "2023-05-01T08:30:00Z",
       updated: "2023-05-01T16:45:00Z",
     },
-  ]
+  ] as Campaign[])
 
   // Filter campaigns based on search query
   const filteredCampaigns = campaigns.filter(
