@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef, ChangeEvent, FormEvent, useEffect } from "react"
+import { useState, useRef, ChangeEvent, FormEvent, useEffect, useCallback } from "react"
 import { Download, Filter, Plus, Search, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -71,7 +71,7 @@ export default function ContactsPage() {
   const { toast } = useToast()
 
   // Fetch contacts
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     try {
       const response = await fetch('/api/v1/contacts')
       if (!response.ok) throw new Error('Failed to fetch contacts')
@@ -84,11 +84,11 @@ export default function ContactsPage() {
         variant: "destructive"
       })
     }
-  }
+  }, [toast])
 
   useEffect(() => {
     fetchContacts()
-  }, [])
+  }, [fetchContacts])
 
   // Handlers
   const handleImportClick = () => setShowImport(true)
