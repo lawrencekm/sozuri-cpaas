@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef, ChangeEvent, FormEvent } from "react"
+import { useState, useRef, ChangeEvent, FormEvent, useEffect } from "react"
 import { Download, Filter, Plus, Search, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,28 +10,55 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import * as XLSX from 'xlsx'
+import { useToast } from "@/components/ui/use-toast"
+
+type Contact = {
+  id?: string;
+  mobile: string;
+  email?: string;
+  city?: string;
+  fname?: string;
+  mname?: string;
+  lname?: string;
+  type?: string;
+  job?: string;
+  company?: string;
+  detail?: string;
+  projectId?: string;
+  userId?: string;
+}
 
 export default function ContactsPage() {
   // State
-  type Contact = {
-    mobile: string;
-    email?: string;
-    city?: string;
-    fname?: string;
-    mname?: string;
-    lname?: string;
-    type?: string;
-    job?: string;
-    company?: string;
-    detail?: string;
-  }
   const [contacts, setContacts] = useState<Contact[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("")
   const [showImport, setShowImport] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const fileInputRef = useRef(null)
   const [newContact, setNewContact] = useState<Contact>({ mobile: "", fname: "", email: "" })
+  const { toast } = useToast()
+
+  // Fetch contacts
+  const fetchContacts = async () => {
+    try {
+      const response = await fetch('/api/v1/contacts')
+      if (!response.ok) throw new Error('Failed to fetch contacts')
+      const data = await response.json()
+      setContacts(data.contacts)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load contacts",
+        variant: "destructive"
+      })
+    }
+  }
+
+  useEffect(() => {
+    fetchContacts()
+  }, [])
 
   // Handlers
   const handleImportClick = () => setShowImport(true)
@@ -45,6 +72,7 @@ export default function ContactsPage() {
     if (!file) return
     
     try {
+      setIsLoading(true)
       const data = await file.arrayBuffer()
       const workbook = XLSX.read(data)
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
@@ -53,24 +81,81 @@ export default function ContactsPage() {
       // Validate data
       const invalidRows = jsonData.filter(row => !row.mobile?.match(/^\+25472/))
       if (invalidRows.length > 0) {
-        alert("Some mobile numbers are invalid. Please ensure all numbers start with +25472")
+        toast({
+          title: "Invalid Data",
+          description: "Some mobile numbers are invalid. Please ensure all numbers start with +25472",
+          variant: "destructive"
+        })
         return
       }
 
-      setContacts((prev) => [...prev, ...jsonData])
-      setShowImport(false)
+      // Upload contacts in batches
+      const results = await Promise.allSettled(
+        jsonData.map(contact =>
+          fetch('/api/v1/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(contact)
+          })
+        )
+      )
+
+      const successful = results.filter(result => result.status === 'fulfilled').length
+      const failed = results.filter(result => result.status === 'rejected').length
+
+      toast({
+        title: "Import Complete",
+        description: `Successfully imported ${successful} contacts${failed > 0 ? `, ${failed} failed` : ''}`,
+        variant: successful > 0 ? "default" : "destructive"
+      })
+
+      if (successful > 0) {
+        await fetchContacts() // Refresh the contacts list
+        setShowImport(false)
+      }
     } catch (error) {
-      alert("Failed to parse Excel file. Please ensure it follows the required format.")
+      toast({
+        title: "Error",
+        description: "Failed to parse Excel file. Please ensure it follows the required format.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   // Add contact
-  const handleAddContact = (e: FormEvent<HTMLFormElement>) => {
+  const handleAddContact = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!newContact.mobile || !newContact.fname) return
-    setContacts((prev) => [...prev, newContact])
-    setNewContact({ mobile: "", fname: "", email: "" })
-    setShowAdd(false)
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/v1/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newContact)
+      })
+
+      if (!response.ok) throw new Error('Failed to add contact')
+
+      toast({
+        title: "Success",
+        description: "Contact added successfully"
+      })
+
+      await fetchContacts() // Refresh the contacts list
+      setNewContact({ mobile: "", fname: "", email: "" })
+      setShowAdd(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add contact",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Filtered contacts
@@ -104,37 +189,85 @@ export default function ContactsPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader>
+                <DialogHeader className="space-y-2">
                   <DialogTitle>Import Contacts</DialogTitle>
-                  <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  <div className="space-y-2 text-sm text-muted-foreground">
                     <DialogDescription>
                       Upload multiple contacts from an MS Excel file (.XLSX)
                     </DialogDescription>
                     <div className="text-sm text-muted-foreground">
-                      Ensure that your Excel file has the ten headers: mobile, email, city, fname, mname, lname, type, job, company, detail.
+                      Ensure that your Excel file has the ten headers:
+                      <div className="grid grid-cols-5 gap-2 mt-1">
+                        <span className="font-medium">mobile*</span>
+                        <span>email</span>
+                        <span>city</span>
+                        <span>fname</span>
+                        <span>mname</span>
+                        <span>lname</span>
+                        <span>type</span>
+                        <span>job</span>
+                        <span>company</span>
+                        <span>detail</span>
+                      </div>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      The &quot;mobile&quot; field is mandatory and must follow the international format +25472X..
+                      * The &quot;mobile&quot; field is mandatory and must follow the international format +25472X..
                     </div>
                   </div>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <label htmlFor="csv-upload" className="block mb-2 text-sm font-medium text-gray-700">Excel File</label>
-                  <input id="csv-upload" type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileUpload} title="Upload Excel file" className="w-full" />
-                  <div className="text-sm text-muted-foreground">
-                    <p className="font-medium">Example format:</p>
-                    <div className="mt-2 p-2 bg-muted rounded-md overflow-x-auto">
-                      <pre className="text-xs">
-                        mobile          | email            | city    | fname  | mname  | lname  | type   | job    | company | detail
-                        +254725164293   | hello@sozuri.net | Nairobi | Sozuri | Sozuri | Sozuri | Sozuri | Sozuri | Sozuri  | Sozuri
-                      </pre>
+                <div className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <label htmlFor="csv-upload" className="text-sm font-medium">Excel File</label>
+                    <input 
+                      id="csv-upload" 
+                      type="file" 
+                      accept=".xlsx" 
+                      ref={fileInputRef} 
+                      onChange={handleFileUpload} 
+                      title="Upload Excel file" 
+                      className="w-full text-sm p-2 border rounded-md" 
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Example format:</p>
+                    <div className="bg-muted rounded-md">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr>
+                              <th className="p-2 text-left">mobile</th>
+                              <th className="p-2 text-left">email</th>
+                              <th className="p-2 text-left">city</th>
+                              <th className="p-2 text-left">fname</th>
+                              <th className="p-2 text-left">other fields...</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="p-2">+254725164293</td>
+                              <td className="p-2">hello@sozuri.net</td>
+                              <td className="p-2">Nairobi</td>
+                              <td className="p-2">Sozuri</td>
+                              <td className="p-2">...</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-4">
+
+                  <div className="space-y-2">
                     <label className="text-sm font-medium">Add to Contact Groups</label>
-                    <p className="text-xs text-muted-foreground mt-1">[Ctrl + Click to add contacts to multiple groups]</p>
+                    <p className="text-xs text-muted-foreground">[Ctrl + Click to add contacts to multiple groups]</p>
                   </div>
                 </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={() => setShowImport(false)} disabled={isLoading}>
+                    Cancel
+                  </Button>
+                </DialogFooter>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant="outline">Close</Button>
@@ -249,10 +382,12 @@ export default function ContactsPage() {
                     />
                   </div>
                   <DialogFooter className="mt-4">
-                    <Button type="submit">Add</Button>
-                    <DialogClose asChild>
-                      <Button variant="outline" type="button">Cancel</Button>
-                    </DialogClose>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Adding..." : "Add"}
+                    </Button>
+                    <Button variant="outline" type="button" onClick={() => setShowAdd(false)} disabled={isLoading}>
+                      Cancel
+                    </Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
@@ -335,53 +470,223 @@ export default function ContactsPage() {
           </TabsContent>
           {/* ...existing code for other tabs... */}
           <TabsContent value="segments" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Audience Segments</CardTitle>
-                <CardDescription>Create and manage audience segments for targeted messaging</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px] flex items-center justify-center">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Users className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">Segmentation</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Create dynamic segments based on user attributes and behaviors
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">Audience Segments</h2>
+                <p className="text-sm text-muted-foreground">Create dynamic segments based on contact attributes and behaviors</p>
+              </div>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Create Segment
+              </Button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Location Based</CardTitle>
+                  <CardDescription>Segment contacts by city, region, or timezone</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Total Contacts</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Active Rules</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Engagement Level</CardTitle>
+                  <CardDescription>Segment by message interaction rates</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Total Contacts</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Active Rules</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Custom Attributes</CardTitle>
+                  <CardDescription>Segment based on custom fields</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Total Contacts</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Active Rules</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
           <TabsContent value="groups" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Groups</CardTitle>
-                <CardDescription>Organize contacts into static groups</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px] flex items-center justify-center">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Users className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">Contact Groups</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create and manage static groups of contacts</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">Contact Groups</h2>
+                <p className="text-sm text-muted-foreground">Organize contacts into static groups for targeted messaging</p>
+              </div>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Create Group
+              </Button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>VIP Customers</CardTitle>
+                  <CardDescription>High-value customer group</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Members</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Updated</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Opt-in Marketing</CardTitle>
+                  <CardDescription>Marketing communication subscribers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Members</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Updated</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Beta Testers</CardTitle>
+                  <CardDescription>Product testing group</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Members</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Updated</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
           <TabsContent value="lists" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribution Lists</CardTitle>
-                <CardDescription>Manage your communication distribution lists</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px] flex items-center justify-center">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Users className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">Distribution Lists</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Create and manage lists for regular communications
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">Distribution Lists</h2>
+                <p className="text-sm text-muted-foreground">Manage targeted communication channels</p>
+              </div>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Create List
+              </Button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Newsletter</CardTitle>
+                  <CardDescription>Weekly newsletter distribution</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Subscribers</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Sent</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Announcements</CardTitle>
+                  <CardDescription>Important updates and notifications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Subscribers</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Sent</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Promotions</CardTitle>
+                  <CardDescription>Special offers and promotions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Subscribers</p>
+                        <p className="text-lg font-medium">0</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Sent</p>
+                        <p className="text-sm text-muted-foreground">Never</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
