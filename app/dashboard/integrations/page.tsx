@@ -15,50 +15,39 @@ import { toast } from "react-hot-toast";
 import { handleError, ErrorType } from "@/lib/error-handler";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import {
-    ZapierLogo,
-    SalesforceLogo,
-    HubSpotLogo,
-    MailchimpLogo,
-    ShopifyLogo,
-    ZendeskLogo,
-    MakeLogo
-} from "@/components/brand-logos";
+import Image from "next/image";
 
 interface PotentialIntegration {
-    type: string; 
+    type: string;
     title: string;
     description: string;
-    icon: React.ComponentType<any>;
+    logoPath: string; // public/logo-integration asset path
     category: string;
 }
 
 interface ConfiguredIntegration {
   id: string;
-  type: string; 
-  name: string; 
-  connected: boolean; 
+  type: string;
+  name: string;
+  isConnected: boolean;
   createdAt: string;
-  
 }
 
 // --- Potential Integrations List ---
 // TODO: Fetch this from an API or define centrally
 const potentialIntegrations: PotentialIntegration[] = [
-    { type: 'zapier', title: 'Zapier', description: 'Connect SOZURI to thousands of apps via Zapier.', icon: ZapierLogo, category: 'Automation' },
-    { type: 'make', title: 'Make.com', description: 'Automate workflows using Make.com (formerly Integromat).', icon: MakeLogo, category: 'Automation' },
-    { type: 'salesforce', title: 'Salesforce', description: 'Sync contacts and communications with Salesforce CRM.', icon: SalesforceLogo, category: 'CRM' },
-    { type: 'hubspot', title: 'HubSpot', description: 'Integrate with HubSpot CRM and Marketing Hub.', icon: HubSpotLogo, category: 'CRM' },
-    { type: 'mailchimp', title: 'Mailchimp', description: 'Connect with Mailchimp for email marketing sync.', icon: MailchimpLogo, category: 'Marketing' },
-    { type: 'shopify', title: 'Shopify', description: 'Automate e-commerce notifications via Shopify.', icon: ShopifyLogo, category: 'Ecommerce' },
-    { type: 'zendesk', title: 'Zendesk', description: 'Streamline support by connecting with Zendesk.', icon: ZendeskLogo, category: 'Support' },
+    { type: 'zapier', title: 'Zapier', description: 'Connect Sozuri to thousands of apps via Zapier.', logoPath: '/logo-integration/Zapier-01.svg', category: 'Automation' },
+    { type: 'make', title: 'Make.com', description: 'Automate workflows using Make.com (formerly Integromat).', logoPath: '/logo-integration/Make_Logo.png', category: 'Automation' },
+    { type: 'salesforce', title: 'Salesforce', description: 'Sync contacts and communications with Salesforce CRM.', logoPath: '/logo-integration/Salesforce.com_logo.svg', category: 'CRM' },
+    { type: 'hubspot', title: 'HubSpot', description: 'Integrate with HubSpot CRM and Marketing Hub.', logoPath: '/logo-integration/HubSpot_Logo.svg', category: 'CRM' },
+    { type: 'odoo', title: 'Odoo', description: 'Connect Odoo ERP with Sozuri for contact and order sync.', logoPath: '/logo-integration/Odoo_logo.png', category: 'ERP' },
+    { type: 'woocommerce', title: 'WooCommerce', description: 'Automate order notifications from WooCommerce.', logoPath: '/logo-integration/WooCommerce_logo.svg', category: 'Ecommerce' },
 ];
 
 // --- API Functions ---
 
 const fetchConfiguredIntegrations = async (): Promise<ConfiguredIntegration[]> => {
-  // TODO: Replace with actual call using configured Axios instance from lib/api
-  const response = await fetch('/api/integrations');
+  const response = await fetch('/api/v1/integrations');
   if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch integrations');
@@ -67,9 +56,8 @@ const fetchConfiguredIntegrations = async (): Promise<ConfiguredIntegration[]> =
 };
 
 const disconnectIntegrationFn = async (id: string): Promise<void> => {
-   // TODO: Replace with actual call using configured Axios instance from lib/api
-  const response = await fetch(`/api/integrations/${id}`, { method: 'DELETE' });
-  if (!response.ok && response.status !== 204) { 
+  const response = await fetch(`/api/v1/integrations/${id}`, { method: 'DELETE' });
+  if (!response.ok && response.status !== 204) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to disconnect integration');
   }
@@ -87,9 +75,8 @@ interface IntegrationCardProps {
 
 function IntegrationCard({ potential, configured, onDisconnect, isDisconnecting, disconnectErrorId }: IntegrationCardProps) {
     const router = useRouter();
-    const Icon = potential.icon;
     const isConfigured = !!configured;
-    const isConnected = isConfigured && configured.connected;
+    const isConnected = isConfigured && configured.isConnected;
     const currentErrorId = disconnectErrorId;
 
     const handleConnect = () => {
@@ -107,7 +94,7 @@ function IntegrationCard({ potential, configured, onDisconnect, isDisconnecting,
     return (
          <Card className="flex flex-col">
             <CardHeader className="flex-row items-start gap-4 space-y-0">
-                <Icon className="h-8 w-8 text-primary flex-shrink-0" />
+                <Image src={potential.logoPath} alt={`${potential.title} logo`} width={32} height={32} className="h-8 w-8 flex-shrink-0" />
                 <div className="flex-grow">
                     <CardTitle>{potential.title}</CardTitle>
                     <CardDescription>{potential.description}</CardDescription>
