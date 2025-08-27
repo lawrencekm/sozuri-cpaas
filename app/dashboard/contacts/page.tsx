@@ -29,6 +29,30 @@ type Contact = {
 }
 
 export default function ContactsPage() {
+  // Types for segments, groups, and lists
+  type Segment = {
+    name: string;
+    description: string;
+    rules: {
+      field: string;
+      operator: string;
+      value: string;
+    }[];
+  }
+
+  type Group = {
+    name: string;
+    description: string;
+    tags?: string[];
+  }
+
+  type List = {
+    name: string;
+    description: string;
+    type: 'sms' | 'whatsapp' | 'email';
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'custom';
+  }
+
   // State
   const [contacts, setContacts] = useState<Contact[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -36,8 +60,14 @@ export default function ContactsPage() {
   const [filter, setFilter] = useState("")
   const [showImport, setShowImport] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
+  const [showCreateSegment, setShowCreateSegment] = useState(false)
+  const [showCreateGroup, setShowCreateGroup] = useState(false)
+  const [showCreateList, setShowCreateList] = useState(false)
   const fileInputRef = useRef(null)
   const [newContact, setNewContact] = useState<Contact>({ mobile: "", fname: "", email: "" })
+  const [newSegment, setNewSegment] = useState<Segment>({ name: "", description: "", rules: [] })
+  const [newGroup, setNewGroup] = useState<Group>({ name: "", description: "" })
+  const [newList, setNewList] = useState<List>({ name: "", description: "", type: 'sms' })
   const { toast } = useToast()
 
   // Fetch contacts
@@ -151,6 +181,105 @@ export default function ContactsPage() {
       toast({
         title: "Error",
         description: "Failed to add contact",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Create segment
+  const handleCreateSegment = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!newSegment.name) return
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/v1/segments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSegment)
+      })
+
+      if (!response.ok) throw new Error('Failed to create segment')
+
+      toast({
+        title: "Success",
+        description: "Segment created successfully"
+      })
+
+      setNewSegment({ name: "", description: "", rules: [] })
+      setShowCreateSegment(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create segment",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Create group
+  const handleCreateGroup = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!newGroup.name) return
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/v1/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGroup)
+      })
+
+      if (!response.ok) throw new Error('Failed to create group')
+
+      toast({
+        title: "Success",
+        description: "Group created successfully"
+      })
+
+      setNewGroup({ name: "", description: "" })
+      setShowCreateGroup(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create group",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Create list
+  const handleCreateList = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!newList.name || !newList.type) return
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/v1/lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newList)
+      })
+
+      if (!response.ok) throw new Error('Failed to create list')
+
+      toast({
+        title: "Success",
+        description: "Distribution list created successfully"
+      })
+
+      setNewList({ name: "", description: "", type: 'sms' })
+      setShowCreateList(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create distribution list",
         variant: "destructive"
       })
     } finally {
@@ -475,9 +604,96 @@ export default function ContactsPage() {
                 <h2 className="text-2xl font-semibold tracking-tight">Audience Segments</h2>
                 <p className="text-sm text-muted-foreground">Create dynamic segments based on contact attributes and behaviors</p>
               </div>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create Segment
-              </Button>
+              <Dialog open={showCreateSegment} onOpenChange={setShowCreateSegment}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Create Segment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Audience Segment</DialogTitle>
+                    <DialogDescription>
+                      Define rules to automatically segment your contacts based on their attributes and behaviors.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateSegment} className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="segment-name" className="text-sm font-medium">Segment Name*</label>
+                      <Input
+                        id="segment-name"
+                        placeholder="e.g., High Value Customers"
+                        value={newSegment.name}
+                        onChange={e => setNewSegment({ ...newSegment, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="segment-description" className="text-sm font-medium">Description</label>
+                      <Input
+                        id="segment-description"
+                        placeholder="Describe the purpose of this segment"
+                        value={newSegment.description}
+                        onChange={e => setNewSegment({ ...newSegment, description: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Segment Rules</label>
+                      <div className="space-y-4">
+                        {newSegment.rules.map((rule, index) => (
+                          <div key={index} className="grid grid-cols-3 gap-2">
+                            <Input
+                              placeholder="Field"
+                              value={rule.field}
+                              onChange={e => {
+                                const rules = [...newSegment.rules]
+                                rules[index].field = e.target.value
+                                setNewSegment({ ...newSegment, rules })
+                              }}
+                            />
+                            <Input
+                              placeholder="Operator"
+                              value={rule.operator}
+                              onChange={e => {
+                                const rules = [...newSegment.rules]
+                                rules[index].operator = e.target.value
+                                setNewSegment({ ...newSegment, rules })
+                              }}
+                            />
+                            <Input
+                              placeholder="Value"
+                              value={rule.value}
+                              onChange={e => {
+                                const rules = [...newSegment.rules]
+                                rules[index].value = e.target.value
+                                setNewSegment({ ...newSegment, rules })
+                              }}
+                            />
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setNewSegment({
+                            ...newSegment,
+                            rules: [...newSegment.rules, { field: '', operator: '', value: '' }]
+                          })}
+                        >
+                          Add Rule
+                        </Button>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Creating..." : "Create Segment"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setShowCreateSegment(false)} disabled={isLoading}>
+                        Cancel
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Card>
@@ -548,9 +764,65 @@ export default function ContactsPage() {
                 <h2 className="text-2xl font-semibold tracking-tight">Contact Groups</h2>
                 <p className="text-sm text-muted-foreground">Organize contacts into static groups for targeted messaging</p>
               </div>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create Group
-              </Button>
+              <Dialog open={showCreateGroup} onOpenChange={setShowCreateGroup}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Create Group
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Contact Group</DialogTitle>
+                    <DialogDescription>
+                      Create a static group to organize your contacts for targeted communications.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateGroup} className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="group-name" className="text-sm font-medium">Group Name*</label>
+                      <Input
+                        id="group-name"
+                        placeholder="e.g., VIP Customers"
+                        value={newGroup.name}
+                        onChange={e => setNewGroup({ ...newGroup, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="group-description" className="text-sm font-medium">Description</label>
+                      <Input
+                        id="group-description"
+                        placeholder="Describe the purpose of this group"
+                        value={newGroup.description}
+                        onChange={e => setNewGroup({ ...newGroup, description: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="group-tags" className="text-sm font-medium">Tags</label>
+                      <Input
+                        id="group-tags"
+                        placeholder="Enter tags separated by commas"
+                        value={newGroup.tags?.join(', ') || ''}
+                        onChange={e => setNewGroup({ 
+                          ...newGroup, 
+                          tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                        })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Tags help you categorize and filter groups easily
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Creating..." : "Create Group"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setShowCreateGroup(false)} disabled={isLoading}>
+                        Cancel
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Card>
@@ -621,9 +893,79 @@ export default function ContactsPage() {
                 <h2 className="text-2xl font-semibold tracking-tight">Distribution Lists</h2>
                 <p className="text-sm text-muted-foreground">Manage targeted communication channels</p>
               </div>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create List
-              </Button>
+              <Dialog open={showCreateList} onOpenChange={setShowCreateList}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Create List
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Distribution List</DialogTitle>
+                    <DialogDescription>
+                      Set up a distribution list for regular communications with your contacts.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateList} className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="list-name" className="text-sm font-medium">List Name*</label>
+                      <Input
+                        id="list-name"
+                        placeholder="e.g., Weekly Newsletter"
+                        value={newList.name}
+                        onChange={e => setNewList({ ...newList, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="list-description" className="text-sm font-medium">Description</label>
+                      <Input
+                        id="list-description"
+                        placeholder="Describe the purpose of this distribution list"
+                        value={newList.description}
+                        onChange={e => setNewList({ ...newList, description: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="list-type" className="text-sm font-medium">Communication Channel*</label>
+                      <select
+                        id="list-type"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={newList.type}
+                        onChange={e => setNewList({ ...newList, type: e.target.value as 'sms' | 'whatsapp' | 'email' })}
+                        required
+                      >
+                        <option value="sms">SMS</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="email">Email</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="list-frequency" className="text-sm font-medium">Communication Frequency</label>
+                      <select
+                        id="list-frequency"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={newList.frequency || ''}
+                        onChange={e => setNewList({ ...newList, frequency: e.target.value as 'daily' | 'weekly' | 'monthly' | 'custom' })}
+                      >
+                        <option value="">Select frequency</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Creating..." : "Create List"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setShowCreateList(false)} disabled={isLoading}>
+                        Cancel
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Card>
