@@ -258,75 +258,7 @@ function NewTemplateDialog({ onCreate }: { onCreate: (template: any) => void }) 
   )
 }
 
-// Campaign Card Component
-function CampaignCard({ campaign }: { campaign: any }) {
-  const router = useRouter()
-  const { id } = useParams()
-
-  return (
-    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{campaign.name}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}`)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}/edit`)}>
-                Edit Campaign
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Campaign
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription>{campaign.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-muted-foreground">Channel</p>
-            <div className="flex items-center font-medium">
-              {campaign.channel === "SMS" && <MessageCircle className="mr-1 h-3 w-3" />}
-              {campaign.channel === "Voice" && <Phone className="mr-1 h-3 w-3" />}
-              {campaign.channel}
-            </div>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Messages</p>
-            <p className="font-medium">{campaign.messages}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Engagement</p>
-            <p className="font-medium">{campaign.engagement}%</p>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center text-xs text-muted-foreground">
-          <Calendar className="mr-1 h-3 w-3" /> Last sent {campaign.lastSent}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full"
-          onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}`)}
-        >
-          View Campaign
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
+import { CampaignCard } from "@/components/dashboard/campaign-card"
 
 // --- Templates Tab Section ---
 function TemplatesTab() {
@@ -555,31 +487,37 @@ export default function ProjectDetailPage() {
   // Sample campaigns data
   const campaigns = [
     {
-      id: 1,
+      id: "1",
       name: "Welcome Message",
       description: "Initial welcome message sent to new customers",
       channel: "SMS",
+      status: "active",
       messages: "1,245",
       engagement: 82,
       lastSent: "Today",
+      created_at: "2025-08-20T10:00:00Z"
     },
     {
-      id: 2,
+      id: "2",
       name: "Setup Guide",
       description: "Step-by-step guide for account setup",
       channel: "WhatsApp",
+      status: "scheduled",
       messages: "856",
       engagement: 68,
       lastSent: "Yesterday",
+      created_at: "2025-08-21T15:30:00Z"
     },
     {
-      id: 3,
+      id: "3",
       name: "Verification Call",
       description: "Automated verification call for new accounts",
       channel: "Voice",
+      status: "active",
       messages: "350",
       engagement: 95,
       lastSent: "3 days ago",
+      created_at: "2025-08-24T09:15:00Z"
     },
   ]
 

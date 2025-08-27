@@ -9,9 +9,9 @@ import {
   TrendingDown, TrendingUp,
   ArrowUp, AlertTriangle, RefreshCw, ArrowRight,
   MessagesSquare, BarChart3, Users, CheckCircle2,
-  Clock, ChevronRight
+  Clock, ChevronRight, MoreHorizontal, Trash2
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { handleError, ErrorType } from "@/lib/error-handler"
 import { ErrorBoundary } from "@/components/error-handling/error-boundary"
 import dynamic from 'next/dynamic'
@@ -23,7 +23,15 @@ import "@/styles/dashboard-patterns.css"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CampaignCard } from "@/components/dashboard/campaign-card"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -105,6 +113,8 @@ function ProjectCard({
   onSelect,
   isLoading = false,
 }: { project: any; onSelect: (project: any) => void; isLoading?: boolean }) {
+  const router = useRouter()
+  
   if (isLoading) {
     return (
       <Card className="dashboard-card animate-pulse">
@@ -136,30 +146,58 @@ function ProjectCard({
   }
 
   return (
-    <Card className="dashboard-card">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">{project.name}</CardTitle>
-        <CardDescription className="line-clamp-1">{project.description}</CardDescription>
+    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{project.name}</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Actions</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onSelect(project)}>
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
+                Edit Project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <CardDescription>{project.description}</CardDescription>
       </CardHeader>
-      <CardContent className="p-8">
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Campaigns</p>
-            <p className="font-medium text-base mt-1">{project.campaigns}</p>
+      <CardContent className="pb-2">
+        <div className="flex justify-between text-sm">
+          <div>
+            <p className="text-muted-foreground">Campaigns</p>
+            <div className="flex items-center font-medium">
+              {project.campaigns}
+            </div>
           </div>
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Messages</p>
-            <p className="font-medium text-base mt-1">{project.messages}</p>
+          <div>
+            <p className="text-muted-foreground">Messages</p>
+            <p className="font-medium">{project.messages}</p>
           </div>
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Engagement</p>
-            <p className="font-medium text-base mt-1">{project.engagement}%</p>
+          <div>
+            <p className="text-muted-foreground">Engagement</p>
+            <p className="font-medium">{project.engagement}%</p>
           </div>
         </div>
       </CardContent>
-      <CardFooter withBorder>
-        <Button variant="default" size="sm" className="w-full" onClick={() => onSelect(project)}>
-          <Layers className="mr-2 h-4 w-4" />
+      <CardFooter>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full"
+          onClick={() => onSelect(project)}
+        >
           View Project
         </Button>
       </CardFooter>
@@ -841,34 +879,8 @@ export default function Dashboard() {
                       </div>
                     ) : campaigns.length > 0 ? (
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {campaigns.slice(0, 6).map((c) => (
-                          <Card key={c.id} className="dashboard-card">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">{c.name}</CardTitle>
-                              <CardDescription className="line-clamp-1">{c.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-5 text-sm">
-                              <div className="flex justify-between">
-                                <div>
-                                  <p className="text-muted-foreground">Channel</p>
-                                  <p className="font-medium capitalize">{c.channel}</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Status</p>
-                                  <p className="font-medium capitalize">{c.status}</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Created</p>
-                                  <p className="font-medium">{new Date(c.created_at).toLocaleDateString()}</p>
-                                </div>
-                              </div>
-                            </CardContent>
-                            <CardFooter>
-                              <Button asChild variant="ghost" size="sm" className="w-full rounded-lg">
-                                <Link href={`/dashboard/campaigns/${c.id}`}>View Campaign</Link>
-                              </Button>
-                            </CardFooter>
-                          </Card>
+                        {campaigns.slice(0, 6).map((campaign) => (
+                          <CampaignCard key={campaign.id} campaign={campaign} />
                         ))}
                       </div>
                     ) : (
