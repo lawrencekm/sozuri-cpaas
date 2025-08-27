@@ -224,8 +224,8 @@ export interface Campaign {
   created?: string;
   updated?: string;
   content?: string;
-  project_id?: string;
-  projectId?: string;
+  projectId: string; // Now required
+  project?: Project; // Include project relationship
   target_audience?: string;
   message_content?: string;
   scheduled_at?: string;
@@ -466,24 +466,25 @@ export const messagingAPI = {
 // Campaigns API with error handling
 export const campaignsAPI = {
   getAll: withErrorHandling(
-    (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
+    (params?: { projectId?: string; page?: number; limit?: number; search?: string }): Promise<{ campaigns: Campaign[]; total: number; page: number; limit: number }> =>
+      api.get("/v1/campaigns", { params }).then(res => res.data),
     ErrorType.API
   ),
 
   getById: withErrorHandling(
-    (id: string): Promise<Campaign> => api.get(`/campaigns/${id}`).then(res => res.data),
+    (id: string): Promise<Campaign> => api.get(`/v1/campaigns/${id}`).then(res => res.data),
     ErrorType.API
   ),
 
   create: withErrorHandling(
-    (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'>): Promise<Campaign> =>
-      api.post("/campaigns", campaign).then(res => res.data),
+    (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'> & { projectId: string }): Promise<Campaign> =>
+      api.post("/v1/campaigns", campaign).then(res => res.data),
     ErrorType.API
   ),
 
   update: withErrorHandling(
-    (id: string, campaign: Partial<Campaign>): Promise<Campaign> =>
-      api.put(`/campaigns/${id}`, campaign).then(res => res.data),
+    (id: string, campaign: Partial<Campaign> & { projectId: string }): Promise<Campaign> =>
+      api.put(`/v1/campaigns/${id}`, campaign).then(res => res.data),
     ErrorType.API
   ),
 
