@@ -217,7 +217,7 @@ export default function BillingPage() {
               {isLoading ? (
                 <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
               ) : (
-                <div className="text-2xl font-bold">${billingData?.currentUsage || "0.00"}</div>
+                <div className="text-2xl font-bold">KSh {billingData?.currentUsage || "0.00"}</div>
               )}
             </CardContent>
             <CardFooter>

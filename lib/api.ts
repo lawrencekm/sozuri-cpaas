@@ -637,6 +637,38 @@ export const adminAPI = {
   ),
 }
 
+export interface BillingSummary {
+  balance: number
+  currency: string
+  billingCycle: string
+  nextInvoiceDate: string | null
+  currentUsage: number
+  paymentMethods: any[]
+}
+
+export const billingAPI = {
+  getSummary: withErrorHandling(
+    (projectId: string): Promise<BillingSummary> =>
+      api.get(`/v1/payments/billing/summary`, { params: { projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getTransactions: withErrorHandling(
+    (projectId: string, params?: { page?: number; limit?: number }) =>
+      api.get(`/v1/payments/transactions`, { params: { projectId, ...(params || {}) } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getInvoices: withErrorHandling(
+    (projectId: string) =>
+      api.get(`/v1/payments/invoices`, { params: { projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  topup: withErrorHandling(
+    (payload: { projectId: string; amount: number; creditsAmount: number; currency?: string; method?: string }) =>
+      api.post(`/v1/payments/topup`, payload).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
 // Log Entry interface
 export interface LogEntry {
   id: string;

@@ -13,9 +13,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
-        aria-disabled={props.disabled ? "true" : "false"}
-        aria-invalid={props["aria-invalid"] ? "true" : "false"}
-        aria-required={props.required ? "true" : "false"}
+        {...(props.disabled ? { 'aria-disabled': 'true' } : {})}
+        {...(props["aria-invalid"] ? { 'aria-invalid': 'true' } : {})}
+        {...(props.required ? { 'aria-required': 'true' } : {})}
       />
     )
   }

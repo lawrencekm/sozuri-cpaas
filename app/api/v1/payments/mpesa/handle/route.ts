@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // POST /api/v1/payments/mpesa/handle
-// Accepts raw M-Pesa callback payload; persists MpesaTransaction
+// Accepts raw M-Pesa callback payload; persists MpesaTransaction and creates credit Transaction on success
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
 
@@ -18,9 +16,10 @@ export async function POST(request: Request) {
   const merchantRequestId = stk?.MerchantRequestID
   const checkoutRequestId = stk?.CheckoutRequestID
 
-  // Required minimal fields; projectId ideally supplied by your earlier request reference or header
+  // Prefer explicit projectId; otherwise unknown-project (you may enrich this later)
   const projectId = (body as any)?.projectId || 'unknown-project'
 
+  const status = resultCode === '0' ? 'completed' : 'failed'
   const tx = await prisma.mpesaTransaction.create({
     data: {
       projectId,
@@ -34,9 +33,25 @@ export async function POST(request: Request) {
       merchantRequestId,
       checkoutRequestId,
       rawData: body,
-      status: resultCode === '0' ? 'completed' : 'failed',
+      status,
     }
   })
+
+  // 1:1 credits for successful M-Pesa payments -> create a credit Transaction
+  if (status === 'completed' && projectId !== 'unknown-project' && amount) {
+    await prisma.transaction.create({
+      data: {
+        projectId,
+        transactionTypeId: 'credit',
+        userId: 'UNKNOWN_USER', // Required field based on schema
+        amount: amount,
+        currency: 'KES',
+        reference: tx.transactionId,
+        description: 'M-Pesa top-up',
+        status: 'completed',
+      }
+    })
+  }
 
   return NextResponse.json({ status: 'ok', id: tx.id })
 }
