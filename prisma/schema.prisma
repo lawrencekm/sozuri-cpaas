@@ -267,6 +267,7 @@ model Project {
   assignments       Assignment[]
   automations       Automation[]
   paybillAccounts   PaybillAccount[]
+  invoices          Invoice[]
 
   @@index([userId])
   @@index([isActive])
@@ -1430,69 +1431,6 @@ model Automation {
 // BILLING & PAYMENTS (added)
 // ============================================================================
 
-model Transaction {
-  id          String   @id @default(cuid())
-  projectId   String
-  userId      String?
-  type        String   // credit | debit | refund | adjustment
-  method      String?  // mpesa | card | bank | internal
-  amount      Decimal  @db.Decimal(20, 2)
-  currency    String   @default("KES")
-  reference   String?
-  description String?
-  status      String   @default("completed") // pending | completed | failed
-  createdAt   DateTime @default(now())
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([projectId])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model Topup {
-  id             String   @id @default(cuid())
-  projectId      String
-  product        String?
-  topupProductId String?
-  amount         Decimal  @db.Decimal(20, 2)
-  creditsAmount  Decimal  @db.Decimal(20, 2)
-  currency       String   @default("KES")
-  method         String?  // mpesa | card | bank
-  status         String   @default("pending") // pending | completed | failed | cancelled
-  providerRef    String?
-  metadata       Json?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([projectId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model Payment {
-  id          String   @id @default(cuid())
-  projectId   String
-  amount      Decimal  @db.Decimal(20, 2)
-  currency    String   @default("KES")
-  method      String   // mpesa | card | bank | other
-  status      String   @default("pending") // pending | completed | failed | refunded
-  reference   String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([projectId])
-  @@index([status])
-  @@index([createdAt])
-}
-
 model Invoice {
   id          String   @id @default(cuid())
   projectId   String
@@ -1513,27 +1451,4 @@ model Invoice {
   @@index([projectId])
   @@index([status])
   @@index([createdAt])
-}
-
-model MpesaTransaction {
-  id                 String   @id @default(cuid())
-  projectId          String
-  transactionType    String   // STK_PUSH, C2B, B2C, etc
-  transactionId      String   @unique
-  transactionTime    DateTime
-  amount             Decimal  @db.Decimal(20, 2)
-  phoneNumber        String
-  resultCode         String?
-  resultDescription  String?
-  merchantRequestId  String?
-  checkoutRequestId  String?
-  rawData            Json?
-  status             String   @default("pending") // pending | completed | failed
-  createdAt          DateTime @default(now())
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([projectId])
-  @@index([status])
-  @@index([transactionTime])
 }
