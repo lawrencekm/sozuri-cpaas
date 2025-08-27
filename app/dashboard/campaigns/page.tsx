@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Filter, Plus, Search } from "lucide-react"
+import { Filter, Plus, Search, MessageSquarePlus, AlertTriangle } from "lucide-react"
 import { formatShortDate } from "@/lib/date-formatter"
 
 import { Button } from "@/components/ui/button"
@@ -154,79 +154,8 @@ import { CampaignCard } from "@/components/dashboard/campaign-card"
 export default function CampaignsPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const { data: campaignsData, isLoading, error } = useCampaigns()
-
-  // Use sample data if API call fails or is loading
-  const campaigns: Campaign[] = campaignsData ?? ([
-    {
-      id: "1",
-      project_id: "proj_1",
-      name: "Welcome Message",
-      description: "Initial welcome message sent to new customers",
-      channel: "sms",
-      status: "active",
-      created: "2023-05-15T10:30:00Z",
-      updated: "2023-05-15T10:30:00Z",
-      audience: {
-        total: 1000,
-        delivered: 850,
-        failed: 50,
-        opened: 700,
-        clicked: 450
-      }
-    },
-    {
-      id: "2",
-      project_id: "proj_1",
-      name: "Appointment Reminder",
-      description: "Automated appointment reminders for customers",
-      channel: "whatsapp",
-      status: "scheduled",
-      created: "2023-05-10T14:20:00Z",
-      updated: "2023-05-12T09:15:00Z",
-      audience: {
-        total: 500,
-        delivered: 0,
-        failed: 0,
-        opened: 0,
-        clicked: 0
-      }
-    },
-    {
-      id: "3",
-      project_id: "proj_2",
-      name: "Feedback Survey",
-      description: "Post-service customer feedback collection",
-      channel: "email",
-      status: "draft",
-      created: "2023-05-08T11:45:00Z",
-      updated: "2023-05-08T11:45:00Z",
-      audience: {
-        total: 2000,
-        delivered: 1950,
-        failed: 50,
-        opened: 1500,
-        clicked: 800
-      }
-    },
-    {
-      id: "4",
-      project_id: "proj_2",
-      name: "Service Outage Alert",
-      description: "Emergency notification for service disruptions",
-      channel: "sms",
-      status: "completed",
-      created: "2023-05-01T08:30:00Z",
-      updated: "2023-05-01T16:45:00Z",
-      audience: {
-        total: 5000,
-        delivered: 4975,
-        failed: 25,
-        opened: 4800,
-        clicked: 3200
-      }
-    },
-  ] as Campaign[])
+  const [open, setOpen] = useState(false)
+  const { data: campaigns = [], isLoading, error } = useCampaigns()
 
   // Filter campaigns based on search query
   const filteredCampaigns = campaigns.filter(
@@ -255,72 +184,157 @@ export default function CampaignsPage() {
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isLoading}
             />
           </div>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" disabled={isLoading}>
             <Filter className="h-4 w-4" />
             <span className="sr-only">Filter</span>
           </Button>
         </div>
 
-        <Tabs defaultValue="grid" className="w-full">
-          <TabsList>
-            <TabsTrigger value="grid">Grid View</TabsTrigger>
-            <TabsTrigger value="table">Table View</TabsTrigger>
-          </TabsList>
-          <TabsContent value="grid" className="space-y-4 pt-4">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="table" className="pt-4">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Channel</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCampaigns.map((campaign) => (
-                      <TableRow key={campaign.id}>
-                        <TableCell className="font-medium">{campaign.name}</TableCell>
-                        <TableCell>{campaign.channel}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            campaign.status === "active" ? "default" :
-                            campaign.status === "draft" ? "outline" :
-                            campaign.status === "scheduled" ? "secondary" :
-                            "destructive"
-                          }>
-                            {campaign.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{formatShortDate(campaign.created_at || campaign.created)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {error ? (
+          <Card className="border-destructive/50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center text-center space-y-2">
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  There was an error loading the campaigns. Please try again later.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs defaultValue="grid" className="w-full">
+            <TabsList>
+              <TabsTrigger value="grid" disabled={isLoading}>Grid View</TabsTrigger>
+              <TabsTrigger value="table" disabled={isLoading}>Table View</TabsTrigger>
+            </TabsList>
+            <TabsContent value="grid" className="space-y-4 pt-4">
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="relative overflow-hidden">
+                      <div className="p-6">
+                        <div className="space-y-4">
+                          <div className="h-5 w-2/3 animate-pulse rounded bg-muted"></div>
+                          <div className="h-4 w-full animate-pulse rounded bg-muted"></div>
+                          <div className="h-4 w-1/2 animate-pulse rounded bg-muted"></div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : filteredCampaigns.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col items-center justify-center text-center space-y-2">
+                      <div className="rounded-full bg-primary/10 p-3">
+                        <MessageSquarePlus className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        No campaigns found. Create your first campaign to get started.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setOpen(true)}
+                      >
+                        Create Campaign
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard key={campaign.id} campaign={campaign} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="table" className="pt-4">
+              <Card>
+                <CardContent className="p-0">
+                  {isLoading ? (
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className="h-8 w-full animate-pulse rounded bg-muted" />
+                        ))}
+                      </div>
+                    </div>
+                  ) : filteredCampaigns.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center p-6 space-y-2">
+                      <div className="rounded-full bg-primary/10 p-3">
+                        <MessageSquarePlus className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        No campaigns found. Create your first campaign to get started.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setOpen(true)}
+                      >
+                        Create Campaign
+                      </Button>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Channel</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredCampaigns.map((campaign) => (
+                          <TableRow key={campaign.id}>
+                            <TableCell className="font-medium">{campaign.name}</TableCell>
+                            <TableCell>{campaign.channel}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                campaign.status === "active" ? "default" :
+                                campaign.status === "draft" ? "outline" :
+                                campaign.status === "scheduled" ? "secondary" :
+                                "destructive"
+                              }>
+                                {campaign.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{formatShortDate(campaign.created_at || campaign.created)}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
+                              >
+                                View
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </DashboardLayout>
   )
