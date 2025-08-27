@@ -13,9 +13,42 @@ export async function GET(request: Request) {
       ...(status ? { status } as any : {}),
       ...(channel ? { type: channel } : {}),
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      projectId: true,
+      name: true,
+      description: true,
+      type: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      totalSent: true,
+      totalDelivered: true,
+      totalFailed: true
+    }
   })
-  return NextResponse.json(campaigns)
+
+  // Transform data to match frontend interface
+  const transformedCampaigns = campaigns.map(campaign => ({
+    id: campaign.id,
+    name: campaign.name,
+    description: campaign.description || "",
+    channel: campaign.type, // Map type to channel for frontend
+    status: campaign.status,
+    created: campaign.createdAt.toISOString(),
+    updated: campaign.updatedAt.toISOString(),
+    project_id: campaign.projectId,
+    audience: {
+      total: campaign.totalSent || 0,
+      delivered: campaign.totalDelivered || 0,
+      failed: campaign.totalFailed || 0,
+      opened: campaign.totalDelivered || 0, // For SMS/WhatsApp, delivered = opened
+      clicked: 0 // Not applicable for SMS/WhatsApp
+    }
+  }))
+
+  return NextResponse.json(transformedCampaigns)
 }
 
 export async function POST(request: Request) {

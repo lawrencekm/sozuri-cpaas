@@ -3,18 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import {
-  ArrowRight,
-  Calendar,
-  Filter,
-  Layers,
-  MessageCircle,
-  MoreHorizontal,
-  Phone,
-  Plus,
-  Search,
-  Trash2
-} from "lucide-react"
+import { Filter, Plus, Search } from "lucide-react"
 import { formatShortDate } from "@/lib/date-formatter"
 
 import { Button } from "@/components/ui/button"
@@ -160,78 +149,7 @@ function NewCampaignDialog() {
   )
 }
 
-// Campaign Card Component
-function CampaignCard({ campaign }: { campaign: any }) {
-  const router = useRouter()
-
-  return (
-    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{campaign.name}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}`)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}/edit`)}>
-                Edit Campaign
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Campaign
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription>{campaign.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-muted-foreground">Channel</p>
-            <div className="flex items-center font-medium">
-              {campaign.channel === "sms" && <MessageCircle className="mr-1 h-3 w-3" />}
-              {campaign.channel === "voice" && <Phone className="mr-1 h-3 w-3" />}
-              {campaign.channel}
-            </div>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Status</p>
-            <Badge variant={
-              campaign.status === "active" ? "default" :
-              campaign.status === "draft" ? "outline" :
-              campaign.status === "scheduled" ? "secondary" :
-              "destructive"
-            }>
-              {campaign.status}
-            </Badge>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Created</p>
-            <p className="font-medium">{formatShortDate(campaign.created_at || campaign.created)}</p>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full"
-          onClick={() => router.push(`/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}`)}
-        >
-          View Campaign <ArrowRight className="ml-1 h-3 w-3" />
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
+import { CampaignCard } from "@/components/dashboard/campaign-card"
 
 export default function CampaignsPage() {
   const router = useRouter()
@@ -242,39 +160,71 @@ export default function CampaignsPage() {
   const campaigns: Campaign[] = campaignsData ?? ([
     {
       id: "1",
+      project_id: "proj_1",
       name: "Welcome Message",
       description: "Initial welcome message sent to new customers",
       channel: "sms",
       status: "active",
       created: "2023-05-15T10:30:00Z",
       updated: "2023-05-15T10:30:00Z",
+      audience: {
+        total: 1000,
+        delivered: 850,
+        failed: 50,
+        opened: 700,
+        clicked: 450
+      }
     },
     {
       id: "2",
+      project_id: "proj_1",
       name: "Appointment Reminder",
       description: "Automated appointment reminders for customers",
       channel: "whatsapp",
       status: "scheduled",
       created: "2023-05-10T14:20:00Z",
       updated: "2023-05-12T09:15:00Z",
+      audience: {
+        total: 500,
+        delivered: 0,
+        failed: 0,
+        opened: 0,
+        clicked: 0
+      }
     },
     {
       id: "3",
+      project_id: "proj_2",
       name: "Feedback Survey",
-      description: "Post-service feedback collection campaign",
+      description: "Post-service customer feedback collection",
       channel: "email",
       status: "draft",
       created: "2023-05-08T11:45:00Z",
       updated: "2023-05-08T11:45:00Z",
+      audience: {
+        total: 2000,
+        delivered: 1950,
+        failed: 50,
+        opened: 1500,
+        clicked: 800
+      }
     },
     {
       id: "4",
+      project_id: "proj_2",
       name: "Service Outage Alert",
       description: "Emergency notification for service disruptions",
       channel: "sms",
       status: "completed",
       created: "2023-05-01T08:30:00Z",
       updated: "2023-05-01T16:45:00Z",
+      audience: {
+        total: 5000,
+        delivered: 4975,
+        failed: 25,
+        opened: 4800,
+        clicked: 3200
+      }
     },
   ] as Campaign[])
 
