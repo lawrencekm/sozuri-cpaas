@@ -139,12 +139,18 @@ export interface Project {
   campaigns?: number;
   messages?: number;
   engagement?: number;
+  successRate?: number;
+  type?: 'marketing' | 'transactional' | 'customer-service' | 'alerts';
   created: string;
   updated: string;
   user_id: string;
   status: 'active' | 'inactive' | 'suspended';
   balance: number;
   currency: string;
+  _count?: {
+    campaigns: number;
+    messageLogs: number;
+  };
 }
 
 

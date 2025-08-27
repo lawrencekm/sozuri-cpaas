@@ -204,11 +204,15 @@ model Project {
   description String? @db.Text
   code        String? @unique
   userId      String
+  type        String? @default("transactional")
 
   // Business Configuration
   isTrial        Boolean   @default(true)
   trialExpiresAt DateTime?
   accountType    String?   @default("basic") // basic, premium, enterprise
+
+  // Message Stats
+  messageStats MessageStats?
 
   // Credits & Billing
   smsCredits      Decimal @default(0) @db.Decimal(20, 2)
@@ -1375,6 +1379,18 @@ model Assignment {
   @@index([projectId])
   @@index([userId])
   @@index([status])
+}
+
+model MessageStats {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  engagement  Int      @default(0)
+  successRate Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Automation {

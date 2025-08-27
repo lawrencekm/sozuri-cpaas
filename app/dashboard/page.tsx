@@ -108,102 +108,8 @@ function DashboardCard({
   )
 }
 
-function ProjectCard({
-  project,
-  onSelect,
-  isLoading = false,
-}: { project: any; onSelect: (project: any) => void; isLoading?: boolean }) {
-  const router = useRouter()
-  
-  if (isLoading) {
-    return (
-      <Card className="dashboard-card animate-pulse">
-        <CardHeader className="pb-2 bg-muted/30">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-muted"></div>
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted"></div>
-        </CardHeader>
-        <CardContent className="p-5">
-          <div className="flex justify-between text-sm">
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t p-4">
-          <div className="h-9 w-full animate-pulse rounded bg-muted"></div>
-        </CardFooter>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{project.name}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onSelect(project)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
-                Edit Project
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Project
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription>{project.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-muted-foreground">Campaigns</p>
-            <div className="flex items-center font-medium">
-              {project.campaigns}
-            </div>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Messages</p>
-            <p className="font-medium">{project.messages}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Engagement</p>
-            <p className="font-medium">{project.engagement}%</p>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full"
-          onClick={() => onSelect(project)}
-        >
-          View Project
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
+// Import ProjectCard component and types
+import { ProjectCard, toCardProject, Project } from "@/components/dashboard/project-card"
 
 // New Project Dialog
 function NewProjectDialog() {
@@ -432,7 +338,7 @@ const ClientSideChart = ({ data }: { data: Array<{ name: string; messages: numbe
 export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState<ApiProject[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
   const [templates, setTemplates] = useState<CampaignTemplate[]>([])
   // For demo purposes, we'll set this to true to show the new user experience
@@ -500,17 +406,10 @@ export default function Dashboard() {
           campaignsAPI.getAll(),
         ])
 
-        const mappedProjects = (projectsData || []).map((p: any) => ({
-          ...p,
-          campaigns: p?._count?.campaigns ?? p.campaigns ?? 0,
-          messages: p?._count?.messageLogs ?? p.messages ?? 0,
-          engagement: p?.engagement ?? 0,
-        }))
+        const mappedProjects = (projectsData || []).map(p => toCardProject(p))
         setProjects(mappedProjects)
         setCampaigns(campaignsData || [])
 
-        // If you want templates across projects, call without project filter (adjust API if needed)
-        // Here we attempt to load for the first project as a sample
         if ((projectsData?.length || 0) > 0) {
           try {
             const tpl = await campaignTemplatesAPI.getAll(projectsData[0].id)
@@ -830,22 +729,34 @@ export default function Dashboard() {
                     {isLoading ? (
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {[1, 2, 3].map((i) => (
-                          <div key={i} className="border rounded-lg p-4 animate-pulse">
-                            <div className="h-5 w-1/2 bg-muted rounded mb-3"></div>
-                            <div className="h-4 w-3/4 bg-muted rounded mb-4"></div>
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                              <div className="h-12 bg-muted rounded"></div>
-                              <div className="h-12 bg-muted rounded"></div>
-                              <div className="h-12 bg-muted rounded"></div>
-                            </div>
-                            <div className="h-8 bg-muted rounded"></div>
-                          </div>
+                          <ProjectCard 
+                            key={i}
+                            project={{
+                              id: `loading-${i}`,
+                              name: '',
+                              description: '',
+                              type: '',
+                              stats: {
+                                campaigns: 0,
+                                messages: 0,
+                                engagement: 0,
+                                successRate: 0
+                              }
+                            }}
+                            isLoading={true}
+                            variant="default"
+                          />
                         ))}
                       </div>
                     ) : projects.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {projects.map((project) => (
-                          <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
+                          <ProjectCard
+                            key={project.id}
+                            project={project}
+                            onView={handleProjectSelect}
+                            variant="default"
+                          />
                         ))}
                       </div>
                     ) : (

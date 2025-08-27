@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { ProjectCard } from "@/components/dashboard/project-card"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowRight, Calendar, Filter, MoreHorizontal, Plus, Search, SortAsc, Trash2, AlertTriangle } from "lucide-react"
@@ -144,159 +144,6 @@ function NewProjectDialog() {
   )
 }
 
-// Project Card Component
-function ProjectCard({ project, isLoading = false }: { project: any; isLoading?: boolean }) {
-  const router = useRouter()
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-6 w-3/4 animate-pulse rounded bg-muted"></div>
-              <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div className="h-8 w-8 animate-pulse rounded-full bg-muted"></div>
-          </div>
-        </CardHeader>
-        <CardContent className="pb-2">
-          <div className="flex items-start space-x-4">
-            <div className="min-w-[100px] flex-1">
-              <div className="h-4 w-full animate-pulse rounded bg-muted"></div>
-              <div className="mt-2 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-                  <div className="h-4 w-12 animate-pulse rounded bg-muted"></div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="h-4 w-20 animate-pulse rounded bg-muted"></div>
-                  <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-                </div>
-              </div>
-            </div>
-            <div className="h-16 w-16 animate-pulse rounded-full bg-muted"></div>
-          </div>
-          <div className="mt-4 h-4 w-32 animate-pulse rounded bg-muted"></div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="h-9 w-24 animate-pulse rounded bg-muted"></div>
-          <div className="h-9 w-24 animate-pulse rounded bg-muted"></div>
-        </CardFooter>
-      </Card>
-    )
-  }
-
-  const typeColors: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-    marketing: { 
-      bg: "bg-blue-50", 
-      text: "text-blue-700",
-      icon: "📈"
-    },
-    transactional: { 
-      bg: "bg-green-50", 
-      text: "text-green-700",
-      icon: "📨"
-    },
-    "customer-service": { 
-      bg: "bg-purple-50", 
-      text: "text-purple-700",
-      icon: "🎯"
-    },
-    alerts: { 
-      bg: "bg-orange-50", 
-      text: "text-orange-700",
-      icon: "🔔"
-    }
-  }
-
-  const typeStyle = typeColors[project.type] || { bg: "bg-gray-50", text: "text-gray-700", icon: "📋" }
-
-  return (
-    <Card className="group hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-lg">{project.name}</CardTitle>
-              <span className={`text-xs px-2 py-1 rounded-full ${typeStyle.bg} ${typeStyle.text}`}>
-                {project.type}
-              </span>
-            </div>
-            <CardDescription className="mt-1 line-clamp-1">{project.description}</CardDescription>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}`)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
-                Edit Project
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Project
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="space-y-4 flex-1">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Campaigns</p>
-                <p className="font-medium">{project.campaigns}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Messages</p>
-                <p className="font-medium">{project.messages.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Success Rate</p>
-                <p className="font-medium text-emerald-600">{project.successRate || '100'}%</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Engagement</p>
-                <p className="font-medium">{project.engagement}%</p>
-              </div>
-            </div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Calendar className="mr-1 h-3 w-3" /> 
-              Last updated {project.updated}
-            </div>
-          </div>
-          <div className={`flex h-16 w-16 items-center justify-center rounded-full ${typeStyle.bg} ${typeStyle.text} text-2xl`}>
-            {typeStyle.icon}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push(`/dashboard/projects/${project.id}/campaigns`)}
-        >
-          View Campaigns
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push(`/dashboard/projects/${project.id}`)}
-        >
-          Project Details
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -419,13 +266,48 @@ export default function ProjectsPage() {
               {isLoading ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <ProjectCard key={i} project={{}} isLoading={true} />
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : filteredProjects.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : searchQuery ? (
@@ -467,13 +349,48 @@ export default function ProjectsPage() {
               {isLoading ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {[1, 2].map((i) => (
-                    <ProjectCard key={i} project={{}} isLoading={true} />
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : filteredProjects.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : (
@@ -497,13 +414,48 @@ export default function ProjectsPage() {
               {isLoading ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {[1, 2].map((i) => (
-                    <ProjectCard key={i} project={{}} isLoading={true} />
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : filteredProjects.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : (
@@ -527,13 +479,48 @@ export default function ProjectsPage() {
               {isLoading ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {[1, 2].map((i) => (
-                    <ProjectCard key={i} project={{}} isLoading={true} />
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : filteredProjects.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
                   ))}
                 </div>
               ) : (
