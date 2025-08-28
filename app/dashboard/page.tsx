@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   Layers, MessageCircle, Plus, Sparkles,
@@ -294,25 +295,57 @@ const hierarchyMap: Record<string, QuickAccessItem[]> = {
     {
       title: "Messaging",
       href: "/dashboard/messaging",
-      icon: <MessagesSquare className="h-5 w-5 text-primary" />,
+      icon: (
+        <Image
+          src="/images/messaging.svg"
+          alt="Messaging"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage all messaging channels",
     },
     {
       title: "Voice",
       href: "/dashboard/voice",
-      icon: <VoiceLogo size={20} />,
+      icon: (
+        <Image
+          src="/images/voice.svg"
+          alt="Voice"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage voice calls and IVR",
     },
     {
       title: "Analytics",
       href: "/dashboard/analytics",
-      icon: <BarChart3 className="h-5 w-5 text-blue-500" />,
+      icon: (
+        <Image
+          src="/images/analytics.svg"
+          alt="Analytics"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "View performance metrics",
     },
     {
       title: "Contacts",
       href: "/dashboard/contacts",
-      icon: <Users className="h-5 w-5 text-green-500" />,
+      icon: (
+        <Image
+          src="/images/contacts.svg"
+          alt="Contacts"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage your audience",
     },
   ],
