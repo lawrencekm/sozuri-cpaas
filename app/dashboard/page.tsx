@@ -374,9 +374,8 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
   const [templates, setTemplates] = useState<CampaignTemplate[]>([])
-  // For demo purposes, we'll set this to true to show the new user experience
-  // In config our app, this would be determined by checking user metadata
-  const [isNewUser, setIsNewUser] = useState(true)
+  // Determine if the user is new by checking backend status once session is available
+  const [isNewUser, setIsNewUser] = useState<boolean>(false)
 
   const { data: session } = useSession();
   const userInfo = {
@@ -384,6 +383,22 @@ export default function Dashboard() {
     companyName: session?.user?.company || "",
     userRole: session?.user?.role || ""
   };
+
+  useEffect(() => {
+    const fetchUserStatus = async () => {
+      try {
+        if (!session?.user?.id) return;
+        const res = await fetch(`/api/users/${session.user.id}/status`);
+        if (!res.ok) throw new Error('Failed to fetch user status');
+        const data = await res.json();
+        setIsNewUser(Boolean(data?.isNewUser));
+      } catch (e) {
+        // Fail closed: if status check fails, do not block dashboard; treat as returning user
+        setIsNewUser(false);
+      }
+    };
+    fetchUserStatus();
+  }, [session?.user?.id]);
 
   const [metrics, setMetrics] = useState({
     ai: {
@@ -396,10 +411,7 @@ export default function Dashboard() {
   const [error, setError] = useState<Error | null>(null)
   const [currentTime, setCurrentTime] = useState<string>('')
 
-  // This is just for demo purposes to toggle between new and returning user views
-  const toggleUserExperience = () => {
-    setIsNewUser(!isNewUser)
-  }
+
 
 
 
@@ -511,22 +523,7 @@ export default function Dashboard() {
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary/90 to-accent/90 text-white">
             <div className="absolute inset-0 bg-grid-white animate-subtle-move [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.5),transparent)]"></div>
             <div className="relative z-10 p-8">
-              {/* Demo toggle - simplified */}
-              <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
-                <span className="text-white/80">Demo:</span>
-                <button
-                  onClick={toggleUserExperience}
-                  className={`px-2 py-1 rounded-md transition-colors ${isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
-                >
-                  New User
-                </button>
-                <button
-                  onClick={toggleUserExperience}
-                  className={`px-2 py-1 rounded-md transition-colors ${!isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
-                >
-                  Returning User
-                </button>
-              </div>
+
 
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="max-w-2xl">
@@ -574,8 +571,7 @@ export default function Dashboard() {
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Getting Started with SOZURI</h2>
-                  <p className="text-sm text-muted-foreground">Complete these steps to set up your account</p>
+
                 </div>
               </div>
               <div className="bg-gradient-to-r from-primary/5 to-transparent p-6 rounded-xl border">
