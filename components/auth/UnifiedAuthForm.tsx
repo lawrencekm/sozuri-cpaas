@@ -165,188 +165,209 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {mode === 'signin' ? 'Sign in to your account' : 'Create your account'}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            {mode === 'signin' ? 'Or ' : 'Already have an account? '}
-            <button
-              onClick={toggleMode}
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              {mode === 'signin' ? 'create a new account' : 'sign in here'}
-            </button>
-          </p>
-        </div>
+    <div className="h-screen grid lg:grid-cols-2 overflow-hidden bg-transparent">
+      {/* Left image panel (no overlay/branding) */}
+      <div className="relative hidden lg:block h-full">
+        <img
+          src={mode === 'signin' ? '/login.png' : '/sign%20up.png'}
+          alt={mode === 'signin' ? 'Login' : 'Sign up'}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{mode === 'signin' ? 'Welcome back' : 'Get started'}</CardTitle>
-            <CardDescription>
-              {mode === 'signin' 
-                ? 'Enter your credentials to access your account'
-                : 'Create your account to get started'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+      {/* Right form panel (scrollable only) */}
+      <div className="h-full overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center px-6 py-10 sm:px-8">
+          <div className="w-full max-w-md">
+            <div className="mb-8 text-center lg:text-left">
+              <h2 className="text-2xl font-semibold text-foreground">
+                {mode === 'signin' ? 'Sign in' : 'Sign up'}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {mode === 'signin' ? (
+                  <>
+                    Don’t have an account?{' '}
+                    <button onClick={toggleMode} className="font-medium text-primary hover:underline">
+                      Create one
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Already have an account?{' '}
+                    <button onClick={toggleMode} className="font-medium text-primary hover:underline">
+                      Sign in
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
 
-            <form onSubmit={handleCredentialsAuth} className="space-y-4">
-              {mode === 'signup' && (
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    placeholder="Enter your full name"
-                  />
-                </div>
-              )}
+            <Card className="shadow-none border-muted">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-xl">{mode === 'signin' ? 'Welcome back' : 'Get started free'}</CardTitle>
+                <CardDescription>
+                  {mode === 'signin'
+                    ? 'Enter your credentials to access your account'
+                    : 'Create your account to get started'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-              <div>
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="Enter your email"
-                />
-              </div>
+                <form onSubmit={handleCredentialsAuth} className="space-y-4">
+                  {mode === 'signup' && (
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                  )}
 
-              {mode === 'signup' && (
-                <div>
-                  <Label htmlFor="company">Company (optional)</Label>
-                  <Input
-                    id="company"
-                    type="text"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="Your company name"
-                  />
-                </div>
-              )}
+                  <div>
+                    <Label htmlFor="email">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="Enter your email"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="password">Password</Label>
+                  {mode === 'signup' && (
+                    <div>
+                      <Label htmlFor="company">Company (optional)</Label>
+                      <Input
+                        id="company"
+                        type="text"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
+                        placeholder="Your company name"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        placeholder={mode === 'signup' ? 'Create a password (min 8 characters)' : 'Enter your password'}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {mode === 'signup' && (
+                    <div>
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        placeholder="Confirm your password"
+                      />
+                    </div>
+                  )}
+
+                  {mode === 'signin' && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <input
+                          id="remember-me"
+                          name="remember-me"
+                          type="checkbox"
+                          className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
+                        />
+                        <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
+                          Remember me
+                        </label>
+                      </div>
+                      <Link href="/auth/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                        Forgot password?
+                      </Link>
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {mode === 'signin' ? 'Sign in' : 'Create account'}
+                  </Button>
+                </form>
+
                 <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder={mode === 'signup' ? 'Create a password (min 8 characters)' : 'Enter your password'}
-                  />
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    variant="outline"
+                    onClick={() => handleOAuthSignIn('google')}
+                    disabled={isLoading}
+                    className="w-full"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+                    </svg>
+                    Google
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOAuthSignIn('github')}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.699 1.028 1.595 1.028 2.688 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.14 18.205 20 14.43 20 10.017 20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                    </svg>
+                    GitHub
                   </Button>
                 </div>
-              </div>
 
-              {mode === 'signup' && (
-                <div>
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    placeholder="Confirm your password"
-                  />
-                </div>
-              )}
-
-              {mode === 'signin' && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                      Remember me
-                    </label>
+                {mode === 'signin' && (
+                  <div className="text-center">
+                    <Link href="/admin-access" className="text-sm text-muted-foreground hover:text-foreground">
+                      Admin Access
+                    </Link>
                   </div>
-                  <Link href="/auth/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    Forgot password?
-                  </Link>
-                </div>
-              )}
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'signin' ? 'Sign in' : 'Create account'}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuthSignIn('google')}
-                disabled={isLoading}
-                className="w-full"
-              >
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
-                </svg>
-                Google
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOAuthSignIn('github')}
-                disabled={isLoading}
-                className="w-full"
-              >
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.699 1.028 1.595 1.028 2.688 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.14 18.205 20 14.43 20 10.017 20 4.484 15.522 0 10 0z" clipRule="evenodd" />
-                </svg>
-                GitHub
-              </Button>
-            </div>
-
-            {mode === 'signin' && (
-              <div className="text-center">
-                <Link href="/admin-access" className="text-sm text-gray-600 hover:text-gray-900">
-                  Admin Access
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
