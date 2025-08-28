@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -168,10 +169,12 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
     <div className="h-screen grid lg:grid-cols-2 overflow-hidden bg-transparent">
       {/* Left image panel (no overlay/branding) */}
       <div className="relative hidden lg:block h-full">
-        <img
+        <Image
           src={mode === 'signin' ? '/login.png' : '/sign%20up.png'}
           alt={mode === 'signin' ? 'Login' : 'Sign up'}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          className="absolute inset-0 object-cover"
+          priority
         />
       </div>
 
