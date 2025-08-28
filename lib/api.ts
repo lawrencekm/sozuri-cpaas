@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios"
 import { handleError, ErrorType } from './error-handler'
 
-const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT || '15000') // ms
+const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000')
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
   timeout: API_TIMEOUT,
@@ -33,7 +33,6 @@ api.interceptors.response.use(
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
-    // Mark error as handled by API layer so downstream wrappers don't duplicate reporting
     try {
       ;(error as any)._handledByApi = true
     } catch (e) {
@@ -467,24 +466,24 @@ export const messagingAPI = {
 export const campaignsAPI = {
   getAll: withErrorHandling(
     (params?: { projectId?: string; page?: number; limit?: number; search?: string }): Promise<{ campaigns: Campaign[]; total: number; page: number; limit: number }> =>
-      api.get("/v1/campaigns", { params }).then(res => res.data),
+      api.get("/campaigns", { params }).then(res => res.data),
     ErrorType.API
   ),
 
   getById: withErrorHandling(
-    (id: string): Promise<Campaign> => api.get(`/v1/campaigns/${id}`).then(res => res.data),
+    (id: string): Promise<Campaign> => api.get(`/campaigns/${id}`).then(res => res.data),
     ErrorType.API
   ),
 
   create: withErrorHandling(
     (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'> & { projectId: string }): Promise<Campaign> =>
-      api.post("/v1/campaigns", campaign).then(res => res.data),
+      api.post("/campaigns", campaign).then(res => res.data),
     ErrorType.API
   ),
 
   update: withErrorHandling(
     (id: string, campaign: Partial<Campaign> & { projectId: string }): Promise<Campaign> =>
-      api.put(`/v1/campaigns/${id}`, campaign).then(res => res.data),
+      api.put(`/campaigns/${id}`, campaign).then(res => res.data),
     ErrorType.API
   ),
 
