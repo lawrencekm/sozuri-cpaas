@@ -63,8 +63,8 @@
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 256 30% 55%;
     --sidebar-muted-foreground: 0 0% 95%;
-    --sidebar-accent: 27 88% 55%;
-    --sidebar-active: 0 0% 100% / 0.1;
+    --sidebar-accent: 0 0% 100% / 0.1;
+    --sidebar-active: data-[active=true]:bg-sidebar-accent data-[active=true]:text-foreground;
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3rem;
 
