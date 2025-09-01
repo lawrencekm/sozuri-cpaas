@@ -58,14 +58,14 @@
     --ring: 256 48% 49%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors and dimensions - Using primary color with subtle active state */
-    --sidebar: 256 48% 49%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 256 30% 55%;
-    --sidebar-muted-foreground: 0 0% 95%;
-    --sidebar-accent: 0 0% 100% / 0.1;
-    --sidebar-active: 0 0% 100% / 0.15;
-    --sidebar-hover: 0 0% 100% / 0.25;
+    /* Sidebar specific colors and dimensions - Using blue color scheme */
+    --sidebar: 226 100% 97%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-muted: 226 100% 60%;
+    --sidebar-muted-foreground: 0 0% 0%;
+    --sidebar-accent: 226 100% 90%;
+    --sidebar-active: 226 100% 60%;
+    --sidebar-hover: 226 100% 95%;
     --sidebar-dropdown: 0 0% 0%;
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3rem;
@@ -151,12 +151,12 @@
     --input: 225 14% 20%;
     --ring: 271 91% 65%;
 
-    /* Sidebar specific colors */
-    --sidebar: 224 71% 6%;
+    /* Sidebar specific colors - Dark mode */
+    --sidebar: 226 20% 10%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 225 14% 20%;
-    --sidebar-muted-foreground: 220 8% 85%;
-    --sidebar-accent: 271 91% 65%;
+    --sidebar-muted: 226 100% 60%;
+    --sidebar-muted-foreground: 0 0% 100%;
+    --sidebar-accent: 226 100% 20%;
   }
 }
 
@@ -266,26 +266,41 @@
 
 /* Sidebar hover and active states */
 [data-sidebar="menu-button"]:not([data-active="true"]):hover {
-  background-color: hsl(226 100% 97% / 0.3) !important;
-  transition: background-color 0.2s ease;
+  background-color: hsl(var(--sidebar-hover)) !important;
+  color: hsl(var(--sidebar-muted));
+  transition: all 0.2s ease;
 }
 
 [data-sidebar="menu-button"][data-active="true"] {
   background-color: transparent !important;
+  color: hsl(var(--sidebar-muted));
+  pointer-events: none;
 }
 
 /* Dropdown icon color */
 [data-sidebar="menu-button"] svg {
-  color: hsl(0 0% 0%);
-  transition: color 0.2s ease;
+  color: hsl(var(--sidebar-foreground));
+  transition: all 0.2s ease;
 }
 
 [data-sidebar="menu-button"]:not([data-active="true"]):hover svg {
-  color: hsl(226 100% 60%);
+  color: hsl(var(--sidebar-muted));
 }
 
 [data-sidebar="menu-button"][data-active="true"] svg {
-  color: hsl(0 0% 0%);
+  color: hsl(var(--sidebar-muted));
+}
+
+/* General sidebar item styles */
+[data-sidebar="menu-item"]:not([data-active="true"]):hover {
+  background-color: hsl(var(--sidebar-hover));
+  color: hsl(var(--sidebar-muted));
+}
+
+[data-sidebar="menu-item"][data-active="true"] {
+  background-color: transparent;
+  color: hsl(var(--sidebar-muted));
+  pointer-events: none;
 }
 
 /* Status indicators */
