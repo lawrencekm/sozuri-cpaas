@@ -274,7 +274,12 @@
 [data-sidebar="menu-button"][data-active="true"] {
   background-color: transparent !important;
   color: hsl(var(--sidebar-muted));
-  pointer-events: none;
+  /* Remove pointer-events: none to keep dropdown functional */
+}
+
+/* Keep active state when dropdown is open */
+[data-sidebar="menu-button"][data-active="true"]:has(+ [data-state="open"]) {
+  background-color: hsl(var(--sidebar-hover)) !important;
 }
 
 /* Dropdown icon color */
@@ -300,7 +305,7 @@
 [data-sidebar="menu-item"][data-active="true"] {
   background-color: transparent;
   color: hsl(var(--sidebar-muted));
-  pointer-events: none;
+  /* Remove pointer-events: none to keep dropdown functional */
 }
 
 /* Status indicators */
