@@ -271,7 +271,7 @@
 }
 
 [data-sidebar="menu-button"][data-active="true"] {
-  background-color: hsl(226 100% 97% / 0.2) !important;
+  background-color: transparent !important;
 }
 
 /* Dropdown icon color */
@@ -280,12 +280,12 @@
   transition: color 0.2s ease;
 }
 
-[data-sidebar="menu-button"]:hover svg {
-  color: hsl(0 0% 100%);
+[data-sidebar="menu-button"]:not([data-active="true"]):hover svg {
+  color: hsl(226 100% 60%);
 }
 
 [data-sidebar="menu-button"][data-active="true"] svg {
-  color: hsl(0 0% 100%);
+  color: hsl(0 0% 0%);
 }
 
 /* Status indicators */
