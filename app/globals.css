@@ -14,13 +14,13 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    /* Primary brand color */
-    --primary: 226 64% 40%;
+    /* Primary brand color - Updated to purple */
+    --primary: 271 91% 65%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary colors */
-    --secondary: 226 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary colors - Updated to darker purple */
+    --secondary: 271 32% 32%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted elements - Enhanced hierarchy */
     --muted: 220 14% 96%;
@@ -38,8 +38,8 @@
     --gray-800: 220 27% 18%;
     --gray-900: 220 39% 11%;
 
-    /* Accent elements */
-    --accent: 199 89% 48%;
+    /* Accent elements - Updated to purple accent */
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
 
     /* Feedback colors */
@@ -49,13 +49,13 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
+    --info: 271 91% 65%;
     --info-foreground: 0 0% 100%;
 
     /* Borders and form elements */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 226 64% 40%;
+    --ring: 271 91% 65%;
     --radius: 0.5rem;
 
     /* Sidebar specific colors and dimensions */
@@ -63,13 +63,13 @@
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 225 14% 20%;
     --sidebar-muted-foreground: 220 8% 85%;
-    --sidebar-accent: 199 89% 48%;
+    --sidebar-accent: 271 91% 65%;
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3rem;
 
     /* Chart colors - Professional palette */
-    --chart-1: 226 64% 40%;
-    --chart-2: 199 89% 48%;
+    --chart-1: 271 91% 65%;
+    --chart-2: 271 91% 65%;
     --chart-3: 142 76% 36%;
     --chart-4: 262 83% 58%;
     --chart-5: 326 100% 45%;
@@ -105,13 +105,13 @@
     --popover: 224 71% 6%;
     --popover-foreground: 220 14% 96%;
 
-    /* Primary brand color */
-    --primary: 199 89% 48%;
+    /* Primary brand color - Updated to purple */
+    --primary: 271 91% 65%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary colors */
-    --secondary: 225 14% 20%;
-    --secondary-foreground: 220 14% 96%;
+    /* Secondary colors - Updated to darker purple */
+    --secondary: 271 32% 32%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted elements - Enhanced hierarchy */
     --muted: 225 14% 10%;
@@ -129,8 +129,8 @@
     --gray-800: 220 14% 96%;
     --gray-900: 220 14% 98%;
 
-    /* Accent elements */
-    --accent: 199 89% 48%;
+    /* Accent elements - Updated to purple accent */
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
 
     /* Feedback colors */
@@ -140,20 +140,20 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
+    --info: 271 91% 65%;
     --info-foreground: 0 0% 100%;
 
     /* Borders and form elements */
     --border: 225 14% 20%;
     --input: 225 14% 20%;
-    --ring: 199 89% 48%;
+    --ring: 271 91% 65%;
 
     /* Sidebar specific colors */
     --sidebar: 224 71% 6%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 225 14% 20%;
     --sidebar-muted-foreground: 220 8% 85%;
-    --sidebar-accent: 199 89% 48%;
+    --sidebar-accent: 271 91% 65%;
   }
 }
 
