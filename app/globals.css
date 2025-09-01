@@ -64,7 +64,9 @@
     --sidebar-muted: 256 30% 55%;
     --sidebar-muted-foreground: 0 0% 95%;
     --sidebar-accent: 0 0% 100% / 0.1;
-    --sidebar-active: data-[active=true]:bg-sidebar-accent data-[active=true]:text-foreground;
+    --sidebar-active: 0 0% 100% / 0.15;
+    --sidebar-hover: 0 0% 100% / 0.25;
+    --sidebar-dropdown: 0 0% 0%;
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3rem;
 
@@ -260,6 +262,30 @@
   .loose-spacing {
     @apply space-y-12;
   }
+}
+
+/* Sidebar hover and active states */
+[data-sidebar="menu-button"]:not([data-active="true"]):hover {
+  background-color: hsl(226 100% 97% / 0.3) !important;
+  transition: background-color 0.2s ease;
+}
+
+[data-sidebar="menu-button"][data-active="true"] {
+  background-color: hsl(226 100% 97% / 0.2) !important;
+}
+
+/* Dropdown icon color */
+[data-sidebar="menu-button"] svg {
+  color: hsl(0 0% 0%);
+  transition: color 0.2s ease;
+}
+
+[data-sidebar="menu-button"]:hover svg {
+  color: hsl(0 0% 100%);
+}
+
+[data-sidebar="menu-button"][data-active="true"] svg {
+  color: hsl(0 0% 100%);
 }
 
 /* Status indicators */
