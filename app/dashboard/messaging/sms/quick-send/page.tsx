@@ -118,7 +118,7 @@ export default function QuickSendPage() {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button type="button" variant="outline" asChild>
-                    <Link href="/dashboard/messaging/sms/templates">
+                    <Link href="/dashboard/messaging/templates">
                       <FileText className="mr-2 h-4 w-4" /> Use Template
                     </Link>
                   </Button>

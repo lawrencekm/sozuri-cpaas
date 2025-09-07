@@ -267,7 +267,7 @@ export default function MessageLogDetailPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="font-medium">{log.template_name}</span>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/dashboard/messaging/sms/templates/${log.template_id}`}>
+                      <Link href={`/dashboard/messaging/templates/${log.template_id}`}>
                         <ExternalLink className="h-3 w-3" />
                       </Link>
                     </Button>
