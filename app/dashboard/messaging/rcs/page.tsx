@@ -182,7 +182,7 @@ export default function RCSDashboard() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push("/dashboard/messaging/rcs/rich-cards")}>
-              <Image className="mr-2 h-4 w-4" />
+              <Image className="mr-2 h-4 w-4" alt="" />
               Rich Cards
             </Button>
             <Button variant="outline" onClick={() => router.push("/dashboard/messaging/rcs/settings")}>
@@ -364,7 +364,7 @@ export default function RCSDashboard() {
                   className="w-full justify-start"
                   onClick={() => router.push("/dashboard/messaging/rcs/rich-cards")}
                 >
-                  <Image className="mr-2 h-4 w-4" />
+                  <Image className="mr-2 h-4 w-4" alt="" />
                   Design Rich Cards
                 </Button>
                 <Button 

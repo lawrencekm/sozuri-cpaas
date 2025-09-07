@@ -214,7 +214,7 @@ export default function RichCardsPage() {
                       <div className="relative">
                         <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 rounded-t-lg flex items-center justify-center">
                           <div className="text-center">
-                            <Image className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                            <Image className="h-12 w-12 mx-auto mb-2 text-muted-foreground" alt="Rich card preview placeholder" />
                             <p className="text-sm text-muted-foreground">Rich Card Preview</p>
                           </div>
                         </div>
@@ -326,7 +326,7 @@ export default function RichCardsPage() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                          <Image className="h-4 w-4" />
+                          <Image className="h-4 w-4" alt="" />
                         </div>
                         <div>
                           <p className="text-sm font-medium">High-resolution Images</p>

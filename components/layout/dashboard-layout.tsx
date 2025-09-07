@@ -122,16 +122,6 @@ const navGroups: NavGroup[] = [
   icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={18} height={18} {...props} />,
       },
       {
-        title: "Automations",
-        href: "/dashboard/automations",
-        icon: (props: any) => <Image src="/images/campaigns.svg" alt="Automations" width={20} height={20} {...props} />,
-        subItems: [
-          { title: "Workflows", href: "/dashboard/automations/workflows" },
-          { title: "Templates", href: "/dashboard/automations/templates" },
-          { title: "Triggers", href: "/dashboard/automations/triggers" },
-        ],
-      },
-      {
         title: "Campaigns",
         href: "/dashboard/campaigns",
   icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
