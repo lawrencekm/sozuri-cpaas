@@ -205,7 +205,7 @@ function TemplateSelectionDialog({ onSelect }: { onSelect: (template: any) => vo
             </div>
           </ScrollArea>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
@@ -391,7 +391,7 @@ function AudienceSelectionDialog({ onSelect }: { onSelect: (audience: any) => vo
             )}
           </ScrollArea>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
