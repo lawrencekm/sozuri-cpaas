@@ -1,23 +1,88 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { useSession } from "next-auth/react"
+
+interface Project {
+  id: string
+  name: string
+  description?: string
+  code?: string
+  userId: string
+  type?: string
+  isTrial: boolean
+  trialExpiresAt?: string
+  accountType?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
 
 interface ProjectContextValue {
   projectId: string | null
+  currentProject: Project | null
+  projects: Project[]
   setProjectId: (id: string | null) => void
+  refreshProjects: () => Promise<void>
+  isLoading: boolean
 }
 
 const ProjectContext = createContext<ProjectContextValue | undefined>(undefined)
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession()
   const [projectId, setProjectIdState] = useState<string | null>(null)
+  const [currentProject, setCurrentProject] = useState<Project | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
+  // Load saved project ID from localStorage
   useEffect(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem('active_project_id') : null
       if (saved) setProjectIdState(saved)
     } catch {}
   }, [])
+
+  // Fetch projects when session is available
+  useEffect(() => {
+    if (session?.user?.id) {
+      refreshProjects()
+    }
+  }, [session?.user?.id])
+
+  // Update current project when projectId changes
+  useEffect(() => {
+    if (projectId && projects.length > 0) {
+      const project = projects.find(p => p.id === projectId)
+      setCurrentProject(project || null)
+    } else {
+      setCurrentProject(null)
+    }
+  }, [projectId, projects])
+
+  const refreshProjects = async () => {
+    if (!session?.user?.id) return
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/v1/projects')
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        setProjects(data.data)
+        
+        // If no project is selected but projects exist, select the first one
+        if (!projectId && data.data.length > 0) {
+          setProjectId(data.data[0].id)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const setProjectId = (id: string | null) => {
     setProjectIdState(id)
@@ -29,7 +94,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }
 
-  const value = useMemo(() => ({ projectId, setProjectId }), [projectId])
+  const value = useMemo(() => ({ 
+    projectId, 
+    currentProject, 
+    projects, 
+    setProjectId, 
+    refreshProjects, 
+    isLoading 
+  }), [projectId, currentProject, projects, isLoading])
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
 }
@@ -39,3 +111,6 @@ export function useProject() {
   if (!ctx) throw new Error('useProject must be used within a ProjectProvider')
   return ctx
 }
+
+// Export with the expected name for compatibility
+export const useProjectContext = useProject

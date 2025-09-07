@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { getServerSession } from 'next-auth'
+import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-
-const prisma = new PrismaClient()
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -11,12 +9,44 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { campaigns: true, messageLogs: true } } },
-  })
-  return NextResponse.json(projects)
+  try {
+    const projects = await prisma.project.findMany({
+      where: { 
+        OR: [
+          { userId: session.user.id },
+          { 
+            collaborations: {
+              some: {
+                userId: session.user.id,
+                isActive: true
+              }
+            }
+          }
+        ]
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { 
+        _count: { 
+          select: { 
+            campaigns: true, 
+            messageLogs: true,
+            collaborations: true
+          } 
+        } 
+      },
+    })
+    
+    return NextResponse.json({
+      success: true,
+      data: projects
+    })
+  } catch (error) {
+    console.error('Error fetching projects:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch projects' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: Request) {

@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { 
   Plus, 
   Search, 
@@ -19,7 +20,9 @@ import {
   UserPlus,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -50,6 +53,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import { useProjectContext } from "@/lib/contexts/project-context"
 
 // Animation variants
 const fadeIn = {
@@ -67,105 +71,92 @@ const staggerContainer = {
   },
 }
 
-// Mock team members data
-const teamMembers = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@sozuri.com",
-    phone: "+1234567890",
-    role: "admin",
-    department: "Engineering",
-    status: "active",
-    avatar: "/api/placeholder/40/40",
-    joinedDate: "2023-01-15",
-    lastActive: "2024-01-20T10:30:00Z",
-    permissions: ["all"]
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@sozuri.com",
-    phone: "+1987654321",
-    role: "manager",
-    department: "Marketing",
-    status: "active",
-    avatar: "/api/placeholder/40/40",
-    joinedDate: "2023-03-20",
-    lastActive: "2024-01-20T09:15:00Z",
-    permissions: ["campaigns", "contacts", "analytics"]
-  },
-  {
-    id: "3",
-    name: "Mike Johnson",
-    email: "mike@sozuri.com",
-    phone: "+1555123456",
-    role: "user",
-    department: "Sales",
-    status: "active",
-    avatar: "/api/placeholder/40/40",
-    joinedDate: "2023-06-10",
-    lastActive: "2024-01-20T08:45:00Z",
-    permissions: ["campaigns", "contacts"]
-  },
-  {
-    id: "4",
-    name: "Sarah Wilson",
-    email: "sarah@sozuri.com",
-    phone: "+1777888999",
-    role: "user",
-    department: "Support",
-    status: "inactive",
-    avatar: "/api/placeholder/40/40",
-    joinedDate: "2023-08-05",
-    lastActive: "2024-01-18T16:20:00Z",
-    permissions: ["conversations", "contacts"]
-  },
-  {
-    id: "5",
-    name: "Alex Brown",
-    email: "alex@sozuri.com",
-    phone: "+1444555666",
-    role: "manager",
-    department: "Operations",
-    status: "active",
-    avatar: "/api/placeholder/40/40",
-    joinedDate: "2023-11-12",
-    lastActive: "2024-01-20T07:30:00Z",
-    permissions: ["automations", "webhooks", "analytics"]
-  }
-]
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+  mobile?: string
+  avatar?: string
+  role: string
+  permissions: string[]
+  status: string
+  joinedDate: string
+  lastActive: string
+  invitedAt: string
+  acceptedAt?: string
+  isOwner: boolean
+  collaborationId?: string
+}
 
-const departments = ["All Departments", "Engineering", "Marketing", "Sales", "Support", "Operations"]
-const roles = ["All Roles", "admin", "manager", "user"]
+interface TeamData {
+  teamMembers: TeamMember[]
+  totalMembers: number
+  activeMembers: number
+  pendingInvitations: number
+}
+
+const roles = ["All Roles", "owner", "admin", "manager", "editor", "viewer"]
 const statuses = ["All Status", "active", "inactive", "pending"]
 
 export default function TeamManagementPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const { currentProject } = useProjectContext()
+  
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments")
   const [selectedRole, setSelectedRole] = useState("All Roles")
   const [selectedStatus, setSelectedStatus] = useState("All Status")
+  
+  const [teamData, setTeamData] = useState<TeamData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [isRemoving, setIsRemoving] = useState<string | null>(null)
+
+  // Load team data
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      if (!currentProject) return
+      
+      try {
+        setIsLoading(true)
+        const response = await fetch(`/api/v1/team?projectId=${currentProject.id}`)
+        const data = await response.json()
+        
+        if (data.success) {
+          setTeamData(data.data)
+        } else {
+          setError(data.error || 'Failed to load team data')
+        }
+      } catch (error) {
+        console.error('Error fetching team data:', error)
+        setError('An error occurred while loading team data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTeamData()
+  }, [currentProject])
 
   // Filter team members
-  const filteredMembers = teamMembers.filter(member => {
+  const filteredMembers = teamData?.teamMembers.filter(member => {
     const matchesSearch = searchQuery === "" || 
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.department.toLowerCase().includes(searchQuery.toLowerCase())
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
     
-    const matchesDepartment = selectedDepartment === "All Departments" || member.department === selectedDepartment
     const matchesRole = selectedRole === "All Roles" || member.role === selectedRole
     const matchesStatus = selectedStatus === "All Status" || member.status === selectedStatus
     
-    return matchesSearch && matchesDepartment && matchesRole && matchesStatus
-  })
+    return matchesSearch && matchesRole && matchesStatus
+  }) || []
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case "owner": return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
       case "admin": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
       case "manager": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      case "user": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      case "editor": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+      case "viewer": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
     }
   }
@@ -181,9 +172,11 @@ export default function TeamManagementPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case "admin": return Crown
+      case "owner": return Crown
+      case "admin": return Shield
       case "manager": return Shield
-      case "user": return User
+      case "editor": return Edit
+      case "viewer": return Eye
       default: return User
     }
   }
@@ -204,27 +197,58 @@ export default function TeamManagementPage() {
     return date.toLocaleDateString()
   }
 
-  const handleMemberAction = (action: string, memberId: string) => {
+  const handleMemberAction = async (action: string, memberId: string) => {
+    if (!currentProject) return
+    
     switch (action) {
       case "view":
-        router.push(`/dashboard/team/${memberId}`)
+        router.push(`/dashboard/team/${memberId}?projectId=${currentProject.id}`)
         break
       case "edit":
-        router.push(`/dashboard/team/${memberId}/edit`)
+        router.push(`/dashboard/team/${memberId}/edit?projectId=${currentProject.id}`)
         break
-      case "delete":
-        console.log("Delete member:", memberId)
+      case "remove":
+        await handleRemoveMember(memberId)
         break
       default:
         break
     }
   }
 
+  const handleRemoveMember = async (memberId: string) => {
+    if (!currentProject || !confirm('Are you sure you want to remove this team member?')) return
+    
+    try {
+      setIsRemoving(memberId)
+      const response = await fetch(`/api/v1/team/${memberId}?projectId=${currentProject.id}`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Refresh team data
+        const refreshResponse = await fetch(`/api/v1/team?projectId=${currentProject.id}`)
+        const refreshData = await refreshResponse.json()
+        if (refreshData.success) {
+          setTeamData(refreshData.data)
+        }
+      } else {
+        alert(data.error || 'Failed to remove team member')
+      }
+    } catch (error) {
+      console.error('Error removing team member:', error)
+      alert('An error occurred while removing the team member')
+    } finally {
+      setIsRemoving(null)
+    }
+  }
+
   // Calculate summary stats
-  const totalMembers = teamMembers.length
-  const activeMembers = teamMembers.filter(m => m.status === "active").length
-  const adminCount = teamMembers.filter(m => m.role === "admin").length
-  const managerCount = teamMembers.filter(m => m.role === "manager").length
+  const totalMembers = teamData?.totalMembers || 0
+  const activeMembers = teamData?.activeMembers || 0
+  const pendingInvitations = teamData?.pendingInvitations || 0
+  const adminCount = teamData?.teamMembers.filter(m => m.role === "admin").length || 0
 
   return (
     <DashboardLayout>
@@ -263,14 +287,14 @@ export default function TeamManagementPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-red-600">{adminCount}</div>
-              <p className="text-xs text-muted-foreground">Administrators</p>
+              <div className="text-2xl font-bold text-yellow-600">{pendingInvitations}</div>
+              <p className="text-xs text-muted-foreground">Pending Invitations</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">{managerCount}</div>
-              <p className="text-xs text-muted-foreground">Managers</p>
+              <div className="text-2xl font-bold text-red-600">{adminCount}</div>
+              <p className="text-xs text-muted-foreground">Administrators</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -286,16 +310,6 @@ export default function TeamManagementPage() {
               className="pl-8"
             />
           </div>
-          <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Department" />
-            </SelectTrigger>
-            <SelectContent>
-              {departments.map((dept) => (
-                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Select value={selectedRole} onValueChange={setSelectedRole}>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Role" />
@@ -324,16 +338,27 @@ export default function TeamManagementPage() {
             <CardHeader>
               <CardTitle>Team Members</CardTitle>
               <CardDescription>
-                Showing {filteredMembers.length} of {teamMembers.length} team members
+                Showing {filteredMembers.length} of {totalMembers} team members
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {filteredMembers.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground">Loading team members...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Error Loading Team</h3>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+              ) : filteredMembers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">No team members found</h3>
                   <p className="text-sm text-muted-foreground">
-                    {searchQuery || selectedDepartment !== "All Departments" || selectedRole !== "All Roles" || selectedStatus !== "All Status"
+                    {searchQuery || selectedRole !== "All Roles" || selectedStatus !== "All Status"
                       ? "Try adjusting your search or filters"
                       : "No team members available"}
                   </p>
@@ -343,9 +368,9 @@ export default function TeamManagementPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Member</TableHead>
-                      <TableHead className="hidden md:table-cell">Department</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead className="hidden lg:table-cell">Status</TableHead>
+                      <TableHead className="hidden sm:table-cell">Joined</TableHead>
                       <TableHead className="hidden sm:table-cell">Last Active</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -364,18 +389,20 @@ export default function TeamManagementPage() {
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium">{member.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{member.name}</p>
+                                  {member.isOwner && (
+                                    <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
+                                      Owner
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Mail className="h-3 w-3" />
                                   <span>{member.email}</span>
                                 </div>
                               </div>
                             </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <Badge variant="outline">
-                              {member.department}
-                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -389,6 +416,11 @@ export default function TeamManagementPage() {
                             <Badge variant="secondary" className={getStatusColor(member.status)}>
                               {member.status}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <div className="text-sm">
+                              {formatDate(member.joinedDate)}
+                            </div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <div className="text-sm">
@@ -414,23 +446,32 @@ export default function TeamManagementPage() {
                                   <Eye className="mr-2 h-4 w-4" />
                                   View Profile
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleMemberAction("edit", member.id)
-                                }}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Member
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleMemberAction("delete", member.id)
-                                  }}
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Remove Member
-                                </DropdownMenuItem>
+                                {!member.isOwner && (
+                                  <>
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleMemberAction("edit", member.id)
+                                    }}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Edit Role
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleMemberAction("remove", member.id)
+                                      }}
+                                      className="text-destructive"
+                                      disabled={isRemoving === member.id}
+                                    >
+                                      {isRemoving === member.id ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                      )}
+                                      Remove Member
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
