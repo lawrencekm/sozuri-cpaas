@@ -132,16 +132,6 @@ const navGroups: NavGroup[] = [
         ],
       },
       {
-        title: "Conversations",
-        href: "/dashboard/conversations",
-        icon: (props: any) => <Image src="/images/messaging.svg" alt="Conversations" width={18} height={18} {...props} />,
-      },
-      {
-        title: "Team",
-        href: "/dashboard/team",
-        icon: (props: any) => <Image src="/images/contacts.svg" alt="Team" width={18} height={18} {...props} />,
-      },
-      {
         title: "Campaigns",
         href: "/dashboard/campaigns",
   icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
@@ -415,6 +405,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/team">Team Management</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/billing">Billing</Link>
