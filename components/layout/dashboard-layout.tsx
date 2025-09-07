@@ -24,7 +24,7 @@ import {
   Users,
   Webhook,
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, EmailLogo } from "@/components/channel-logos"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -89,10 +89,14 @@ const navGroups: NavGroup[] = [
         channels: [
           { name: "SMS", logo: SMSLogo },
           { name: "WhatsApp", logo: WhatsAppLogo },
+          { name: "RCS", logo: RCSLogo },
+          { name: "Email", logo: EmailLogo },
         ],
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms" },
           { title: "WhatsApp", href: "/dashboard/messaging/whatsapp" },
+          { title: "RCS", href: "/dashboard/messaging/rcs" },
+          { title: "Email", href: "/dashboard/messaging/email" },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },
@@ -116,6 +120,26 @@ const navGroups: NavGroup[] = [
         title: "Webhooks",
         href: "/dashboard/webhooks",
   icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={18} height={18} {...props} />,
+      },
+      {
+        title: "Automations",
+        href: "/dashboard/automations",
+        icon: (props: any) => <Image src="/images/campaigns.svg" alt="Automations" width={20} height={20} {...props} />,
+        subItems: [
+          { title: "Workflows", href: "/dashboard/automations/workflows" },
+          { title: "Templates", href: "/dashboard/automations/templates" },
+          { title: "Triggers", href: "/dashboard/automations/triggers" },
+        ],
+      },
+      {
+        title: "Conversations",
+        href: "/dashboard/conversations",
+        icon: (props: any) => <Image src="/images/messaging.svg" alt="Conversations" width={18} height={18} {...props} />,
+      },
+      {
+        title: "Team",
+        href: "/dashboard/team",
+        icon: (props: any) => <Image src="/images/contacts.svg" alt="Team" width={18} height={18} {...props} />,
       },
       {
         title: "Campaigns",
@@ -253,7 +277,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {navGroups.map((group, index) => (
                 <SidebarGroup key={group.id} className={index !== 0 ? "mt-1" : ""}>
                   {group.title && (
-                    <div className="px-6 py-1 text-xs font-bold text-blue-500 tracking-widest uppercase">
+                    <div className="px-6 py-1 text-xs font-bold text-gray-500 tracking-widest uppercase">
                       {group.title}
                     </div>
                   )}
