@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Calendar, Clock, FileText, MessageSquare, Save, Send, Upload, Users } from "lucide-react"
+import { ArrowLeft, Calendar, Clock, FileText, MessageCircle, MessageSquare, Save, Send, Tag, Upload, Users } from "lucide-react"
 import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 
 // Animation variants
@@ -43,11 +45,114 @@ const staggerContainer = {
 // Template selection dialog
 function TemplateSelectionDialog({ onSelect }: { onSelect: (template: any) => void }) {
   const [open, setOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleSelect = (template: any) => {
     onSelect(template)
     setOpen(false)
   }
+
+  // SMS templates from the unified templates system - filtered for SMS channel only
+  const smsTemplates = [
+    {
+      id: "builtin-1",
+      name: "Welcome Message",
+      content: "Welcome to {{company}}! We're excited to have you join us. Your account is now active and ready to use.",
+      type: "Transactional",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-2",
+      name: "Appointment Reminder",
+      content: "Hi {{name}}, this is a reminder that your appointment is scheduled for {{date}} at {{time}}. Please arrive 15 minutes early.",
+      type: "Notification",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-3",
+      name: "Order Confirmation",
+      content: "Thank you for your order! Your order #{{order_id}} has been confirmed and will be shipped on {{ship_date}}. Track your order at {{tracking_url}}",
+      type: "Transactional",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-4",
+      name: "Promotional Offer",
+      content: "🎉 Special offer just for you, {{name}}! Use code {{promo_code}} to get {{discount}}% off your next purchase. Valid until {{expiry_date}}. Shop now!",
+      type: "Marketing",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-5",
+      name: "Payment Confirmation",
+      content: "Payment received! Thank you for your payment of {{amount}} for {{service}}. Your receipt has been sent to {{email}}. Reference: {{ref_number}}",
+      type: "Transactional",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-6",
+      name: "Event Reminder",
+      content: "Don't forget! The {{event_name}} is happening on {{date}} at {{time}}. We look forward to seeing you there!",
+      type: "Reminder",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-7",
+      name: "Delivery Notification",
+      content: "Great news! Your order #{{order_id}} has been delivered to {{address}}. Thank you for choosing {{company}}!",
+      type: "Notification",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-8",
+      name: "Password Reset",
+      content: "Your password reset code is {{reset_code}}. This code will expire in 10 minutes. If you didn't request this, please ignore.",
+      type: "Transactional",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-9",
+      name: "Survey Request",
+      content: "Hi {{name}}, we'd love your feedback! Please take 2 minutes to rate your recent experience: {{survey_link}}",
+      type: "Marketing",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    },
+    {
+      id: "builtin-10",
+      name: "Account Verification",
+      content: "Welcome to {{company}}! Your verification code is {{verification_code}}. Enter this code to complete your account setup.",
+      type: "Transactional",
+      channel: "sms",
+      lastUsed: "Built-in template",
+      isBuiltIn: true,
+    }
+  ]
+
+  // Filter templates based on search query
+  const filteredTemplates = smsTemplates.filter((template) => {
+    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         template.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         template.type.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSearch
+  })
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -56,54 +161,65 @@ function TemplateSelectionDialog({ onSelect }: { onSelect: (template: any) => vo
           <FileText className="mr-2 h-4 w-4" /> Choose Template
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Select Message Template</DialogTitle>
-          <DialogDescription>Choose a template for your SMS campaign</DialogDescription>
+          <DialogTitle>Select SMS Template</DialogTitle>
+          <DialogDescription>Choose a template for your SMS campaign (SMS templates only)</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {[
-              {
-                id: 1,
-                name: "Welcome Message",
-                content: "Welcome to {{company}}! We're excited to have you join us.",
-                type: "Transactional",
-              },
-              {
-                id: 2,
-                name: "Appointment Reminder",
-                content: "Reminder: Your appointment is scheduled for {{date}} at {{time}}.",
-                type: "Notification",
-              },
-              {
-                id: 3,
-                name: "Order Confirmation",
-                content: "Your order #{{order_id}} has been confirmed and will be shipped on {{ship_date}}.",
-                type: "Transactional",
-              },
-              {
-                id: 4,
-                name: "Promotional Offer",
-                content: "Special offer for you! Use code {{promo_code}} to get {{discount}}% off your next purchase.",
-                type: "Marketing",
-              },
-            ].map((template) => (
-              <Card
-                key={template.id}
-                className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all"
-                onClick={() => handleSelect(template)}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{template.name}</CardTitle>
-                  <CardDescription className="text-xs">{template.type}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-muted-foreground">{template.content}</p>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="space-y-4">
+          <div className="relative">
+            <Input
+              placeholder="Search templates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-4"
+            />
           </div>
+          <ScrollArea className="h-[400px] pr-4">
+            <div className="grid gap-3">
+              {filteredTemplates.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No templates found</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery ? "Try adjusting your search terms" : "No SMS templates available"}
+                  </p>
+                </div>
+              ) : (
+                filteredTemplates.map((template) => (
+                  <Card
+                    key={template.id}
+                    className="cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all"
+                    onClick={() => handleSelect(template)}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm">{template.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            SMS
+                          </Badge>
+                        </div>
+                      </div>
+                      <CardDescription className="flex items-center gap-2">
+                        <Badge variant="outline">
+                          <Tag className="h-3 w-3 mr-1" /> {template.type}
+                        </Badge>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{template.content}</p>
+                      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{template.lastUsed}</span>
+                        <span>{template.content.length} chars</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
