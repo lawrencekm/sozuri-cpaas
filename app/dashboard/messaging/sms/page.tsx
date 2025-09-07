@@ -101,16 +101,16 @@ export default function SmsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Templates</CardTitle>
-                  <CardDescription>Manage your SMS message templates</CardDescription>
+                  <CardDescription>Create and manage reusable SMS message templates</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Create and manage reusable SMS templates with personalization variables for consistent messaging.
+                    Create and manage reusable message templates with personalization variables for consistent messaging across all channels.
                   </p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full" asChild>
-                    <Link href="/dashboard/messaging/sms/templates">
+                    <Link href="/dashboard/messaging/templates">
                       Manage Templates <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>

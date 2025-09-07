@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { ContextualNav } from "@/components/navigation/contextual-nav"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo, } from "@/components/channel-logos"
 
 export default function MessagingPage() {
   const channels = [
