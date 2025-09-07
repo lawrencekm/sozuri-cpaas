@@ -1,17 +1,38 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status') || undefined
   const channel = searchParams.get('channel') || undefined
+  const projectId = searchParams.get('projectId') || undefined
+
+  // Get user's projects to filter campaigns
+  const userProjects = await prisma.project.findMany({
+    where: { userId: session.user.id },
+    select: { id: true }
+  })
+  
+  const projectIds = userProjects.map(p => p.id)
+  
+  if (projectIds.length === 0) {
+    return NextResponse.json([])
+  }
 
   const campaigns = await prisma.campaign.findMany({
     where: {
+      projectId: projectId ? projectId : { in: projectIds }, // Filter by user's projects
       ...(status ? { status } as any : {}),
-      ...(channel ? { type: channel } : {}),
+      ...(channel ? { type: channel } as any : {}),
     },
     orderBy: { createdAt: 'desc' },
     select: {
@@ -29,30 +50,17 @@ export async function GET(request: Request) {
     }
   })
 
-  // Transform data to match frontend interface
-  const transformedCampaigns = campaigns.map(campaign => ({
-    id: campaign.id,
-    name: campaign.name,
-    description: campaign.description || "",
-    channel: campaign.type, // Map type to channel for frontend
-    status: campaign.status,
-    created: campaign.createdAt.toISOString(),
-    updated: campaign.updatedAt.toISOString(),
-    project_id: campaign.projectId,
-    audience: {
-      total: campaign.totalSent || 0,
-      delivered: campaign.totalDelivered || 0,
-      failed: campaign.totalFailed || 0,
-      opened: campaign.totalDelivered || 0, // For SMS/WhatsApp, delivered = opened
-      clicked: 0 // Not applicable for SMS/WhatsApp
-    }
-  }))
-
-  return NextResponse.json(transformedCampaigns)
+  // Return standardized response format
+  return NextResponse.json(campaigns)
 }
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
 
     // Map legacy/front-end field `channel` -> Prisma field `type` and whitelist fields
@@ -84,6 +92,21 @@ export async function POST(request: Request) {
     if (!cleaned?.name || typeof cleaned.name !== 'string' || !cleaned.name.trim()) {
       return NextResponse.json({ error: 'name is required' }, { status: 400 })
     }
+
+    // Verify project ownership
+    const project = await prisma.project.findFirst({
+      where: {
+        id: cleaned.projectId,
+        userId: session.user.id
+      }
+    })
+
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found or access denied' }, { status: 403 })
+    }
+
+    // Add user context to campaign
+    cleaned.createdBy = session.user.id
 
     const campaign = await prisma.campaign.create({ data: cleaned })
     return NextResponse.json(campaign, { status: 201 })

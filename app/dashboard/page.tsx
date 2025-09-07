@@ -457,8 +457,13 @@ export default function Dashboard() {
 
         if ((projectsData?.length || 0) > 0) {
           try {
-            const tpl = await campaignTemplatesAPI.getAll(projectsData[0].id)
-            setTemplates(tpl || [])
+            // Aggregate templates from all user projects
+            const templatePromises = projectsData.map(project => 
+              campaignTemplatesAPI.getAll(project.id).catch(() => [])
+            )
+            const templateArrays = await Promise.all(templatePromises)
+            const allTemplates = templateArrays.flat()
+            setTemplates(allTemplates || [])
           } catch (_) {
             setTemplates([])
           }

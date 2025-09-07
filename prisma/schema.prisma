@@ -268,6 +268,10 @@ model Project {
   automations       Automation[]
   paybillAccounts   PaybillAccount[]
   invoices          Invoice[]
+  conversations     Conversation[]
+  unifiedMessages   UnifiedMessage[]
+  messageRoutes     MessageRoute[]
+  channelPreferences ChannelPreference[]
 
   @@unique([userId, name])
   @@index([userId])
@@ -1430,7 +1434,282 @@ model Automation {
 }
 
 // ============================================================================
-// BILLING & PAYMENTS (added)
+// UNIFIED CONVERSATION ORCHESTRATION
+// ============================================================================
+
+model Conversation {
+  id        String @id @default(cuid())
+  projectId String
+
+  // Conversation Identity
+  conversationId String @unique // Unified conversation identifier across channels
+  subject        String?
+  
+  // Participants
+  customerId    String // Primary customer identifier (phone/email)
+  customerName  String?
+  assignedAgent String? // Assigned agent/user ID
+  
+  // Channel Management
+  primaryChannel   String // sms, whatsapp, email, voice
+  activeChannels   String[] // Array of currently active channels
+  preferredChannel String? // Customer's preferred channel
+  
+  // Conversation State
+  status       String   @default("active") // active, paused, closed, escalated
+  priority     String   @default("normal") // low, normal, high, urgent
+  category     String? // support, sales, marketing, notification
+  tags         String[] // Conversation tags for categorization
+  
+  // Context & Journey
+  journeyStage    String? // awareness, consideration, purchase, support, retention
+  lastChannel     String? // Last channel used for communication
+  channelHistory  Json? // History of channel usage and switches
+  
+  // Metadata
+  metadata     Json? // Additional conversation context
+  isArchived   Boolean  @default(false)
+  archivedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActivity DateTime @default(now())
+  
+  // Relations
+  project      Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     UnifiedMessage[]
+  routes       MessageRoute[]
+  states       ConversationState[]
+  
+  @@index([projectId])
+  @@index([customerId])
+  @@index([status])
+  @@index([primaryChannel])
+  @@index([lastActivity])
+  @@index([createdAt])
+}
+
+model ConversationParticipant {
+  id             String @id @default(cuid())
+  conversationId String
+  
+  // Participant Identity
+  participantId   String // User ID, agent ID, or external ID
+  participantType String // customer, agent, bot, system
+  role           String @default("participant") // participant, moderator, observer
+  
+  // Contact Information
+  phoneNumber String?
+  email       String?
+  name        String?
+  
+  // Channel Preferences
+  preferredChannels String[] // Preferred communication channels
+  blockedChannels   String[] // Channels to avoid
+  timezone         String?   @default("Africa/Nairobi")
+  language         String?   @default("en")
+  
+  // Status
+  isActive   Boolean   @default(true)
+  joinedAt   DateTime  @default(now())
+  leftAt     DateTime?
+  lastSeenAt DateTime?
+  
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@unique([conversationId, participantId])
+  @@index([conversationId])
+  @@index([participantId])
+  @@index([participantType])
+}
+
+model UnifiedMessage {
+  id             String @id @default(cuid())
+  conversationId String
+  projectId      String
+  
+  // Message Identity
+  messageId       String @unique // Unified message identifier
+  externalId      String? // External message ID from channel provider
+  parentMessageId String? // For threading/replies
+  
+  // Channel Information
+  channel         String // sms, whatsapp, email, voice
+  channelProvider String? // safaricom, meta, twilio, etc.
+  
+  // Participants
+  fromId          String // Participant ID
+  fromType        String // customer, agent, bot, system
+  fromIdentifier  String // Phone number, email, etc.
+  toId            String // Participant ID
+  toType          String // customer, agent, bot, system
+  toIdentifier    String // Phone number, email, etc.
+  
+  // Message Content
+  messageType String // text, image, video, audio, document, location, template
+  content     Json   // Flexible content structure
+  subject     String? // For email messages
+  
+  // Message Status
+  status           String    @default("pending") // pending, sent, delivered, read, failed
+  deliveryStatus   String? // Channel-specific delivery status
+  readAt           DateTime?
+  deliveredAt      DateTime?
+  failedAt         DateTime?
+  failureReason    String?
+  
+  // Routing Information
+  routeId         String? // Reference to routing decision
+  isAutoRouted    Boolean @default(false)
+  routingReason   String? // Why this channel was chosen
+  fallbackLevel   Int     @default(0) // 0 = primary, 1+ = fallback attempts
+  
+  // Context & Intelligence
+  intent          String? // Detected message intent
+  sentiment       String? // positive, negative, neutral
+  urgency         String? // low, normal, high, urgent
+  priority        String? // low, normal, high, urgent
+  isAutomated     Boolean @default(false)
+  automationId    String? // If sent by automation
+  
+  // Pricing
+  cost     Decimal? @db.Decimal(10, 4)
+  currency String?  @default("KES")
+  
+  // Timestamps
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  conversation Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  route        MessageRoute? @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  
+  @@index([conversationId])
+  @@index([projectId])
+  @@index([messageId])
+  @@index([channel])
+  @@index([status])
+  @@index([fromIdentifier])
+  @@index([toIdentifier])
+  @@index([createdAt])
+  @@index([sentAt])
+}
+
+model MessageRoute {
+  id             String @id @default(cuid())
+  conversationId String
+  projectId      String
+  
+  // Routing Decision
+  routeId         String @unique
+  primaryChannel  String // Intended channel
+  fallbackChannels String[] // Ordered fallback channels
+  
+  // Routing Logic
+  routingStrategy String // preference, availability, cost, reliability
+  decisionFactors Json   // Factors that influenced the routing decision
+  
+  // Channel Availability
+  channelStatus Json // Status of each channel at routing time
+  
+  // Execution
+  attemptedChannels String[] // Channels that were attempted
+  successfulChannel String? // Channel that successfully delivered
+  totalAttempts     Int      @default(0)
+  
+  // Timing
+  routedAt    DateTime  @default(now())
+  completedAt DateTime?
+  
+  // Relations
+  conversation Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messages     UnifiedMessage[]
+  
+  @@index([conversationId])
+  @@index([projectId])
+  @@index([primaryChannel])
+  @@index([routedAt])
+}
+
+model ConversationState {
+  id             String @id @default(cuid())
+  conversationId String
+  
+  // State Information
+  state          String // active, waiting, escalated, resolved, closed
+  subState       String? // More specific state information
+  reason         String? // Reason for state change
+  
+  // Context Preservation
+  context        Json? // Conversation context and variables
+  customerData   Json? // Customer information and preferences
+  agentNotes     String? @db.Text
+  
+  // Workflow
+  workflowStage  String? // Current stage in business workflow
+  nextActions    String[] // Suggested next actions
+  
+  // Timing
+  validFrom DateTime @default(now())
+  validTo   DateTime?
+  createdAt DateTime @default(now())
+  
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@index([conversationId])
+  @@index([state])
+  @@index([validFrom])
+}
+
+model ChannelPreference {
+  id        String @id @default(cuid())
+  projectId String
+  
+  // Customer Identity
+  customerId       String // Phone number, email, or customer ID
+  customerType     String @default("phone") // phone, email, customer_id
+  
+  // Channel Preferences
+  preferredChannels String[] // Ordered list of preferred channels
+  blockedChannels   String[] // Channels customer has opted out of
+  
+  // Availability Windows
+  availableHours Json? // When customer prefers to be contacted
+  timezone       String @default("Africa/Nairobi")
+  
+  // Channel-specific Preferences
+  smsPreferences      Json? // SMS-specific preferences
+  whatsappPreferences Json? // WhatsApp-specific preferences
+  emailPreferences    Json? // Email-specific preferences
+  voicePreferences    Json? // Voice-specific preferences
+  
+  // Behavior Tracking
+  responseRates    Json? // Response rates by channel
+  engagementScore  Int?  @default(0) // Overall engagement score
+  lastChannelUsed  String?
+  
+  // Metadata
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, customerId, customerType])
+  @@index([projectId])
+  @@index([customerId])
+  @@index([preferredChannels])
+}
+
+// ============================================================================
+// BILLING & PAYMENTS 
 // ============================================================================
 
 model Invoice {

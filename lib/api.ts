@@ -3,7 +3,7 @@ import { handleError, ErrorType } from './error-handler'
 
 const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000')
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api/v1",
   timeout: API_TIMEOUT,
 })
 
@@ -465,7 +465,7 @@ export const messagingAPI = {
 // Campaigns API with error handling
 export const campaignsAPI = {
   getAll: withErrorHandling(
-    (params?: { projectId?: string; page?: number; limit?: number; search?: string }): Promise<{ campaigns: Campaign[]; total: number; page: number; limit: number }> =>
+    (params?: { projectId?: string; page?: number; limit?: number; search?: string }): Promise<Campaign[]> =>
       api.get("/campaigns", { params }).then(res => res.data),
     ErrorType.API
   ),
