@@ -36,7 +36,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const setProjectId = (id: string | null) => {
+  const setProjectId = useCallback((id: string | null) => {
     setProjectIdState(id)
     try {
       if (typeof window !== 'undefined') {
@@ -44,7 +44,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         else localStorage.removeItem('active_project_id')
       }
     } catch {}
-  }
+  }, [])
 
   const refreshProjects = useCallback(async () => {
     if (!session?.user?.id) return
