@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react"
 import { useSession } from "next-auth/react"
 
 interface Project {
@@ -36,32 +36,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  // Load saved project ID from localStorage
-  useEffect(() => {
+  const setProjectId = (id: string | null) => {
+    setProjectIdState(id)
     try {
-      const saved = typeof window !== 'undefined' ? localStorage.getItem('active_project_id') : null
-      if (saved) setProjectIdState(saved)
+      if (typeof window !== 'undefined') {
+        if (id) localStorage.setItem('active_project_id', id)
+        else localStorage.removeItem('active_project_id')
+      }
     } catch {}
-  }, [])
+  }
 
-  // Fetch projects when session is available
-  useEffect(() => {
-    if (session?.user?.id) {
-      refreshProjects()
-    }
-  }, [session?.user?.id])
-
-  // Update current project when projectId changes
-  useEffect(() => {
-    if (projectId && projects.length > 0) {
-      const project = projects.find(p => p.id === projectId)
-      setCurrentProject(project || null)
-    } else {
-      setCurrentProject(null)
-    }
-  }, [projectId, projects])
-
-  const refreshProjects = async () => {
+  const refreshProjects = useCallback(async () => {
     if (!session?.user?.id) return
     
     try {
@@ -82,17 +67,32 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [session?.user?.id, projectId, setProjectId])
 
-  const setProjectId = (id: string | null) => {
-    setProjectIdState(id)
+  // Load saved project ID from localStorage
+  useEffect(() => {
     try {
-      if (typeof window !== 'undefined') {
-        if (id) localStorage.setItem('active_project_id', id)
-        else localStorage.removeItem('active_project_id')
-      }
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('active_project_id') : null
+      if (saved) setProjectIdState(saved)
     } catch {}
-  }
+  }, [])
+
+  // Fetch projects when session is available
+  useEffect(() => {
+    if (session?.user?.id) {
+      refreshProjects()
+    }
+  }, [session?.user?.id, refreshProjects])
+
+  // Update current project when projectId changes
+  useEffect(() => {
+    if (projectId && projects.length > 0) {
+      const project = projects.find(p => p.id === projectId)
+      setCurrentProject(project || null)
+    } else {
+      setCurrentProject(null)
+    }
+  }, [projectId, projects])
 
   const value = useMemo(() => ({ 
     projectId, 
@@ -101,7 +101,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setProjectId, 
     refreshProjects, 
     isLoading 
-  }), [projectId, currentProject, projects, isLoading])
+  }), [projectId, currentProject, projects, isLoading, refreshProjects])
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
 }
@@ -112,5 +112,4 @@ export function useProject() {
   return ctx
 }
 
-// Export with the expected name for compatibility
 export const useProjectContext = useProject
