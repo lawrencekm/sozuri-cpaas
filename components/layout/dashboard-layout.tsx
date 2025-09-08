@@ -248,7 +248,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
           <Sidebar className="border-r bg-sidebar text-sidebar-foreground">
-            <SidebarHeader className="border-b border-gray-200 py-6 dark:border-gray-700">
+            <SidebarHeader className="border-b border-gray-200 py-6 dark:border-gray-700 bg-purple-500">
               <div className="flex items-center justify-center px-6">
                 <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
               </div>
