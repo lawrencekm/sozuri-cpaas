@@ -69,12 +69,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch('/api/v1/projects')
       const data = await response.json()
       
-      if (data.success && data.data) {
-        setProjects(data.data)
+      if (Array.isArray(data)) {
+        setProjects(data)
         
         // If no project is selected but projects exist, select the first one
-        if (!projectId && data.data.length > 0) {
-          setProjectId(data.data[0].id)
+        if (!projectId && data.length > 0) {
+          setProjectId(data[0].id)
         }
       }
     } catch (error) {
