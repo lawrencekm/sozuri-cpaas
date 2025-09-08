@@ -101,7 +101,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setProjectId, 
     refreshProjects, 
     isLoading 
-  }), [projectId, currentProject, projects, isLoading, refreshProjects])
+  }), [projectId, currentProject, projects, isLoading, refreshProjects, setProjectId])
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
 }
