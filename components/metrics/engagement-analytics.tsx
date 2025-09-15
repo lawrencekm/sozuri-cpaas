@@ -20,6 +20,22 @@ import {
 } from "recharts"
 import { Users, Clock, TrendingUp, MessagesSquare } from "lucide-react"
 
+// Map metrics API response to engagementData shape
+function mapMetricsToEngagementData(metrics: any, channel: string) {
+  return {
+    activeUsers: metrics.timeSeries?.reduce((max: number, point: any) => Math.max(max, point.value), 0) || 0,
+    responseRate: metrics.deliveryRate || 0,
+    messagesSent: metrics.timeSeries?.reduce((sum: number, point: any) => sum + point.value, 0) || 0,
+    averageResponseTime: metrics.latency || 0,
+    channelPreferences: { [metrics.channel || channel]: metrics.throughput || 0 },
+    userSegments: [
+      { segment: "Highly Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.5) },
+      { segment: "Moderately Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.3) },
+      { segment: "Low Engagement", count: Math.round((metrics.deliveryRate || 0) * 0.2) },
+    ],
+  }
+}
+
 export function EngagementAnalytics() {
   const [engagementData, setEngagementData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -27,26 +43,10 @@ export function EngagementAnalytics() {
   const [channel] = useState("sms") // Default channel, can be made dynamic if needed
   const [metric] = useState("engagement") // Placeholder metric, can be customized
 
-  // Map metrics API response to engagementData shape
-  const mapMetricsToEngagementData = (metrics: any) => {
-    return {
-      activeUsers: metrics.timeSeries?.reduce((max: number, point: any) => Math.max(max, point.value), 0) || 0,
-      responseRate: metrics.deliveryRate || 0,
-      messagesSent: metrics.timeSeries?.reduce((sum: number, point: any) => sum + point.value, 0) || 0,
-      averageResponseTime: metrics.latency || 0,
-      channelPreferences: { [metrics.channel || channel]: metrics.throughput || 0 },
-      userSegments: [
-        { segment: "Highly Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.5) },
-        { segment: "Moderately Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.3) },
-        { segment: "Low Engagement", count: Math.round((metrics.deliveryRate || 0) * 0.2) },
-      ],
-    }
-  }
-
   const fetchEngagementData = async () => {
     try {
       const metrics = await analyticsAPI.getMetrics(channel, metric, timeframe)
-      setEngagementData(mapMetricsToEngagementData(metrics))
+      setEngagementData(mapMetricsToEngagementData(metrics, channel))
     } catch (error) {
       console.error("Error fetching engagement data:", error)
     } finally {
@@ -60,7 +60,7 @@ export function EngagementAnalytics() {
       try {
         const metrics = await analyticsAPI.getMetrics(channel, metric, timeframe);
         if (isMounted) {
-          setEngagementData(mapMetricsToEngagementData(metrics));
+          setEngagementData(mapMetricsToEngagementData(metrics, channel));
         }
       } catch (error) {
         if (isMounted) {
