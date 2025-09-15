@@ -360,13 +360,6 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
                   </Button>
                 </div>
 
-                {mode === 'signin' && (
-                  <div className="text-center">
-                    <Link href="/admin-access" className="text-sm text-muted-foreground hover:text-foreground">
-                      Admin Access
-                    </Link>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

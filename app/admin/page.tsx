@@ -66,15 +66,7 @@ export default function AdminDashboardPage() {
       setCurrentUser(user)
     } catch (error) {
       console.error('Failed to load current user:', error)
-      setCurrentUser({
-        id: 'admin_demo',
-        name: 'Demo Admin',
-        email: 'admin@demo.com',
-        role: 'admin',
-        status: 'active',
-        created_at: new Date().toISOString(),
-        permissions: ['read', 'write', 'admin', 'impersonate']
-      })
+      setCurrentUser(null)
     }
   }, [])
 
