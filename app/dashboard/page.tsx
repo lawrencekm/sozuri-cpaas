@@ -451,7 +451,10 @@ export default function Dashboard() {
           campaignsAPI.getAll(),
         ])
 
-        const mappedProjects = (projectsData || []).map(p => toCardProject(p))
+        const mappedProjects = (projectsData || []).map(p => toCardProject({
+          ...p,
+          type: p.accountType || 'marketing'
+        }))
         setProjects(mappedProjects)
         setCampaigns(campaignsData || [])
 
