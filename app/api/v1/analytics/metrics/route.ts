@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withCache, buildKey } from '@/lib/cache'
 
 // Simple utility to generate mock metrics based on timeframe
 function generateMockMetrics(channel: string, timeframe: string) {
@@ -85,7 +86,13 @@ export async function GET(req: NextRequest) {
   // metric is currently unused but kept for API contract compatibility
   const timeframe = searchParams.get('timeframe') || '1d'
 
-  // In a real implementation, validate inputs and query your datastore
-  const data = generateMockMetrics(channel, timeframe)
+  // Cache key per channel/timeframe
+  const key = buildKey(['analytics','metrics', channel, timeframe])
+
+  const data = await withCache(key, async () => {
+    // In a real implementation, validate inputs and query your datastore
+    return generateMockMetrics(channel, timeframe)
+  }, { ttlSeconds: 30 })
+
   return NextResponse.json(data)
 }

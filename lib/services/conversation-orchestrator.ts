@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { ChannelRouter } from './channel-router';
 import { ConversationManager } from './conversation-manager';
 import { CustomerJourneyTracker } from './customer-journey-tracker';
+import { getSMSProvider, getWhatsAppProvider, getEmailProvider, getVoiceProvider } from '../providers';
 
 const prisma = new PrismaClient();
 
@@ -83,7 +84,7 @@ export class ConversationOrchestrator {
           messageId,
           conversationId: conversation.conversationId,
           projectId: request.projectId,
-          channel: routingDecision.primaryChannel,
+          channel: routingDecision.primaryChannel as 'sms' | 'email' | 'whatsapp' | 'voice',
           channelProvider: routingDecision.provider,
           fromId: 'system',
           fromType: 'system',
@@ -103,12 +104,34 @@ export class ConversationOrchestrator {
         }
       });
 
-      // 5. Execute message delivery through selected channel
-      const deliveryResult = await this.executeMessageDelivery(
-        unifiedMessage,
-        routingDecision,
-        context
-      );
+      // 5. Execute message delivery through selected channel (inline or via background queue)
+      const useQueue = process.env.USE_QUEUE === 'true'
+      let deliveryResult
+      if (useQueue) {
+        try {
+          const { enqueueDelivery } = await import('../queues/message-queue')
+          await enqueueDelivery({
+            messageId: unifiedMessage.messageId,
+            message: unifiedMessage,
+            routingDecision,
+            channel: routingDecision.primaryChannel as 'sms' | 'email' | 'whatsapp' | 'voice',
+          })
+          deliveryResult = { success: true } // Assume success; webhook/worker will update statuses
+        } catch (e) {
+          // Fallback to direct send on queue failure
+          deliveryResult = await this.executeMessageDelivery(
+            unifiedMessage,
+            routingDecision,
+            context
+          )
+        }
+      } else {
+        deliveryResult = await this.executeMessageDelivery(
+          unifiedMessage,
+          routingDecision,
+          context
+        )
+      }
 
       // 6. Update conversation state and journey
       await this.updateConversationAfterMessage(
@@ -362,7 +385,7 @@ export class ConversationOrchestrator {
   /**
    * Deliver message through specific channel
    */
-  private async deliverThroughChannel(
+  async deliverThroughChannel(
     message: any,
     channel: string,
     routingDecision: any
@@ -385,86 +408,152 @@ export class ConversationOrchestrator {
    * SMS delivery implementation
    */
   private async deliverSMS(message: any, routingDecision: any): Promise<{ success: boolean; error?: string }> {
-    // Integrate with existing SMS service
-    // This would call the actual SMS API
-    console.log(`Delivering SMS message ${message.messageId} via ${routingDecision.provider}`);
-    
-    // Simulate delivery
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Update message status
-    await prisma.unifiedMessage.update({
-      where: { id: message.id },
-      data: {
-        status: 'sent',
-        sentAt: new Date()
-      }
-    });
+    try {
+      const provider = await getSMSProvider(routingDecision.provider);
+      const from = routingDecision.fromIdentifier || 'SOZURI';
+      const to = message.toIdentifier;
+      const text = typeof message.content === 'string'
+        ? message.content
+        : (message.content?.text ?? message.content?.body ?? JSON.stringify(message.content));
 
-    return { success: true };
+      const result = await provider.sendText({ from, to, text, messageId: message.messageId });
+
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: {
+          status: result.success ? 'sent' : 'failed',
+          sentAt: result.success ? new Date() : undefined,
+          failedAt: result.success ? undefined : new Date(),
+          failureReason: result.success ? undefined : result.error,
+          externalId: result.externalId,
+        }
+      });
+
+      return result.success ? { success: true } : { success: false, error: result.error };
+    } catch (error: any) {
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: { status: 'failed', failedAt: new Date(), failureReason: error?.message || 'SMS delivery error' }
+      });
+      return { success: false, error: error?.message || 'SMS delivery error' };
+    }
   }
 
   /**
    * WhatsApp delivery implementation
    */
   private async deliverWhatsApp(message: any, routingDecision: any): Promise<{ success: boolean; error?: string }> {
-    // Integrate with existing WhatsApp service
-    console.log(`Delivering WhatsApp message ${message.messageId} via ${routingDecision.provider}`);
-    
-    // Simulate delivery
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    await prisma.unifiedMessage.update({
-      where: { id: message.id },
-      data: {
-        status: 'sent',
-        sentAt: new Date()
-      }
-    });
+    try {
+      const provider = await getWhatsAppProvider(routingDecision.provider);
+      const fromPhoneId = routingDecision.fromIdentifier; // Meta uses phone number ID
+      const to = message.toIdentifier;
 
-    return { success: true };
+      // Determine whether to send text or template
+      const isTemplate = message.messageType === 'template' || !!message.content?.template;
+      const text = typeof message.content === 'string'
+        ? message.content
+        : (message.content?.text ?? message.content?.body ?? JSON.stringify(message.content));
+
+      const result = isTemplate
+        ? await provider.sendTemplate?.({ fromPhoneId, to, template: message.content?.template, messageId: message.messageId })
+        : await provider.sendText({ fromPhoneId, to, text, messageId: message.messageId });
+
+      const ok = !!result && result.success;
+
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: {
+          status: ok ? 'sent' : 'failed',
+          sentAt: ok ? new Date() : undefined,
+          failedAt: ok ? undefined : new Date(),
+          failureReason: ok ? undefined : (result?.error || 'WhatsApp delivery error'),
+          externalId: result?.externalId,
+        }
+      });
+
+      return ok ? { success: true } : { success: false, error: result?.error || 'WhatsApp delivery error' };
+    } catch (error: any) {
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: { status: 'failed', failedAt: new Date(), failureReason: error?.message || 'WhatsApp delivery error' }
+      });
+      return { success: false, error: error?.message || 'WhatsApp delivery error' };
+    }
   }
 
   /**
    * Email delivery implementation
    */
   private async deliverEmail(message: any, routingDecision: any): Promise<{ success: boolean; error?: string }> {
-    // Integrate with email service
-    console.log(`Delivering Email message ${message.messageId} via ${routingDecision.provider}`);
-    
-    // Simulate delivery
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
-    await prisma.unifiedMessage.update({
-      where: { id: message.id },
-      data: {
-        status: 'sent',
-        sentAt: new Date()
-      }
-    });
+    try {
+      const provider = await getEmailProvider(routingDecision.provider);
+      const from = routingDecision.fromIdentifier || process.env.EMAIL_FROM || 'no-reply@sozuri.local';
+      const to = message.toIdentifier;
 
-    return { success: true };
+      const subject = message.subject || message.content?.subject || 'Message from Sozuri';
+      const html = typeof message.content === 'string' ? undefined : (message.content?.html as string | undefined);
+      const text = typeof message.content === 'string'
+        ? message.content
+        : (message.content?.text ?? message.content?.body ?? JSON.stringify(message.content));
+
+      const result = await provider.sendEmail({ from, to, subject, text, html, messageId: message.messageId });
+
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: {
+          status: result.success ? 'sent' : 'failed',
+          sentAt: result.success ? new Date() : undefined,
+          failedAt: result.success ? undefined : new Date(),
+          failureReason: result.success ? undefined : result.error,
+          externalId: result.externalId,
+        }
+      });
+
+      return result.success ? { success: true } : { success: false, error: result.error };
+    } catch (error: any) {
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: { status: 'failed', failedAt: new Date(), failureReason: error?.message || 'Email delivery error' }
+      });
+      return { success: false, error: error?.message || 'Email delivery error' };
+    }
   }
 
   /**
    * Voice delivery implementation
    */
   private async deliverVoice(message: any, routingDecision: any): Promise<{ success: boolean; error?: string }> {
-    // Integrate with voice service
-    console.log(`Delivering Voice message ${message.messageId} via ${routingDecision.provider}`);
-    
-    // Simulate delivery
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    await prisma.unifiedMessage.update({
-      where: { id: message.id },
-      data: {
-        status: 'sent',
-        sentAt: new Date()
-      }
-    });
+    try {
+      const provider = await getVoiceProvider(routingDecision.provider);
+      const from = routingDecision.fromIdentifier || process.env.TWILIO_FROM_NUMBER;
+      const to = message.toIdentifier;
 
-    return { success: true };
+      const text = typeof message.content === 'string'
+        ? message.content
+        : (message.content?.text ?? message.content?.body);
+      const url = message.content?.url as string | undefined; // Optional TwiML URL
+
+      const result = await provider.makeCall({ from, to, text, url, messageId: message.messageId });
+
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: {
+          status: result.success ? 'sent' : 'failed',
+          sentAt: result.success ? new Date() : undefined,
+          failedAt: result.success ? undefined : new Date(),
+          failureReason: result.success ? undefined : result.error,
+          externalId: result.externalId,
+        }
+      });
+
+      return result.success ? { success: true } : { success: false, error: result.error };
+    } catch (error: any) {
+      await prisma.unifiedMessage.update({
+        where: { id: message.id },
+        data: { status: 'failed', failedAt: new Date(), failureReason: error?.message || 'Voice delivery error' }
+      });
+      return { success: false, error: error?.message || 'Voice delivery error' };
+    }
   }
 
   /**

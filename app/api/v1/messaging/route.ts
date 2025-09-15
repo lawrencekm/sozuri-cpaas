@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { cacheDel, withCache, buildKey } from '@/lib/cache'
 
 const prisma = new PrismaClient()
 
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
     },
   })
 
+  // Invalidate recent logs cache for this project
+  const listKey = buildKey(['messaging','logs','recent', projectId || 'all'])
+  await cacheDel(listKey)
+
   return NextResponse.json({ status: 'queued', id: log.id })
 }
 
@@ -38,11 +43,16 @@ export async function GET(request: Request) {
   if (!session?.user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
-  const projectId = searchParams.get('projectId') || undefined
-  const logs = await prisma.messageLog.findMany({
-    where: { ...(projectId ? { projectId } : {}) },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  })
+  const projectId = searchParams.get('projectId') || 'all'
+  const listKey = buildKey(['messaging','logs','recent', projectId])
+
+  const logs = await withCache(listKey, async () => {
+    return prisma.messageLog.findMany({
+      where: { ...(projectId !== 'all' ? { projectId } : {}) },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    })
+  }, { ttlSeconds: 10 })
+
   return NextResponse.json({ logs })
 }
