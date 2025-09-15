@@ -146,7 +146,7 @@ export function CampaignCard({ campaign }: CampaignProps) {
               <DropdownMenuItem
                 onClick={() =>
                   router.push(
-                    `/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}`
+                    `/dashboard/campaigns/${campaign.id}`
                   )
                 }
               >
@@ -156,7 +156,7 @@ export function CampaignCard({ campaign }: CampaignProps) {
               <DropdownMenuItem
                 onClick={() =>
                   router.push(
-                    `/dashboard/projects/${campaign.projectId}/campaigns/${campaign.id}/edit`
+                    `/dashboard/campaigns/${campaign.id}/edit`
                   )
                 }
               >

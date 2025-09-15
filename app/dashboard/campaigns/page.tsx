@@ -56,7 +56,7 @@ function NewCampaignDialog() {
     successMessage: "Campaign created successfully",
     onSuccess: (campaign) => {
       setOpen(false)
-      router.push(`/dashboard/projects/${formData.projectId}/campaigns/${campaign.id}`)
+  router.push(`/dashboard/campaigns/${campaign.id}`)
     }
   })
 
@@ -155,11 +155,12 @@ export default function CampaignsPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [open, setOpen] = useState(false)
-  const { data: campaigns = [], isLoading, error } = useCampaigns()
+  const { data, isLoading, error } = useCampaigns()
+  const campaigns: Campaign[] = data ?? [];
 
   // Filter campaigns based on search query
   const filteredCampaigns = campaigns.filter(
-    (campaign) =>
+    (campaign: Campaign) =>
       campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       campaign.description.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -256,7 +257,7 @@ export default function CampaignsPage() {
                 </Card>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredCampaigns.map((campaign) => (
+                  {filteredCampaigns.map((campaign: Campaign) => (
                     <CampaignCard key={campaign.id} campaign={campaign} />
                   ))}
                 </div>
@@ -301,7 +302,7 @@ export default function CampaignsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredCampaigns.map((campaign) => (
+                        {filteredCampaigns.map((campaign: Campaign) => (
                           <TableRow key={campaign.id}>
                             <TableCell className="font-medium">{campaign.name}</TableCell>
                             <TableCell>{campaign.channel}</TableCell>

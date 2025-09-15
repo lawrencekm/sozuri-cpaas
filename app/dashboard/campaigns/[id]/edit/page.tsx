@@ -46,26 +46,24 @@ export default function EditCampaignPage({ params }: { params: Promise<{ id: str
         status: campaignData.status || "",
         content: campaignData.content || ""
       })
-    } else {
-      // Fallback to sample data if API call fails
-      const sampleCampaign = {
-        id,
-        name: "Welcome Message",
-        description: "Initial welcome message sent to new customers",
-        channel: "sms",
-        status: "active",
-        content: "Welcome to our service! We're excited to have you on board. Reply HELP for assistance or STOP to unsubscribe.",
-      }
-
-      setFormData({
-        name: sampleCampaign.name,
-        description: sampleCampaign.description,
-        channel: sampleCampaign.channel,
-        status: sampleCampaign.status,
-        content: sampleCampaign.content
-      })
     }
-  }, [id, campaignData])
+  }, [campaignData])
+
+  if (isLoadingCampaign) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">Loading...</div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!campaignData) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64 text-destructive">Failed to load campaign.</div>
+      </DashboardLayout>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target

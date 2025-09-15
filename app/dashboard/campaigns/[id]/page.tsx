@@ -39,28 +39,24 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
     }
   })
 
-  // Use sample data if API call fails or is loading
-  const campaign = campaignData || {
-    id,
-    name: "Welcome Message",
-    description: "Initial welcome message sent to new customers",
-    channel: "sms",
-    status: "active",
-    created: "2023-05-15T10:30:00Z",
-    updated: "2023-05-15T10:30:00Z",
-    content: "Welcome to our service! We're excited to have you on board. Reply HELP for assistance or STOP to unsubscribe.",
-    audience: {
-      total: 1245,
-      delivered: 1200,
-      failed: 45,
-      opened: 980,
-      clicked: 650
-    },
-    schedule: {
-      type: "one-time",
-      sentAt: "2023-05-15T10:30:00Z"
-    }
+  // Only use API data, handle loading and error states
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">Loading...</div>
+      </DashboardLayout>
+    );
   }
+
+  if (error || !campaignData) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64 text-destructive">Failed to load campaign.</div>
+      </DashboardLayout>
+    );
+  }
+
+  const campaign = campaignData;
 
   const handleDelete = async () => {
     await deleteCampaign(id)

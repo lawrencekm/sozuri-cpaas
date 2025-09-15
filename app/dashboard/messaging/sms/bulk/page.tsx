@@ -19,6 +19,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useCampaigns } from "@/hooks/use-api"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
@@ -31,7 +33,6 @@ const fadeIn = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
-
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -41,7 +42,6 @@ const staggerContainer = {
     },
   },
 }
-
 // Template selection dialog
 function TemplateSelectionDialog({ onSelect }: { onSelect: (template: any) => void }) {
   const [open, setOpen] = useState(false)
@@ -214,7 +214,6 @@ function TemplateSelectionDialog({ onSelect }: { onSelect: (template: any) => vo
     </Dialog>
   )
 }
-
 // Audience selection dialog
 function AudienceSelectionDialog({ onSelect }: { onSelect: (audience: any) => void }) {
   const [open, setOpen] = useState(false)
@@ -401,7 +400,8 @@ function AudienceSelectionDialog({ onSelect }: { onSelect: (audience: any) => vo
   )
 }
 
-export default function BulkSmsPage() {
+
+export default function Page() {
   const router = useRouter()
   const [campaignData, setCampaignData] = useState({
     name: "",
@@ -412,12 +412,20 @@ export default function BulkSmsPage() {
   })
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [selectedAudience, setSelectedAudience] = useState<any>(null)
+  const { data: campaigns = [], isLoading: isLoadingCampaigns } = useCampaigns();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setCampaignData((prev) => ({
       ...prev,
       [name]: value,
+    }))
+  }
+
+  const handleCampaignSelect = (value: string) => {
+    setCampaignData((prev) => ({
+      ...prev,
+      name: value,
     }))
   }
 
@@ -456,7 +464,7 @@ export default function BulkSmsPage() {
     <DashboardLayout>
       <motion.div className="flex flex-col space-y-6" initial="hidden" animate="visible" variants={staggerContainer}>
         <motion.div className="flex items-center gap-2" variants={fadeIn}>
-          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/messaging/sms")}>
+          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/messaging/sms")}> 
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -475,13 +483,29 @@ export default function BulkSmsPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Campaign Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Enter campaign name"
-                    value={campaignData.name}
-                    onChange={handleInputChange}
-                  />
+                  <Select onValueChange={handleCampaignSelect} value={campaignData.name}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isLoadingCampaigns ? "Loading campaigns..." : "Select or create campaign"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {campaigns.length > 0 ? (
+                        campaigns.map((campaign: any) => (
+                          <SelectItem key={campaign.id} value={campaign.name}>{campaign.name}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="__new__">Create new campaign</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {campaignData.name === "__new__" && (
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="Enter new campaign name"
+                      value={campaignData.name === "__new__" ? "" : campaignData.name}
+                      onChange={handleInputChange}
+                    />
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
