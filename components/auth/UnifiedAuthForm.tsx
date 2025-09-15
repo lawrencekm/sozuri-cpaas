@@ -170,8 +170,8 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
       {/* Left image panel (no overlay/branding) */}
       <div className="relative hidden lg:block h-full">
         <Image
-          src={mode === 'signin' ? '/login.png' : '/sign%20up.png'}
-          alt={mode === 'signin' ? 'Login' : 'Sign up'}
+          src={mode === 'signin' ? '/Coding--Streamline-Bangalore.svg.svg' : '/Virtual-Reality--Streamline-Bangalore.svg.svg'}
+          alt={mode === 'signin' ? 'Login Illustration' : 'Sign Up Illustration'}
           fill
           className="absolute inset-0 object-cover"
           priority
