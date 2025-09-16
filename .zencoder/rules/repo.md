@@ -32,8 +32,5 @@
 2. docker compose up -d
 3. pnpm dev
 
-## Notes
-- Consider consolidating lib/db.ts and lib/prisma.ts to a single Prisma client.
+## Note
 - Redis is optional; features degrade gracefully if unavailable where used via try/ping.
-
-

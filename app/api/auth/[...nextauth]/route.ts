@@ -75,24 +75,20 @@ export const authOptions: NextAuthOptions = {
           data: { lastLoginAt: new Date() }
         });
 
-        // Determine role from boolean flags
-        let role = 'user';
-        if (user.isGlobalAdmin) role = 'global-admin';
-        else if (user.isAdmin) role = 'admin';
-        else if (user.isGlobalManager) role = 'global-manager';
-        else if (user.isManager) role = 'manager';
-        else if (user.isGlobalOfficer) role = 'global-officer';
-        else if (user.isOfficer) role = 'officer';
-        else if (user.isGlobalClerk) role = 'global-clerk';
-        else if (user.isClerk) role = 'clerk';
+        // RBAC via Role/UserRole
+        const memberships = await prisma.userRole.findMany({
+          where: { userId: user.id },
+          include: { role: true },
+        })
+        const isAdmin = memberships.some(m => m.role.name === 'admin')
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: role,
+          role: isAdmin ? 'admin' : 'user',
           status: user.isActive ? 'active' : 'inactive',
-          company: undefined // User model doesn't have company field
+          company: undefined,
         };
       }
     }),
