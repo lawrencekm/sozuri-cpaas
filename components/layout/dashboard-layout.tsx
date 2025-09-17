@@ -45,7 +45,6 @@ import { ErrorBoundary } from "react-error-boundary"
 import { RefreshCw, AlertTriangle } from "lucide-react"
 import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
 import { MobileNav } from "@/components/navigation/mobile-nav"
-import { ProductTour } from "@/components/onboarding/product-tour"
 
 interface LucideProps extends React.SVGProps<SVGSVGElement> {
   className?: string
@@ -438,7 +437,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </SidebarProvider>
-      <ProductTour />
+      {/* ProductTour removed per request */}
     </ErrorBoundary>
   )
 }
