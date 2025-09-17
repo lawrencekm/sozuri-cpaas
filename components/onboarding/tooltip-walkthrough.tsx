@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useContext, createContext } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { X, ArrowRight, Clock } from "lucide-react"
 import type { WalkthroughStep } from "./types"
 import { useOnboardingPreferences } from "@/hooks/use-onboarding-preferences"
@@ -71,6 +71,7 @@ function WalkthroughTooltip({
   onNext: () => void,
   onClose: () => void
 }) {
+  const prefersReducedMotion = useReducedMotion()
   // Use our new preferences hook for the "remind later" functionality
   const { remindLater } = useOnboardingPreferences({
     storageKey: 'walkthrough_tooltip_preferences',
@@ -95,9 +96,10 @@ function WalkthroughTooltip({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
       className="fixed z-[1000] p-4 bg-background rounded-lg border shadow-xl max-w-xs"
       style={positions[step.position || 'bottom']}
     >

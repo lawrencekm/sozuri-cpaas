@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -44,6 +44,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { useCampaignTemplates, useCreateCampaignTemplate, useDeleteCampaignTemplate, useUpdateCampaignTemplate, useCampaignAutomations, useCreateCampaignAutomation, useDeleteCampaignAutomation, useUpdateCampaignAutomation } from "@/hooks/use-api"
+import { projectsAPI, campaignsAPI, Project as ApiProject, Campaign as ApiCampaign } from "@/lib/api"
 
 // New Campaign Dialog
 function NewCampaignDialog() {
@@ -470,56 +471,61 @@ export default function ProjectDetailPage() {
   const { id } = useParams()
   const router = useRouter()
 
-  // Sample project data
-  const project = {
-    id: Number(id),
-    name: "Customer Onboarding",
-    description: "Welcome messages and setup guides for new customers",
-    campaigns: 3,
-    messages: "2,451",
-    engagement: 76,
-    updated: "2 days ago",
-    type: "Transactional",
-    created: "June 15, 2023",
-    audience: "1,245",
+  const [project, setProject] = useState<ApiProject | null>(null)
+  const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      if (!id) return
+      setIsLoading(true)
+      setError(null)
+      try {
+        const [p, cs] = await Promise.all([
+          projectsAPI.getById(id as string),
+          campaignsAPI.getAll({ projectId: id as string })
+        ])
+        setProject(p)
+        setCampaigns(cs || [])
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load project')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <Card><CardContent className="p-6">Loading project...</CardContent></Card>
+      </DashboardLayout>
+    )
   }
 
-  // Sample campaigns data
-  const campaigns = [
-    {
-      id: "1",
-      name: "Welcome Message",
-      description: "Initial welcome message sent to new customers",
-      channel: "SMS",
-      status: "active",
-      messages: "1,245",
-      engagement: 82,
-      lastSent: "Today",
-      created_at: "2025-08-20T10:00:00Z"
-    },
-    {
-      id: "2",
-      name: "Setup Guide",
-      description: "Step-by-step guide for account setup",
-      channel: "WhatsApp",
-      status: "scheduled",
-      messages: "856",
-      engagement: 68,
-      lastSent: "Yesterday",
-      created_at: "2025-08-21T15:30:00Z"
-    },
-    {
-      id: "3",
-      name: "Verification Call",
-      description: "Automated verification call for new accounts",
-      channel: "Voice",
-      status: "active",
-      messages: "350",
-      engagement: 95,
-      lastSent: "3 days ago",
-      created_at: "2025-08-24T09:15:00Z"
-    },
-  ]
+  if (error || !project) {
+    return (
+      <DashboardLayout>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="text-red-600 text-sm">{error || 'Project not found'}</div>
+              <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/projects")}>Back to Projects</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    )
+  }
+
+  const projectStats = {
+    campaigns: project?._count?.campaigns ?? 0,
+    messages: project?._count?.messageLogs ?? 0,
+    engagement: project?.successRate ?? 0,
+    audience: project?.balance ? project.balance.toString() : "-",
+  }
 
   return (
     <DashboardLayout>
@@ -564,16 +570,16 @@ export default function ProjectDetailPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Campaigns"
-            value={project.campaigns.toString()}
+            value={projectStats.campaigns.toString()}
             icon={<Layers className="h-5 w-5" />}
           />
-          <MetricCard title="Total Messages" value={project.messages} icon={<MessageCircle className="h-5 w-5" />} />
+          <MetricCard title="Total Messages" value={projectStats.messages.toString()} icon={<MessageCircle className="h-5 w-5" />} />
           <MetricCard
             title="Engagement Rate"
-            value={`${project.engagement}%`}
+            value={`${projectStats.engagement || 0}%`}
             icon={<BarChart3 className="h-5 w-5" />}
           />
-          <MetricCard title="Audience Size" value={project.audience} icon={<Users className="h-5 w-5" />} />
+          <MetricCard title="Audience Size" value={projectStats.audience} icon={<Users className="h-5 w-5" />} />
         </div>
 
         <Tabs defaultValue="campaigns" className="w-full">

@@ -6,7 +6,7 @@ export * from "./use-onboarding";
 export * from "./tooltip-walkthrough";
 
 // Main Components
-export * from "./enterprise-guided-tour";
+export * from "./enhanced-empty-state";
 export * from "./product-tour";
 export * from "./onboarding-card";
 

@@ -137,11 +137,24 @@ function NewProjectDialog() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          accountType: formData.type || undefined,
+        }),
+      })
 
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create project')
+      }
+
+      const project = await response.json()
       setOpen(false)
-      router.refresh()
+      router.push(`/dashboard/projects`)
     } catch (error) {
       handleError(error, ErrorType.API, {
         toastMessage: "Failed to create project. Please try again.",
@@ -550,7 +563,7 @@ export default function Dashboard() {
                       </Link>
                     </Button>
                     <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         <Layers className="mr-2 h-4 w-4" />
                         New Campaign
                       </Link>
@@ -650,7 +663,7 @@ export default function Dashboard() {
                       <span>15 min to complete</span>
                     </div>
                     <Button size="sm" className="mt-auto w-full" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         Create Campaign
                       </Link>
                     </Button>
@@ -740,7 +753,7 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground">Manage your communication projects and assets</p>
               </div>
               <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
-                <Link href="/dashboard/projects/new">
+                <Link href="/dashboard/projects">
                   <Plus className="mr-2 h-4 w-4" />
                   New Project
                 </Link>
@@ -806,7 +819,7 @@ export default function Dashboard() {
                           Create your first project to organize your communication campaigns and messages
                         </p>
                         <Button className="rounded-lg" asChild>
-                          <Link href="/dashboard/projects/new">
+                          <Link href="/dashboard/projects">
                             <Plus className="mr-2 h-4 w-4" />
                             Create Project
                           </Link>
@@ -980,7 +993,7 @@ export default function Dashboard() {
                   </CardContent>
                   <CardFooter className="border-t pt-3">
                     <Button variant="outline" size="sm" className="ml-auto" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         Create Campaign
                         <ChevronRight className="ml-1 h-3 w-3" />
                       </Link>

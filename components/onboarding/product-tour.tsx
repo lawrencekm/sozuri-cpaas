@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ArrowRight, X, Clock } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -15,6 +15,7 @@ import { useOnboardingPreferences } from "@/hooks/use-onboarding-preferences"
 
 export function ProductTour() {
   const [currentStep, setCurrentStep] = useState(0)
+  const prefersReducedMotion = useReducedMotion()
 
   // Use our new preferences hook for persistence and "remind later" functionality
   const {
@@ -43,9 +44,10 @@ export function ProductTour() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <AnimatePresence>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
+          exit={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
           className="w-full max-w-4xl mx-auto p-6"
         >
           <Card className="border shadow-lg overflow-hidden">
