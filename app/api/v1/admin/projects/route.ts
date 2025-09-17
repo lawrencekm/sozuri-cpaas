@@ -14,5 +14,12 @@ export async function GET(request: Request) {
   const userId = searchParams.get('user_id') || undefined
   const where: any = userId ? { userId } : {}
   const projects = await prisma.project.findMany({ where, orderBy: { createdAt: 'desc' } })
-  return NextResponse.json(projects)
+
+  // Align with client expectation: { projects, total, page, limit }
+  return NextResponse.json({
+    projects,
+    total: projects.length,
+    page: 1,
+    limit: projects.length,
+  })
 }

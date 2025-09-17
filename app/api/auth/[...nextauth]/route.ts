@@ -80,7 +80,8 @@ export const authOptions: NextAuthOptions = {
           where: { userId: user.id },
           include: { role: true },
         })
-        const isAdmin = memberships.some(m => m.role.name === 'admin')
+        // Honor legacy admin flags as well as RBAC role membership
+        const isAdmin = Boolean((user as any).isAdmin || (user as any).isGlobalAdmin || memberships.some(m => m.role.name === 'admin'))
 
         return {
           id: user.id,

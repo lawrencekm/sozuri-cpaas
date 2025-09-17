@@ -15,7 +15,14 @@ export async function GET(request: Request) {
   const search = searchParams.get('search') || undefined
   const where: any = search ? { OR: [ { name: { contains: search } }, { email: { contains: search } } ] } : {}
   const users = await prisma.user.findMany({ where, orderBy: { createdAt: 'desc' } })
-  return NextResponse.json(users)
+
+  // Align with client expectation: { users, total, page, limit }
+  return NextResponse.json({
+    users,
+    total: users.length,
+    page: 1,
+    limit: users.length,
+  })
 }
 
 export async function POST(request: Request) {
