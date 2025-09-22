@@ -12,7 +12,7 @@ const nextConfig = {
       },
     },
     webpackMemoryOptimizations: true,
-    optimizeCss: true,
+    optimizeCss: false,
     optimizePackageImports: [
       'recharts',
       'framer-motion',

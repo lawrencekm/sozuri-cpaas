@@ -175,6 +175,7 @@ model User {
   messageLogs    MessageLog[]
   transactions   Transaction[]
   apiKeys        ApiKey[]
+  apiKeysV2      ApiKeyV2[]      @relation("UserApiKeysV2")
   logEntries     LogEntry[]
   referrals      Referral[]      @relation("ReferralUser")
   referredBy     Referral[]      @relation("ReferredUser")
@@ -272,6 +273,9 @@ model Project {
   unifiedMessages   UnifiedMessage[]
   messageRoutes     MessageRoute[]
   channelPreferences ChannelPreference[]
+  apiKeys           ApiKey[]           @relation("ProjectApiKeys")
+  apiKeysV2         ApiKeyV2[]         @relation("ProjectApiKeysV2")
+  apiUsage          ApiUsageAnalytics[] @relation("ProjectApiUsage")
 
   @@unique([userId, name])
   @@index([userId])
@@ -1296,6 +1300,7 @@ model Integration {
 model ApiKey {
   id          String    @id @default(cuid())
   userId      String
+  projectId   String?
   name        String
   keyHash     String    @unique // Hashed version of the key
   permissions String[] // Array of permissions
@@ -1303,11 +1308,15 @@ model ApiKey {
   lastUsedAt  DateTime?
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation("ProjectApiKeys", fields: [projectId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([projectId])
+  @@index([keyHash])
   @@index([isActive])
 }
 
@@ -1707,6 +1716,81 @@ model ChannelPreference {
   @@index([customerId])
   @@index([preferredChannels])
 }
+
+// ============================================================================
+// API MANAGEMENT & VERSIONING
+// ============================================================================
+
+model ApiVersion {
+  id             String    @id @default(cuid())
+  version        String    @unique
+  status         String    @default("active") // active, deprecated, sunset
+  deprecatedAt   DateTime?
+  sunsetAt       DateTime?
+  migrationGuide String?
+  createdAt      DateTime  @default(now())
+
+  @@index([version])
+  @@index([status])
+}
+
+model ApiKeyV2 {
+  id          String    @id @default(cuid())
+  projectId   String
+  userId      String?
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String // First 8 characters for display (e.g., "ak_live_")
+  permissions Json      @default("[]") // Array of permission objects
+  scopes      Json      @default("[]") // Array of API scopes
+  rateLimit   Json? // Rate limiting configuration
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  usageCount  Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project Project @relation("ProjectApiKeysV2", fields: [projectId], references: [id], onDelete: Cascade)
+  user    User?   @relation("UserApiKeysV2", fields: [userId], references: [id], onDelete: SetNull)
+  usage   ApiUsageAnalytics[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([keyHash])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([lastUsedAt])
+}
+
+model ApiUsageAnalytics {
+  id                String    @id @default(cuid())
+  projectId         String
+  apiKeyId          String?
+  endpoint          String
+  method            String
+  statusCode        Int
+  responseTimeMs    Int?
+  requestSizeBytes  Int?
+  responseSizeBytes Int?
+  userAgent         String?
+  ipAddress         String?
+  apiVersion        String?
+  timestamp         DateTime  @default(now())
+
+  // Relations
+  project Project   @relation("ProjectApiUsage", fields: [projectId], references: [id], onDelete: Cascade)
+  apiKey  ApiKeyV2? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([apiKeyId])
+  @@index([timestamp])
+  @@index([endpoint])
+  @@index([statusCode])
+}
+
+
 
 // ============================================================================
 // BILLING & PAYMENTS 

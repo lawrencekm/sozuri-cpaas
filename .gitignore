@@ -11,6 +11,8 @@ yarn-error.log*
 
 .env*
 .env.local
+.kiro
+.swc
 
 .vercel
 .zencoder

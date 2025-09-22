@@ -331,27 +331,33 @@ function AutomationsTab() {
   const updateAutomation = useUpdateCampaignAutomation();
   const [form, setForm] = useState({
     name: "",
-    trigger_event: "",
-    campaign_template_id: "",
+    description: "",
+    trigger_type: "webhook",
+    trigger_config: {},
+    action_type: "send_sms",
+    action_config: {},
     is_active: true,
   });
   const [open, setOpen] = useState(false);
 
-  // Fetch templates for the select dropdown
-  const { data: templates } = useCampaignTemplates(projectId as string);
+  // No need for templates since we're using the new automation schema
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-  const handleTemplateChange = (value: string) => {
-    setForm((prev) => ({ ...prev, campaign_template_id: value }));
+  const handleTriggerTypeChange = (value: string) => {
+    setForm((prev) => ({ ...prev, trigger_type: value }));
+  };
+
+  const handleActionTypeChange = (value: string) => {
+    setForm((prev) => ({ ...prev, action_type: value }));
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createAutomation.mutate({ ...form, project_id: projectId as string });
+    createAutomation.mutate({ ...form, projectId: projectId as string });
     setOpen(false);
-    setForm({ name: "", trigger_event: "", campaign_template_id: "", is_active: true });
+    setForm({ name: "", description: "", trigger_type: "webhook", trigger_config: {}, action_type: "send_sms", action_config: {}, is_active: true });
   };
 
   const handleDelete = (id: string) => {
@@ -382,25 +388,38 @@ function AutomationsTab() {
                   <Input id="name" name="name" value={form.name} onChange={handleChange} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="trigger_event">Trigger Event</Label>
-                  <Input id="trigger_event" name="trigger_event" value={form.trigger_event} onChange={handleChange} placeholder="e.g. user_signup, order_placed" required />
+                  <Label htmlFor="description">Description</Label>
+                  <Input id="description" name="description" value={form.description} onChange={handleChange} placeholder="What does this automation do?" />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="campaign_template_id">Campaign Template</Label>
-                  <Select value={form.campaign_template_id} onValueChange={handleTemplateChange}>
+                  <Label htmlFor="trigger_type">Trigger Type</Label>
+                  <Select value={form.trigger_type} onValueChange={handleTriggerTypeChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select template" />
+                      <SelectValue placeholder="Select trigger type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {templates && templates.map((tpl: any) => (
-                        <SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>
-                      ))}
+                      <SelectItem value="webhook">Webhook</SelectItem>
+                      <SelectItem value="schedule">Schedule</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="action_type">Action Type</Label>
+                  <Select value={form.action_type} onValueChange={handleActionTypeChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select action type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="send_sms">Send SMS</SelectItem>
+                      <SelectItem value="send_whatsapp">Send WhatsApp</SelectItem>
+                      <SelectItem value="update_contact">Update Contact</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={!form.name || !form.trigger_event || !form.campaign_template_id}>Save Automation</Button>
+                <Button type="submit" disabled={!form.name || !form.trigger_type || !form.action_type}>Save Automation</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -419,15 +438,20 @@ function AutomationsTab() {
               <Card key={auto.id}>
                 <CardHeader>
                   <CardTitle>{auto.name}</CardTitle>
-                  <CardDescription>On <span className="font-semibold">{auto.trigger_event}</span> trigger, launch <span className="font-semibold">{templates?.find((t: any) => t.id === auto.campaign_template_id)?.name || 'Template'}</span></CardDescription>
+                  <CardDescription>
+                    {auto.description || `${auto.triggerType} trigger → ${auto.actionType} action`}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className={auto.is_active ? "text-green-600" : "text-red-600"}>{auto.is_active ? "Active" : "Inactive"}</span>
+                    <span className={auto.isActive ? "text-green-600" : "text-red-600"}>{auto.isActive ? "Active" : "Inactive"}</span>
+                    {auto.executionCount > 0 && (
+                      <span className="text-muted-foreground">• {auto.executionCount} executions</span>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between text-xs text-muted-foreground">
-                  <span>Last updated {auto.updated_at}</span>
+                  <span>Updated {new Date(auto.updatedAt).toLocaleDateString()}</span>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => handleUpdate(auto.id, { name: auto.name + " (Updated)" })}>Edit</Button>
                     <Button size="sm" variant="destructive" onClick={() => handleDelete(auto.id)}>Delete</Button>

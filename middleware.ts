@@ -2,6 +2,18 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// Temporarily disable Redis-dependent middleware to fix startup issues
+// import { createApiGateway } from "./lib/middleware/api-gateway";
+// import { createRateLimitingMiddleware } from "./lib/middleware/rate-limiting";
+// import { createRequestValidationMiddleware } from "./lib/middleware/request-validation";
+// import { createApiAuthMiddleware } from "./lib/middleware/api-auth";
+
+// Initialize middleware components
+// const apiGateway = createApiGateway();
+// const rateLimiter = createRateLimitingMiddleware();
+// const requestValidator = createRequestValidationMiddleware();
+// const apiAuth = createApiAuthMiddleware();
+
 // Paths that don't require authentication
 const publicPaths = [
   "/auth/signin",
@@ -20,6 +32,36 @@ const adminPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Handle API requests with enhanced middleware stack
+  if (pathname.startsWith('/api/')) {
+    // Temporarily disabled Redis-dependent middleware
+    // TODO: Re-enable after Redis setup
+    
+    // 1. API authentication (validate API keys)
+    // const authResponse = await apiAuth.processRequest(request);
+    // if (authResponse) {
+    //   return authResponse;
+    // }
+
+    // 2. Rate limiting (after authentication)
+    // const rateLimitResponse = await rateLimiter.processRequest(request);
+    // if (rateLimitResponse) {
+    //   return rateLimitResponse;
+    // }
+
+    // 3. Request validation
+    // const validationResponse = await requestValidator.validateRequest(request);
+    // if (validationResponse) {
+    //   return validationResponse;
+    // }
+
+    // 4. API versioning and routing
+    // const apiResponse = await apiGateway.handleRequest(request);
+    // if (apiResponse) {
+    //   return apiResponse;
+    // }
+  }
   
   // Check if the path is public
   const isPublicPath = publicPaths.some(path => 

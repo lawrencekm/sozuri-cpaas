@@ -202,13 +202,36 @@ export interface CampaignTemplate {
 
 export interface CampaignAutomation {
   id: string;
-  project_id: string;
+  projectId: string;
+  userId: string;
   name: string;
-  trigger_event: string;
-  campaign_template_id: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  description?: string;
+  triggerType: string; // webhook, schedule, event
+  triggerConfig: any;
+  actionType: string; // send_sms, send_whatsapp, update_contact
+  actionConfig: any;
+  isActive: boolean;
+  lastTriggered?: string;
+  executionCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+// API request interface for creating automations
+export interface CreateCampaignAutomationRequest {
+  projectId: string;
+  name: string;
+  description?: string;
+  trigger_type: string;
+  trigger_config?: any;
+  action_type: string;
+  action_config?: any;
+  is_active?: boolean;
 }
 
 export interface Campaign {
@@ -388,7 +411,7 @@ export const campaignAutomationsAPI = {
     ErrorType.API
   ),
   create: withErrorHandling(
-    (automation: Omit<CampaignAutomation, 'id' | 'created_at' | 'updated_at'>): Promise<CampaignAutomation> =>
+    (automation: CreateCampaignAutomationRequest): Promise<CampaignAutomation> =>
       api.post(`/automations`, automation).then(res => res.data),
     ErrorType.API
   ),
