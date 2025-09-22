@@ -142,7 +142,7 @@ export const errorHandling = {
 };
 
 // Default export with all utilities
-export default {
+const fieldMappingUtils = {
   fieldMapping,
   validation,
   errorHandling,
@@ -151,3 +151,5 @@ export default {
   ApiErrorHandler,
   ApiMiddleware
 };
+
+export default fieldMappingUtils;
