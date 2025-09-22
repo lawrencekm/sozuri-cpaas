@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldTransformer } from '../field-mapping/transformer';
 import { DataValidator } from '../validation/validator';
-import { ApiErrorHandler } from './error-handler';
+import { ApiErrorHandler, ApiErrorCode } from './error-handler';
 import { ValidationResult } from '../field-mapping/types';
 
 export interface ApiMiddlewareOptions {
@@ -31,7 +31,7 @@ export class ApiMiddleware {
       // Extract query parameters
       const url = new URL(request.url);
       data = Object.fromEntries(url.searchParams.entries());
-      
+
       // Convert array parameters (e.g., ?tags=tag1&tags=tag2)
       const params = new URLSearchParams(url.search);
       for (const [key, value] of params.entries()) {
@@ -47,7 +47,7 @@ export class ApiMiddleware {
         return {
           data: null,
           errors: ApiErrorHandler.createErrorResponse({
-            code: ApiErrorHandler.ApiErrorCode.INVALID_INPUT,
+            code: ApiErrorCode.INVALID_INPUT,
             message: 'Invalid JSON in request body',
             statusCode: 400
           })
@@ -63,14 +63,14 @@ export class ApiMiddleware {
     // Validate data if enabled
     if (options.validateData && DataValidator.hasSchema(options.model)) {
       const validationResult = DataValidator.validate(options.model, options.operation, data);
-      
+
       if (!validationResult.isValid) {
         return {
           data: null,
           errors: ApiErrorHandler.handleValidationError(validationResult.errors)
         };
       }
-      
+
       data = validationResult.data;
     }
 
@@ -110,7 +110,7 @@ export class ApiMiddleware {
       return ApiErrorHandler.wrapHandler(async (request: NextRequest, context?: any) => {
         // Process request
         const { data, errors } = await this.processRequest(request, options);
-        
+
         if (errors) {
           return errors;
         }
@@ -148,7 +148,7 @@ export class ApiMiddleware {
     validateQuery: boolean = true
   ): { params: any; errors?: NextResponse } {
     const params: any = {};
-    
+
     // Extract all parameters
     for (const [key, value] of searchParams.entries()) {
       const allValues = searchParams.getAll(key);
@@ -164,14 +164,14 @@ export class ApiMiddleware {
     // Validate query parameters
     if (validateQuery && DataValidator.hasSchema(model)) {
       const validationResult = DataValidator.validateQuery(model, params);
-      
+
       if (!validationResult.isValid) {
         return {
           params: null,
           errors: ApiErrorHandler.handleValidationError(validationResult.errors)
         };
       }
-      
+
       return { params: validationResult.data };
     }
 
@@ -204,7 +204,7 @@ export class ApiMiddleware {
 
     if (sortBy) {
       orderBy = { [sortBy]: sortOrder };
-      
+
       // Transform sort field names if mapping exists
       if (FieldTransformer.hasMapping(model)) {
         orderBy = FieldTransformer.transformSortParams(model, orderBy);
@@ -223,7 +223,7 @@ export class ApiMiddleware {
     searchableFields: string[] = ['name', 'description']
   ) {
     const search = searchParams.get('search') || searchParams.get('q');
-    
+
     if (!search) {
       return {};
     }
@@ -231,7 +231,7 @@ export class ApiMiddleware {
     // Transform searchable field names if mapping exists
     let transformedFields = searchableFields;
     if (FieldTransformer.hasMapping(model)) {
-      transformedFields = searchableFields.map(field => 
+      transformedFields = searchableFields.map(field =>
         FieldTransformer.getDbFieldName(model, field)
       );
     }

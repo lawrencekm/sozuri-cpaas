@@ -23,6 +23,12 @@ export { DataValidator } from '../validation/validator';
 export { ApiErrorHandler, ApiErrorCode } from '../api/error-handler';
 export { ApiMiddleware } from '../api/middleware';
 
+// Import the classes first
+import { FieldTransformer } from './transformer';
+import { DataValidator } from '../validation/validator';
+import { ApiErrorHandler } from '../api/error-handler';
+import { ApiMiddleware } from '../api/middleware';
+
 // Convenience functions for common operations
 export const fieldMapping = {
   /**
