@@ -240,7 +240,7 @@ export function CampaignCard({ campaign }: CampaignProps) {
           className="w-full hover:bg-primary/5 hover:text-primary"
           onClick={() =>
             router.push(
-              `/dashboard/projects/${campaign.project_id || campaign.projectId}/campaigns/${campaign.id}`
+              `/dashboard/campaigns/${campaign.id}`
             )
           }
         >
