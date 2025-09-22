@@ -50,8 +50,15 @@ export async function GET(request: Request) {
     }
   })
 
-  // Return standardized response format
-  return NextResponse.json(campaigns)
+  // Map database fields to UI expected format
+  const mappedCampaigns = campaigns.map(campaign => ({
+    ...campaign,
+    channel: campaign.type, // Map type -> channel for UI
+    created_at: campaign.createdAt, // Map createdAt -> created_at for UI
+    updated_at: campaign.updatedAt // Map updatedAt -> updated_at for UI
+  }))
+
+  return NextResponse.json(mappedCampaigns)
 }
 
 export async function POST(request: Request) {
