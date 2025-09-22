@@ -54,7 +54,16 @@ export async function GET(_: Request, { params }: { params: Promise<Params> }) {
   const { id } = await params
   const campaign = await prisma.campaign.findUnique({ where: { id } })
   if (!campaign) return NextResponse.json({ message: 'Not found' }, { status: 404 })
-  return NextResponse.json(campaign)
+  
+  // Map database fields to UI expected format
+  const mappedCampaign = {
+    ...campaign,
+    channel: campaign.type, // Map type -> channel for UI
+    created: campaign.createdAt, // Map createdAt -> created for UI
+    updated: campaign.updatedAt // Map updatedAt -> updated for UI
+  }
+  
+  return NextResponse.json(mappedCampaign)
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<Params> }) {
