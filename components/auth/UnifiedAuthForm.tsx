@@ -51,7 +51,7 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
   const checkUserStatus = async (userId: string) => {
     try {
       // Check if user has any projects or data
-      const response = await fetch(`/api/users/${userId}/status`);
+      const response = await fetch(`/api/v1/users/${userId}/status`);
       const data = await response.json();
       
       return {
@@ -92,7 +92,7 @@ export default function UnifiedAuthForm({ defaultMode = 'signin', redirectTo }: 
     try {
       if (mode === 'signup') {
         // Register new user first
-        const registerResponse = await fetch('/api/auth/register', {
+        const registerResponse = await fetch('/api/v1/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, company }),

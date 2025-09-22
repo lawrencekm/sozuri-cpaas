@@ -29,7 +29,7 @@ interface WebhookConfig {
 
 const fetchWebhooks = async (): Promise<WebhookConfig[]> => {
   // TODO: Replace with actual call using configured Axios instance from lib/api
-  const response = await fetch('/api/webhooks');
+  const response = await fetch('/api/v1/webhooks');
   if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch webhooks');
@@ -39,7 +39,7 @@ const fetchWebhooks = async (): Promise<WebhookConfig[]> => {
 
 const deleteWebhookFn = async (id: string): Promise<void> => {
    // TODO: Replace with actual call using configured Axios instance from lib/api
-  const response = await fetch(`/api/webhooks/${id}`, { method: 'DELETE' });
+  const response = await fetch(`/api/v1/webhooks/${id}`, { method: 'DELETE' });
   if (!response.ok && response.status !== 204) { // 204 is success (No Content)
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to delete webhook');

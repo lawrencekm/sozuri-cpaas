@@ -335,7 +335,7 @@ export const defaultRateLimitConfig: RateLimitConfig = {
     },
     // Authentication endpoints
     {
-      path: '/api/auth/login',
+      path: '/api/v1/auth/login',
       method: 'POST',
       requests: 5,
       window: 300, // 5 minutes

@@ -22,6 +22,7 @@ const publicPaths = [
   "/auth/reset-password",
   "/auth/verify-email",
   "/api/auth/**",
+  "/api/v1/auth/**",
 ];
 
 // Paths that are only accessible to admins

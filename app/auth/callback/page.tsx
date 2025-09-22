@@ -24,7 +24,7 @@ export default function AuthCallbackPage() {
         
         try {
           // Check user status to determine redirect
-          const response = await fetch(`/api/users/${session.user.id}/status`);
+          const response = await fetch(`/api/v1/users/${session.user.id}/status`);
           const userStatus = await response.json();
 
           // Redirect based on user role and status

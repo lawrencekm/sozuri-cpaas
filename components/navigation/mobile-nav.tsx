@@ -204,7 +204,7 @@ export function MobileNav() {
                 size="sm" 
                 className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50"
                 onClick={async () => {
-                  await fetch('/api/auth/logout')
+                  await fetch('/api/v1/auth/logout')
                   router.push('/')
                 }}
               >

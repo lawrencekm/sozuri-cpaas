@@ -129,6 +129,7 @@ export const defaultApiAuthConfig: ApiAuthConfig = {
   enabled: true,
   publicPaths: [
     '/api/auth/**',
+    '/api/v1/auth/**',
     '/api/health',
     '/api/status'
   ],

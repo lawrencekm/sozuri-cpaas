@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { handleError, ErrorType } from "@/lib/error-handler"
 import { useApi } from "@/hooks/use-api"
 import { ErrorBoundary, ComponentErrorBoundary } from "@/components/error-handling/error-boundary"
+import { useProjectContext } from "@/lib/contexts/project-context"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -93,25 +94,30 @@ function NewApiKeyDialog({ onSuccess, ...props }: NewApiKeyDialogProps) {
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const queryClient = useQueryClient(); // Get query client for invalidation
+  const { currentProject } = useProjectContext()
 
-  // Define the mutation function (simulated API call)
+  // Define the mutation function (actual API call)
   const createApiKeyFn = async (keyData: CreateApiKeyPayload): Promise<CreateApiKeyResponse> => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    // Simulate generated API key
-    const generatedKey = randomBytes(32).toString('hex') 
-    return { key: generatedKey }
-    // Replace above simulation with actual API call:
-    // const response = await fetch('/api/api-keys', { // Assuming endpoint exists
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(keyData),
-    // });
-    // if (!response.ok) {
-    //   const errorData = await response.json().catch(() => ({ message: 'Failed to create API key' }))
-    //   throw new Error(errorData.message || 'Failed to create API key');
-    // }
-    // return await response.json();
+    if (!currentProject?.id) {
+      throw new Error('No project selected')
+    }
+    
+    const response = await fetch('/api/v1/api-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...keyData,
+        projectId: currentProject.id
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to create API key' }))
+      throw new Error(errorData.message || 'Failed to create API key');
+    }
+    
+    const result = await response.json();
+    return { key: result.data.key };
   };
 
   // Use useMutation hook
@@ -120,6 +126,8 @@ function NewApiKeyDialog({ onSuccess, ...props }: NewApiKeyDialogProps) {
     onSuccess: (data) => {
       setNewKey(data.key)
       toast.success("API key created successfully")
+      // Invalidate queries to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['apiKeys', currentProject?.id] })
       // Call the onSuccess prop passed from the parent (e.g., to invalidate queries)
       if (onSuccess) {
         onSuccess()
@@ -623,6 +631,7 @@ export default function ApiKeysPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { endWalkthrough } = useWalkthrough()
+  const { currentProject } = useProjectContext()
 
   // State for inline error indicators
   const [deleteErrorKeyId, setDeleteErrorKeyId] = useState<string | null>(null);
@@ -630,15 +639,20 @@ export default function ApiKeysPage() {
 
   // Use React Query with proper error handling - Corrected destructuring
   const { data: apiKeys, isLoading, isError, error } = useQuery<ApiKey[], Error>({
-    queryKey: ['apiKeys'],
+    queryKey: ['apiKeys', currentProject?.id],
     queryFn: async () => {
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+      
       try {
-        const response = await fetch('/api/api-keys')
+        const response = await fetch(`/api/v1/api-keys?projectId=${currentProject.id}`)
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           throw new Error(errorData.message || 'Failed to fetch API keys')
         }
-        return response.json()
+        const result = await response.json()
+        return result.success ? result.data : []
       } catch (error: any) {
         // Use our centralized error handler
         handleError(error, ErrorType.API, {
@@ -648,14 +662,19 @@ export default function ApiKeysPage() {
         throw error
       }
     },
+    enabled: !!currentProject?.id,
     retry: 2
   })
 
   // Delete API key mutation with error handling
   const deleteMutation = useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+      
       try {
-        const response = await fetch(`/api/api-keys/${id}`, { method: 'DELETE' })
+        const response = await fetch(`/api/v1/api-keys/${id}?projectId=${currentProject.id}`, { method: 'DELETE' })
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           throw new Error(errorData.message || 'Failed to delete API key')
@@ -670,7 +689,7 @@ export default function ApiKeysPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+      queryClient.invalidateQueries({ queryKey: ['apiKeys', currentProject?.id] })
       toast.success("API key deleted successfully")
       setDeleteErrorKeyId(null); // Clear error on success
     },
@@ -683,8 +702,12 @@ export default function ApiKeysPage() {
   // Regenerate API key mutation with error handling
   const regenerateMutation = useMutation<any, Error, string>({
     mutationFn: async (id: string) => {
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+      
       try {
-        const response = await fetch(`/api/api-keys/${id}/regenerate`, { method: 'POST' })
+        const response = await fetch(`/api/v1/api-keys/${id}/regenerate?projectId=${currentProject.id}`, { method: 'POST' })
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           throw new Error(errorData.message || 'Failed to regenerate API key')
@@ -699,7 +722,7 @@ export default function ApiKeysPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apiKeys'] })
+      queryClient.invalidateQueries({ queryKey: ['apiKeys', currentProject?.id] })
       toast.success("API key regenerated successfully")
       setRegenErrorKeyId(null); // Clear error on success
     },
@@ -712,6 +735,30 @@ export default function ApiKeysPage() {
   // Filter keys (Example - adjust based on actual data structure if needed)
   const activeKeys = apiKeys?.filter((key: ApiKey) => key.active);
   const expiredKeys = apiKeys?.filter((key: ApiKey) => !key.active);
+
+  // Show project selection message if no project is selected
+  if (!currentProject) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100/80">
+            <Key className="h-10 w-10 text-blue-600" />
+          </div>
+          <h2 className="mt-6 text-xl font-semibold">Select a Project</h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground text-center">
+            Please select a project to manage API keys. API keys are project-specific and allow secure access to your project's resources.
+          </p>
+          <Button
+            onClick={() => router.push('/dashboard/projects')}
+            className="mt-6"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go to Projects
+          </Button>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   // Custom error UI for the entire page
   if (isError) {
@@ -726,7 +773,7 @@ export default function ApiKeysPage() {
             {error instanceof Error ? error.message : 'An unexpected error occurred'}
           </p>
           <Button
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['apiKeys'] })}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['apiKeys', currentProject?.id] })}
             className="mt-6"
           >
             <RefreshCw className="mr-2 h-4 w-4" />

@@ -41,7 +41,7 @@ type WebhookFormData = z.infer<typeof WebhookSchema>;
 // --- API Function ---
 const createWebhookFn = async (data: WebhookFormData): Promise<any> => {
    // TODO: Replace with actual call using configured Axios instance from lib/api
-  const response = await fetch('/api/webhooks', {
+  const response = await fetch('/api/v1/webhooks', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

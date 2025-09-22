@@ -233,7 +233,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const showBreadcrumb = pathname && !["/dashboard", "/dashboard/"].includes(pathname)
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout')
+    await fetch('/api/v1/auth/logout')
     router.push('/auth/signin')
   }
 

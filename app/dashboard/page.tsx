@@ -401,7 +401,7 @@ export default function Dashboard() {
     const fetchUserStatus = async () => {
       try {
         if (!session?.user?.id) return;
-        const res = await fetch(`/api/users/${session.user.id}/status`);
+        const res = await fetch(`/api/v1/users/${session.user.id}/status`);
         if (!res.ok) throw new Error('Failed to fetch user status');
         const data = await res.json();
         setIsNewUser(Boolean(data?.isNewUser));
