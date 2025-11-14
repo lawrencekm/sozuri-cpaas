@@ -138,6 +138,13 @@ export const errorHandling = {
    */
   paginated: <T>(items: T[], total: number, page: number, limit: number, message?: string) => {
     return ApiErrorHandler.createPaginatedResponse(items, total, page, limit, message);
+  },
+
+  /**
+   * Handle business logic errors
+   */
+  businessError: (code: string, message: string, statusCode?: number) => {
+    return ApiErrorHandler.handleBusinessError(code as any, message, statusCode);
   }
 };
 

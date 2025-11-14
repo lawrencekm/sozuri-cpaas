@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SMSProvider, ProviderResult } from '../types';
 
-// Minimal Airtel SMS adapter (placeholder endpoints; replace with actual API)
+// Minimal Airtel SMS adapter (placeholder endpoints)
 export class AirtelSMSProvider implements SMSProvider {
   private apiKey: string | undefined;
   private apiSecret: string | undefined;

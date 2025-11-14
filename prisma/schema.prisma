@@ -991,7 +991,7 @@ model Payment {
 }
 
 // ============================================================================
-// MPESA INTEGRATION (Kenya Mobile Money)
+// MPESA INTEGRATION 
 // ============================================================================
 
 model PaybillAccount {
