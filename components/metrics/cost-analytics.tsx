@@ -144,7 +144,7 @@ export function CostAnalytics() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$32,450</div>
+                            <div className="text-2xl font-bold">KSh 32,450</div>
             <div className="flex items-center text-xs text-muted-foreground mt-1">
               <span>Jan 1 - Jun 30, 2023</span>
             </div>
@@ -157,7 +157,7 @@ export function CostAnalytics() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$68,900</div>
+                            <div className="text-2xl font-bold">KSh 68,900</div>
             <div className="flex items-center text-xs text-muted-foreground mt-1">
               <span>Based on current usage</span>
             </div>
@@ -189,7 +189,6 @@ export function CostAnalytics() {
                   <Bar dataKey="sms" name="SMS" stackId="a" fill="#2563eb" />
                   <Bar dataKey="whatsapp" name="WhatsApp" stackId="a" fill="#22c55e" />
                   <Bar dataKey="voice" name="Voice" stackId="a" fill="#f97316" />
-                  <Bar dataKey="viber" name="Viber" stackId="a" fill="#8b5cf6" />
                   <Bar dataKey="rcs" name="RCS" stackId="a" fill="#64748b" />
                   <Bar dataKey="chat" name="Chat" stackId="a" fill="#ec4899" />
                 </BarChart>
@@ -206,7 +205,7 @@ export function CostAnalytics() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${monthlyData[5].sms}</div>
+                <div className="text-2xl font-bold">KSh {monthlyData[5].sms}</div>
                 <div className="flex items-center text-xs mt-1">
                   <span className={`${monthlyData[5].sms > monthlyData[4].sms ? 'text-red-500' : 'text-green-500'} font-medium`}>
                     {monthlyData[5].sms > monthlyData[4].sms ? '+' : '-'}
@@ -225,7 +224,7 @@ export function CostAnalytics() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${monthlyData[5].whatsapp}</div>
+                <div className="text-2xl font-bold">KSh {monthlyData[5].whatsapp}</div>
                 <div className="flex items-center text-xs mt-1">
                   <span className={`${monthlyData[5].whatsapp > monthlyData[4].whatsapp ? 'text-red-500' : 'text-green-500'} font-medium`}>
                     {monthlyData[5].whatsapp > monthlyData[4].whatsapp ? '+' : '-'}
@@ -280,7 +279,7 @@ export function CostAnalytics() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
+                  <Tooltip formatter={(value) => [`KSh ${value}`, 'Cost']} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -325,7 +324,7 @@ export function CostAnalytics() {
                   <CardTitle className="text-sm font-medium">{item.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${item.value}</div>
+                  <div className="text-2xl font-bold">KSh {item.value}</div>
                   <div className="flex items-center text-xs text-muted-foreground mt-1">
                     <span>{((item.value / costBreakdown.reduce((acc, curr) => acc + curr.value, 0)) * 100).toFixed(1)}% of total</span>
                   </div>

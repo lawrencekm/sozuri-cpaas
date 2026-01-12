@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-
+import { ProjectCard } from "@/components/dashboard/project-card"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Calendar, Filter, MoreHorizontal, Plus, Search, SortAsc, Trash2 } from "lucide-react"
+import { ArrowRight, Calendar, Filter, MoreHorizontal, Plus, Search, SortAsc, Trash2, AlertTriangle } from "lucide-react"
 import { toast } from "react-hot-toast"
 import * as Sentry from "@sentry/nextjs"
 
@@ -57,24 +57,27 @@ function NewProjectDialog() {
     setIsSubmitting(true)
 
     try {
-      // Replace with actual API call
-      // const response = await fetch('/api/projects', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData),
-      // });
+      const response = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          // map UI type to an optional accountType if desired
+          accountType: formData.type || undefined,
+        }),
+      })
 
-      // if (!response.ok) throw new Error('Failed to create project');
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create project')
+      }
 
       setOpen(false)
       router.refresh()
     } catch (error) {
-      console.error("Error creating project:", error)
+      console.error('Error creating project:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setIsSubmitting(false)
     }
@@ -141,128 +144,50 @@ function NewProjectDialog() {
   )
 }
 
-// Project Card Component
-function ProjectCard({ project, isLoading = false }: { project: any; isLoading?: boolean }) {
-  const router = useRouter()
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="h-6 w-3/4 animate-pulse rounded bg-muted"></div>
-            <div className="h-8 w-8 animate-pulse rounded-full bg-muted"></div>
-          </div>
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted mt-2"></div>
-        </CardHeader>
-        <CardContent className="pb-2">
-          <div className="flex justify-between text-sm">
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-          </div>
-          <div className="mt-4 h-4 w-32 animate-pulse rounded bg-muted"></div>
-        </CardContent>
-        <CardFooter>
-          <div className="h-9 w-full animate-pulse rounded bg-muted"></div>
-        </CardFooter>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{project.name}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}`)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
-                Edit Project
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Project
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription>{project.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-muted-foreground">Campaigns</p>
-            <p className="font-medium">{project.campaigns}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Messages</p>
-            <p className="font-medium">{project.messages}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Engagement</p>
-            <p className="font-medium">{project.engagement}%</p>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center text-xs text-muted-foreground">
-          <Calendar className="mr-1 h-3 w-3" /> Updated {project.updated}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full"
-          onClick={() => router.push(`/dashboard/projects/${project.id}`)}
-        >
-          View Project <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [projects, setProjects] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("all")
 
   useEffect(() => {
-    // Fetch projects data
     const fetchProjects = async () => {
       try {
-        // Replace with actual API call
-        // const response = await fetch('/api/projects');
-        // if (!response.ok) throw new Error('Failed to fetch projects');
-        // const data = await response.json();
+        setIsLoading(true)
+        setError(null)
+        const response = await fetch('/api/v1/projects')
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to fetch projects')
+        }
+        
+        const data = await response.json()
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Map API to UI fields
+        const mapped = (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          type: p.accountType || 'marketing',
+          campaigns: p._count?.campaigns ?? 0,
+          messages: p._count?.messageLogs ?? 0,
+          engagement: Math.round(Math.random() * 100), // TODO: Replace with actual engagement data
+          successRate: Math.round(95 + Math.random() * 5), // TODO: Replace with actual success rate
+          updated: new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
+            -Math.round((Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
+            'day'
+          ),
+        }))
 
-        // Placeholder empty data
-        setProjects([])
+        setProjects(mapped)
       } catch (error) {
-        console.error("Error fetching projects:", error)
-        toast.error("Failed to load projects")
+        console.error('Error fetching projects:', error)
+        const message = error instanceof Error ? error.message : 'Failed to load projects'
+        setError(message)
+        toast.error(message)
         Sentry.captureException(error)
       } finally {
         setIsLoading(false)
@@ -309,110 +234,314 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">All Projects</TabsTrigger>
-            <TabsTrigger value="marketing">Marketing</TabsTrigger>
-            <TabsTrigger value="transactional">Transactional</TabsTrigger>
-            <TabsTrigger value="customer-service">Customer Service</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all" className="pt-4">
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <ProjectCard key={i} project={{}} isLoading={true} />
-                ))}
-              </div>
-            ) : filteredProjects.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Plus className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Projects Yet</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first project to get started</p>
-                  <NewProjectDialog />
+        {error ? (
+          <Card className="border-destructive/50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center text-center space-y-2">
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  {error}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
               </div>
-            )}
-          </TabsContent>
-          <TabsContent value="marketing" className="pt-4">
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2].map((i) => (
-                  <ProjectCard key={i} project={{}} isLoading={true} />
-                ))}
-              </div>
-            ) : filteredProjects.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Plus className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Marketing Projects</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first marketing project</p>
-                  <NewProjectDialog />
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="all" disabled={isLoading}>All Projects</TabsTrigger>
+              <TabsTrigger value="marketing" disabled={isLoading}>Marketing</TabsTrigger>
+              <TabsTrigger value="transactional" disabled={isLoading}>Transactional</TabsTrigger>
+              <TabsTrigger value="customer-service" disabled={isLoading}>Customer Service</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="pt-4">
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
+                  ))}
                 </div>
-              </div>
-            )}
-          </TabsContent>
-          <TabsContent value="transactional" className="pt-4">
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2].map((i) => (
-                  <ProjectCard key={i} project={{}} isLoading={true} />
-                ))}
-              </div>
-            ) : filteredProjects.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Plus className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Transactional Projects</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first transactional project</p>
-                  <NewProjectDialog />
+              ) : filteredProjects.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
+                  ))}
                 </div>
-              </div>
-            )}
-          </TabsContent>
-          <TabsContent value="customer-service" className="pt-4">
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2].map((i) => (
-                  <ProjectCard key={i} project={{}} isLoading={true} />
-                ))}
-              </div>
-            ) : filteredProjects.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Plus className="h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">No Customer Service Projects</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Create your first customer service project</p>
-                  <NewProjectDialog />
+              ) : searchQuery ? (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <Search className="h-10 w-10 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-lg font-medium">No Results Found</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      No projects match your search criteria
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      Clear Search
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium">No Projects Yet</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create your first project to get started with campaigns
+                    </p>
+                    <div className="mt-4">
+                      <NewProjectDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="marketing" className="pt-4">
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2].map((i) => (
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : filteredProjects.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium">No Marketing Projects</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create your first marketing project to get started
+                    </p>
+                    <div className="mt-4">
+                      <NewProjectDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="transactional" className="pt-4">
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2].map((i) => (
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : filteredProjects.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium">No Transactional Projects</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create your first transactional project to get started
+                    </p>
+                    <div className="mt-4">
+                      <NewProjectDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="customer-service" className="pt-4">
+              {isLoading ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2].map((i) => (
+                    <ProjectCard 
+                      key={i} 
+                      project={{
+                        id: `loading-${i}`,
+                        name: '',
+                        description: '',
+                        type: 'sms',
+                        status: 'active',
+                        stats: {
+                          campaigns: 0,
+                          messages: 0,
+                          engagement: 0,
+                          successRate: 0
+                        },
+                        updated: new Date().toISOString()
+                      }}
+                      isLoading={true}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : filteredProjects.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard 
+                      key={project.id} 
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        description: project.description || '',
+                        type: project.type,
+                        status: project.status,
+                        stats: {
+                          campaigns: project.campaigns,
+                          messages: project.messages,
+                          engagement: project.engagement,
+                          successRate: project.successRate,
+                        },
+                        updated: project.updated
+                      }}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium">No Customer Service Projects</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create your first customer service project to get started
+                    </p>
+                    <div className="mt-4">
+                      <NewProjectDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </DashboardLayout>
   )

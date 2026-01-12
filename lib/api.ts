@@ -1,9 +1,10 @@
 import axios, { AxiosError } from "axios"
 import { handleError, ErrorType } from './error-handler'
 
+const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000')
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
-  timeout: 5000, // 5 seconds timeout for faster fallback
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api/v1",
+  timeout: API_TIMEOUT,
 })
 
 api.interceptors.request.use(
@@ -32,9 +33,15 @@ api.interceptors.response.use(
     const requestUrl = error.config?.url || 'unknown endpoint'
     const method = error.config?.method?.toUpperCase() || 'unknown method'
 
+    try {
+      ;(error as any)._handledByApi = true
+    } catch (e) {
+      // ignore
+    }
+
     // Handle authentication errors
     if (error.response?.status === 401) {
-      handleError(error, ErrorType.AUTHENTICATION, {
+  handleError(error, ErrorType.AUTHENTICATION, {
         toastMessage: "Your session has expired. Please sign in again.",
         context: { requestUrl, method }
       })
@@ -45,7 +52,7 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Handle rate limiting
+  // Handle rate limiting
     if (error.response?.status === 429) {
       handleError(error, ErrorType.API, {
         toastMessage: "Rate limit exceeded. Please try again later.",
@@ -63,8 +70,8 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Handle all other API errors
-    handleError(error, ErrorType.API, {
+  // Handle all other API errors
+  handleError(error, ErrorType.API, {
       context: {
         requestUrl,
         method,
@@ -82,18 +89,22 @@ function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   errorType: ErrorType,
   options: { toastMessage?: string; context?: Record<string, any> } = {}
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
-  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>> {
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await fn(...args);
     } catch (error) {
-      handleError(error, errorType, {
-        toastMessage: options.toastMessage,
-        context: {
-          source: fn.name || 'api_call', // Use function name if available
-          ...(options.context || {}),
-        },
-      });
+      // If the error was already handled by the API interceptors, skip duplicate reporting
+      const errAny = error as any
+      if (!errAny?._handledByApi) {
+        handleError(error, errorType, {
+          toastMessage: options.toastMessage,
+          context: {
+            source: fn.name || 'api_call',
+            ...(options.context || {}),
+          },
+        });
+      }
       throw error;
     }
   };
@@ -127,12 +138,18 @@ export interface Project {
   campaigns?: number;
   messages?: number;
   engagement?: number;
+  successRate?: number;
+  type?: 'marketing' | 'transactional' | 'customer-service' | 'alerts';
   created: string;
   updated: string;
   user_id: string;
   status: 'active' | 'inactive' | 'suspended';
   balance: number;
   currency: string;
+  _count?: {
+    campaigns: number;
+    messageLogs: number;
+  };
 }
 
 
@@ -149,7 +166,7 @@ export interface MessagePayload {
 export interface MessageLog {
   id: string;
   message_id: string;
-  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  channel: 'sms' | 'whatsapp' | 'rcs' | 'voice';
   direction: 'inbound' | 'outbound';
   sender: string;
   recipient: string;
@@ -175,7 +192,7 @@ export interface CampaignTemplate {
   id: string;
   project_id: string;
   name: string;
-  channel: 'sms' | 'whatsapp' | 'viber' | 'rcs' | 'voice';
+  channel: 'sms' | 'whatsapp' | 'rcs' | 'voice';
   content: string;
   type: 'transactional' | 'marketing' | 'notification' | 'reminder';
   variables: string[];
@@ -185,24 +202,55 @@ export interface CampaignTemplate {
 
 export interface CampaignAutomation {
   id: string;
-  project_id: string;
+  projectId: string;
+  userId: string;
   name: string;
-  trigger_event: string;
-  campaign_template_id: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  description?: string;
+  triggerType: string; // webhook, schedule, event
+  triggerConfig: any;
+  actionType: string; // send_sms, send_whatsapp, update_contact
+  actionConfig: any;
+  isActive: boolean;
+  lastTriggered?: string;
+  executionCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+// API request interface for creating automations
+export interface CreateCampaignAutomationRequest {
+  projectId: string;
+  name: string;
+  description?: string;
+  trigger_type: string;
+  trigger_config?: any;
+  action_type: string;
+  action_config?: any;
+  is_active?: boolean;
 }
 
 export interface Campaign {
   id: string;
   name: string;
   description: string;
-  channel: 'sms' | 'email' | 'whatsapp' | 'voice';
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  created_at: string;
-  updated_at: string;
+ 
+  channel?: 'sms' | 'email' | 'whatsapp' | 'voice' | string;
+  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
+  created_at?: string;
+  updated_at?: string;
+  created?: string;
+  updated?: string;
   content?: string;
+  projectId: string; // Now required
+  project?: Project; // Include project relationship
+  target_audience?: string;
+  message_content?: string;
+  scheduled_at?: string;
   audience?: {
     total: number;
     delivered: number;
@@ -211,9 +259,16 @@ export interface Campaign {
     clicked: number;
   };
   schedule?: {
-    type: 'immediate' | 'scheduled' | 'recurring';
+    type?: 'immediate' | 'scheduled' | 'recurring' | string;
     sentAt?: string;
     scheduledFor?: string;
+  };
+  metrics?: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    cost: number;
   };
 }
 
@@ -356,7 +411,7 @@ export const campaignAutomationsAPI = {
     ErrorType.API
   ),
   create: withErrorHandling(
-    (automation: Omit<CampaignAutomation, 'id' | 'created_at' | 'updated_at'>): Promise<CampaignAutomation> =>
+    (automation: CreateCampaignAutomationRequest): Promise<CampaignAutomation> =>
       api.post(`/automations`, automation).then(res => res.data),
     ErrorType.API
   ),
@@ -433,7 +488,8 @@ export const messagingAPI = {
 // Campaigns API with error handling
 export const campaignsAPI = {
   getAll: withErrorHandling(
-    (): Promise<Campaign[]> => api.get("/campaigns").then(res => res.data),
+    (params?: { projectId?: string; page?: number; limit?: number; search?: string }): Promise<Campaign[]> =>
+      api.get("/campaigns", { params }).then(res => res.data),
     ErrorType.API
   ),
 
@@ -443,13 +499,13 @@ export const campaignsAPI = {
   ),
 
   create: withErrorHandling(
-    (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'>): Promise<Campaign> =>
+    (campaign: Omit<Campaign, 'id' | 'created_at' | 'updated_at'> & { projectId: string }): Promise<Campaign> =>
       api.post("/campaigns", campaign).then(res => res.data),
     ErrorType.API
   ),
 
   update: withErrorHandling(
-    (id: string, campaign: Partial<Campaign>): Promise<Campaign> =>
+    (id: string, campaign: Partial<Campaign> & { projectId: string }): Promise<Campaign> =>
       api.put(`/campaigns/${id}`, campaign).then(res => res.data),
     ErrorType.API
   ),
@@ -603,6 +659,38 @@ export const adminAPI = {
   ),
 }
 
+export interface BillingSummary {
+  balance: number
+  currency: string
+  billingCycle: string
+  nextInvoiceDate: string | null
+  currentUsage: number
+  paymentMethods: any[]
+}
+
+export const billingAPI = {
+  getSummary: withErrorHandling(
+    (projectId: string): Promise<BillingSummary> =>
+      api.get(`/v1/payments/billing/summary`, { params: { projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getTransactions: withErrorHandling(
+    (projectId: string, params?: { page?: number; limit?: number }) =>
+      api.get(`/v1/payments/transactions`, { params: { projectId, ...(params || {}) } }).then(res => res.data),
+    ErrorType.API
+  ),
+  getInvoices: withErrorHandling(
+    (projectId: string) =>
+      api.get(`/v1/payments/invoices`, { params: { projectId } }).then(res => res.data),
+    ErrorType.API
+  ),
+  topup: withErrorHandling(
+    (payload: { projectId: string; amount: number; creditsAmount: number; currency?: string; method?: string }) =>
+      api.post(`/v1/payments/topup`, payload).then(res => res.data),
+    ErrorType.API
+  ),
+}
+
 // Log Entry interface
 export interface LogEntry {
   id: string;
@@ -624,39 +712,3 @@ export interface AnalyticsMetrics {
   conversionRate: string;
 }
 
-export interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
-  type?: 'sms' | 'whatsapp' | 'voice' | 'email';
-  channel?: string;
-  content?: string;
-  created_at?: string;
-  updated_at?: string;
-  created?: string;
-  updated?: string;
-  project_id?: string;
-  projectId?: string;
-  target_audience?: string;
-  message_content?: string;
-  scheduled_at?: string;
-  audience?: {
-    total: number;
-    delivered: number;
-    failed: number;
-    opened: number;
-    clicked: number;
-  };
-  schedule?: {
-    type: string;
-    sentAt: string;
-  };
-  metrics?: {
-    sent: number;
-    delivered: number;
-    opened: number;
-    clicked: number;
-    cost: number;
-  };
-}

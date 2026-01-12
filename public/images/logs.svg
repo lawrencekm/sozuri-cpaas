@@ -1,0 +1,11 @@
+<svg id="Flow-Logs-Vpc--Streamline-Carbon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" height="16" width="16">
+  <desc>
+    Flow Logs Vpc Streamline Icon: https://streamlinehq.com
+  </desc>
+  <defs></defs>
+  <path d="M9 9.5h6v1H9Z" fill="#000000" stroke-width="0.5"></path>
+  <path d="M9 11.5h6v1H9Z" fill="#000000" stroke-width="0.5"></path>
+  <path d="M9 13.5h4v1h-4Z" fill="#000000" stroke-width="0.5"></path>
+  <path d="M12 2a1.9981 1.9981 0 0 0 -1.92895 1.5H6V2H2v4h4V4.5h4.07105a1.97 1.97 0 0 0 0.2124 0.5095L5.0095 10.28345A1.97605 1.97605 0 0 0 4 10a2 2 0 1 0 1.92895 2.5H8v-1h-2.07105a1.97 1.97 0 0 0 -0.2124 -0.5095L10.9905 5.71655A1.97605 1.97605 0 0 0 12 6a2 2 0 0 0 0 -4Zm-7 3H3V3h2ZM4 13a1 1 0 1 1 1 -1 1.00115 1.00115 0 0 1 -1 1Zm8 -8a1 1 0 1 1 1 -1 1.00115 1.00115 0 0 1 -1 1Z" fill="#000000" stroke-width="0.5"></path>
+  <path id="_Transparent_Rectangle_" d="M0 0h16v16H0Z" fill="none" stroke-width="0.5"></path>
+</svg>

@@ -8,7 +8,8 @@ import {
   Users,
   ArrowRight
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
+import Image from "next/image"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 
 interface HierarchyItem {
   title: string
@@ -31,12 +32,7 @@ const hierarchyMap: Record<string, HierarchyItem[]> = {
       icon: <WhatsAppLogo size={20} />,
       description: "Send and manage WhatsApp messages",
     },
-    {
-      title: "Viber",
-      href: "/dashboard/messaging/viber",
-      icon: <ViberLogo size={20} />,
-      description: "Send and manage Viber messages",
-    },
+
     {
       title: "RCS",
       href: "/dashboard/messaging/rcs",
@@ -48,25 +44,25 @@ const hierarchyMap: Record<string, HierarchyItem[]> = {
     {
       title: "Messaging",
       href: "/dashboard/messaging",
-      icon: <MessagesSquare className="h-5 w-5 text-primary" />,
+  icon: <Image src="/images/messaging.svg" width={20} height={20} alt="Messaging" className="h-5 w-5" />, 
       description: "Manage all messaging channels",
     },
     {
       title: "Voice",
       href: "/dashboard/voice",
-      icon: <VoiceLogo size={20} />,
+  icon: <Image src="/images/voice.svg" width={20} height={20} alt="Voice" className="h-5 w-5" />, 
       description: "Manage voice calls and IVR",
     },
     {
       title: "Analytics",
       href: "/dashboard/analytics",
-      icon: <BarChart3 className="h-5 w-5 text-blue-500" />,
+  icon: <Image src="/images/analytics.svg" width={20} height={20} alt="Analytics" className="h-5 w-5" />, 
       description: "View performance metrics",
     },
     {
       title: "Contacts",
       href: "/dashboard/contacts",
-      icon: <Users className="h-5 w-5 text-green-500" />,
+  icon: <Image src="/images/contacts.svg" width={20} height={20} alt="Contacts" className="h-5 w-5" />, 
       description: "Manage your audience",
     },
   ],

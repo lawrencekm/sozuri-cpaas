@@ -30,3 +30,28 @@
   animation: subtle-move 20s linear infinite;
   background-size: 200% 200%;
 }
+
+/* Sidebar Variables */
+:root {
+  --sidebar-width: 16rem;
+  --sidebar-width-icon: 3rem;
+}
+
+/* Sidebar Wrapper */
+.sidebar-wrapper {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.sidebar-wrapper[data-variant="inset"] {
+  background-color: var(--sidebar-bg);
+}
+
+.group\\/sidebar-wrapper {
+  display: flex;
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+  --sidebar-width: 18rem;
+}

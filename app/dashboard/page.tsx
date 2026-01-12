@@ -3,26 +3,36 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   Layers, MessageCircle, Plus, Sparkles,
-  TrendingDown, TrendingUp, BarChart as BarChartIcon,
-  Mail, ArrowUp, ArrowDownRight, AlertTriangle, RefreshCw, ArrowRight,
-  MessagesSquare, BarChart3, Users, CheckCircle2, Activity,
-  Clock, Shield, ChevronRight, Zap
+  TrendingDown, TrendingUp,
+  ArrowUp, AlertTriangle, RefreshCw, ArrowRight,
+  MessagesSquare, BarChart3, Users, CheckCircle2,
+  Clock, ChevronRight, MoreHorizontal, Trash2
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { handleError, ErrorType } from "@/lib/error-handler"
 import { ErrorBoundary } from "@/components/error-handling/error-boundary"
 import dynamic from 'next/dynamic'
 import { getTimeBasedGreeting } from "@/lib/greeting-utils"
+import { useSession } from "next-auth/react";
 
 // Add CSS for background grid pattern
 import "@/styles/dashboard-patterns.css"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CampaignCard } from "@/components/dashboard/campaign-card"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -38,6 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
+import { projectsAPI, campaignsAPI, campaignTemplatesAPI, Project as ApiProject, Campaign as ApiCampaign, CampaignTemplate } from "@/lib/api"
 
 // Lazy load chart components for better performance
 
@@ -98,72 +109,8 @@ function DashboardCard({
   )
 }
 
-function ProjectCard({
-  project,
-  onSelect,
-  isLoading = false,
-}: { project: any; onSelect: (project: any) => void; isLoading?: boolean }) {
-  if (isLoading) {
-    return (
-      <Card className="dashboard-card animate-pulse">
-        <CardHeader className="pb-2 bg-muted/30">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-muted"></div>
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted"></div>
-        </CardHeader>
-        <CardContent className="p-5">
-          <div className="flex justify-between text-sm">
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-            <div>
-              <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
-              <div className="mt-1 h-4 w-8 animate-pulse rounded bg-muted"></div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t p-4">
-          <div className="h-9 w-full animate-pulse rounded bg-muted"></div>
-        </CardFooter>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="dashboard-card">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">{project.name}</CardTitle>
-        <CardDescription className="line-clamp-1">{project.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="p-8">
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Campaigns</p>
-            <p className="font-medium text-base mt-1">{project.campaigns}</p>
-          </div>
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Messages</p>
-            <p className="font-medium text-base mt-1">{project.messages}</p>
-          </div>
-          <div className="bg-gray-50/80 p-4 rounded-lg dark:bg-gray-800/50">
-            <p className="text-gray-600 text-xs dark:text-gray-400">Engagement</p>
-            <p className="font-medium text-base mt-1">{project.engagement}%</p>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter withBorder>
-        <Button variant="default" size="sm" className="w-full" onClick={() => onSelect(project)}>
-          <Layers className="mr-2 h-4 w-4" />
-          View Project
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
+// Import ProjectCard component and types
+import { ProjectCard, toCardProject, Project } from "@/components/dashboard/project-card"
 
 // New Project Dialog
 function NewProjectDialog() {
@@ -190,11 +137,24 @@ function NewProjectDialog() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          accountType: formData.type || undefined,
+        }),
+      })
 
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create project')
+      }
+
+      const project = await response.json()
       setOpen(false)
-      router.refresh()
+      router.push(`/dashboard/projects`)
     } catch (error) {
       handleError(error, ErrorType.API, {
         toastMessage: "Failed to create project. Please try again.",
@@ -348,25 +308,57 @@ const hierarchyMap: Record<string, QuickAccessItem[]> = {
     {
       title: "Messaging",
       href: "/dashboard/messaging",
-      icon: <MessagesSquare className="h-5 w-5 text-primary" />,
+      icon: (
+        <Image
+          src="/images/messaging.svg"
+          alt="Messaging"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage all messaging channels",
     },
     {
       title: "Voice",
       href: "/dashboard/voice",
-      icon: <VoiceLogo size={20} />,
+      icon: (
+        <Image
+          src="/images/voice.svg"
+          alt="Voice"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage voice calls and IVR",
     },
     {
       title: "Analytics",
       href: "/dashboard/analytics",
-      icon: <BarChart3 className="h-5 w-5 text-blue-500" />,
+      icon: (
+        <Image
+          src="/images/analytics.svg"
+          alt="Analytics"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "View performance metrics",
     },
     {
       title: "Contacts",
       href: "/dashboard/contacts",
-      icon: <Users className="h-5 w-5 text-green-500" />,
+      icon: (
+        <Image
+          src="/images/contacts.svg"
+          alt="Contacts"
+          width={20}
+          height={20}
+          className="h-5 w-5"
+        />
+      ),
       description: "Manage your audience",
     },
   ],
@@ -392,23 +384,36 @@ const ClientSideChart = ({ data }: { data: Array<{ name: string; messages: numbe
 export default function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState<any[]>([])
-  // For demo purposes, we'll set this to true to show the new user experience
-  // In config our app, this would be determined by checking user metadata
-  const [isNewUser, setIsNewUser] = useState(true)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
+  const [templates, setTemplates] = useState<CampaignTemplate[]>([])
+  // Determine if the user is new by checking backend status once session is available
+  const [isNewUser, setIsNewUser] = useState<boolean>(false)
 
-  // Get user information from localStorage or context in a real app
-  const [userInfo, setUserInfo] = useState({
-    name: "John",
-    companyName: "Acme Corporation",
-    userRole: "Platform Administrator"
-  });
+  const { data: session } = useSession();
+  const userInfo = {
+    name: session?.user?.name || "",
+    companyName: session?.user?.company || "",
+    userRole: session?.user?.role || ""
+  };
+
+  useEffect(() => {
+    const fetchUserStatus = async () => {
+      try {
+        if (!session?.user?.id) return;
+        const res = await fetch(`/api/v1/users/${session.user.id}/status`);
+        if (!res.ok) throw new Error('Failed to fetch user status');
+        const data = await res.json();
+        setIsNewUser(Boolean(data?.isNewUser));
+      } catch (e) {
+        // Fail closed: if status check fails, do not block dashboard; treat as returning user
+        setIsNewUser(false);
+      }
+    };
+    fetchUserStatus();
+  }, [session?.user?.id]);
 
   const [metrics, setMetrics] = useState({
-    deliveryRate: { value: "0", change: "0%", trend: "up" as const },
-    latency: { value: "0", change: "0ms", trend: "down" as const },
-    errorRate: { value: "0", change: "0%", trend: "down" as const },
-    throughput: { value: "0", change: "0/sec", trend: "up" as const },
     ai: {
       accuracy: 0,
       predictions: 0,
@@ -419,10 +424,7 @@ export default function Dashboard() {
   const [error, setError] = useState<Error | null>(null)
   const [currentTime, setCurrentTime] = useState<string>('')
 
-  // This is just for demo purposes to toggle between new and returning user views
-  const toggleUserExperience = () => {
-    setIsNewUser(!isNewUser)
-  }
+
 
 
 
@@ -456,16 +458,36 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Fetch projects, campaigns, and templates in parallel
+        const [projectsData, campaignsData] = await Promise.all([
+          projectsAPI.getAll(),
+          campaignsAPI.getAll(),
+        ])
 
-        // Placeholder empty data
-        setProjects([])
+        const mappedProjects = (projectsData || []).map(p => toCardProject({
+          ...p,
+          type: p.accountType || 'marketing'
+        }))
+        setProjects(mappedProjects)
+        setCampaigns(campaignsData || [])
+
+        if ((projectsData?.length || 0) > 0) {
+          try {
+            // Aggregate templates from all user projects
+            const templatePromises = projectsData.map(project => 
+              campaignTemplatesAPI.getAll(project.id).catch(() => [])
+            )
+            const templateArrays = await Promise.all(templatePromises)
+            const allTemplates = templateArrays.flat()
+            setTemplates(allTemplates || [])
+          } catch (_) {
+            setTemplates([])
+          }
+        } else {
+          setTemplates([])
+        }
+
         setMetrics({
-          deliveryRate: { value: "98.7", change: "+1.2%", trend: "up" },
-          latency: { value: "87", change: "-5ms", trend: "down" },
-          errorRate: { value: "0.8", change: "-0.3%", trend: "down" },
-          throughput: { value: "156", change: "+12/sec", trend: "up" },
           ai: {
             accuracy: 92,
             predictions: 1243,
@@ -522,22 +544,7 @@ export default function Dashboard() {
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary/90 to-accent/90 text-white">
             <div className="absolute inset-0 bg-grid-white animate-subtle-move [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.5),transparent)]"></div>
             <div className="relative z-10 p-8">
-              {/* Demo toggle - simplified */}
-              <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
-                <span className="text-white/80">Demo:</span>
-                <button
-                  onClick={toggleUserExperience}
-                  className={`px-2 py-1 rounded-md transition-colors ${isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
-                >
-                  New User
-                </button>
-                <button
-                  onClick={toggleUserExperience}
-                  className={`px-2 py-1 rounded-md transition-colors ${!isNewUser ? 'bg-white text-primary font-medium' : 'text-white/70 hover:bg-white/10'}`}
-                >
-                  Returning User
-                </button>
-              </div>
+
 
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="max-w-2xl">
@@ -556,7 +563,7 @@ export default function Dashboard() {
                       </Link>
                     </Button>
                     <Button size="default" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 font-medium rounded-lg" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         <Layers className="mr-2 h-4 w-4" />
                         New Campaign
                       </Link>
@@ -585,8 +592,7 @@ export default function Dashboard() {
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Getting Started with SOZURI</h2>
-                  <p className="text-sm text-muted-foreground">Complete these steps to set up your account</p>
+
                 </div>
               </div>
               <div className="bg-gradient-to-r from-primary/5 to-transparent p-6 rounded-xl border">
@@ -657,7 +663,7 @@ export default function Dashboard() {
                       <span>15 min to complete</span>
                     </div>
                     <Button size="sm" className="mt-auto w-full" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         Create Campaign
                       </Link>
                     </Button>
@@ -703,58 +709,7 @@ export default function Dashboard() {
 
 
 
-          {/* Suggested Next Steps - Only for new users */}
-          {isNewUser && (
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Suggested Next Steps</h2>
-                  <p className="text-sm text-muted-foreground">Recommended actions to explore the platform</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-primary">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium mb-1">Explore AI-Powered Features</h3>
-                        <p className="text-xs text-muted-foreground mb-3">Discover how our AI can help optimize your messaging campaigns and improve engagement.</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
-                          <Link href="/dashboard/ai-suggestions">
-                            Learn More
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-sm hover:shadow-md transition-all border-l-4 border-l-accent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 flex-shrink-0">
-                        <MessageCircle className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium mb-1">Send Your First Test Message</h3>
-                        <p className="text-xs text-muted-foreground mb-3">Try sending a test message to yourself to see how the platform works in real-time.</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-accent" asChild>
-                          <Link href="/dashboard/messaging">
-                            Send Test Message
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
+          {/* Suggested Next Steps removed */}
 
           {/* Quick Navigation */}
           <div className="mb-8">
@@ -789,94 +744,172 @@ export default function Dashboard() {
               </div>
             </Suspense>
           </div>
-
-          {/* Essential Performance Metrics */}
+          
+          {/* Projects & Resources Section  */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-lg font-semibold">Performance Overview</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Key metrics across all communication channels</p>
+                <h2 className="text-lg font-semibold">Projects & Resources</h2>
+                <p className="text-sm text-muted-foreground">Manage your communication projects and assets</p>
               </div>
-              <Link
-                href="/dashboard/analytics"
-                className="text-sm text-primary hover:bg-primary/5 flex items-center px-3 py-1.5 rounded-md transition-colors"
-              >
-                View detailed analytics
-                <ArrowUp className="ml-1 h-3 w-3 rotate-45" />
-              </Link>
+              <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
+                <Link href="/dashboard/projects">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Project
+                </Link>
+              </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard
-                title="Delivery Rate"
-                value={isLoading ? "..." : `${metrics.deliveryRate.value}%`}
-                change={metrics.deliveryRate.change}
-                trend={metrics.deliveryRate.trend}
-                description="Messages successfully delivered"
-                icon={<CheckCircle2 className="h-5 w-5" />}
-                color="bg-green-500"
-                isLoading={isLoading}
-              />
-              <DashboardCard
-                title="Average Latency"
-                value={isLoading ? "..." : `${metrics.latency.value}ms`}
-                change={metrics.latency.change}
-                trend={metrics.latency.trend}
-                description="Response time across channels"
-                icon={<Clock className="h-5 w-5" />}
-                color="bg-blue-500"
-                isLoading={isLoading}
-              />
-              <DashboardCard
-                title="Error Rate"
-                value={isLoading ? "..." : `${metrics.errorRate.value}%`}
-                change={metrics.errorRate.change}
-                trend={metrics.errorRate.trend}
-                description="Failed message attempts"
-                icon={<AlertTriangle className="h-5 w-5" />}
-                color="bg-amber-500"
-                isLoading={isLoading}
-              />
-              <DashboardCard
-                title="Throughput"
-                value={isLoading ? "..." : `${metrics.throughput.value}/sec`}
-                change={metrics.throughput.change}
-                trend={metrics.throughput.trend}
-                description="Messages processed per second"
-                icon={<Zap className="h-5 w-5" />}
-                color="bg-purple-500"
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-
-          {/* Message Volume Chart */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Message Volume Trends</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Monthly delivery performance across all channels</p>
-              </div>
-              <Select defaultValue="year">
-                <SelectTrigger className="w-[140px] h-8 text-xs rounded-lg">
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="month">Last 30 days</SelectItem>
-                  <SelectItem value="quarter">Last quarter</SelectItem>
-                  <SelectItem value="year">Last 12 months</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Card className="shadow-sm">
-              <CardContent className="p-8">
-                <div className="w-full h-[320px]">
-                  <Suspense fallback={<div className="h-[320px] w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg" />}>
-                    <ClientSideChart data={chartData} />
-                  </Suspense>
+            <Card variant="interactive" className="shadow-md">
+              <Tabs defaultValue="projects" className="w-full">
+                <div className="border-b">
+                  <TabsList className="p-0 h-12 bg-transparent border-b-0 rounded-none">
+                    <TabsTrigger value="projects" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Projects
+                    </TabsTrigger>
+                    <TabsTrigger value="campaigns" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Campaigns
+                    </TabsTrigger>
+                    <TabsTrigger value="templates" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
+                      Templates
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
-              </CardContent>
+                <div className="p-6">
+                  <TabsContent value="projects" className="m-0">
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                          <ProjectCard 
+                            key={i}
+                            project={{
+                              id: `loading-${i}`,
+                              name: '',
+                              description: '',
+                              type: '',
+                              stats: {
+                                campaigns: 0,
+                                messages: 0,
+                                engagement: 0,
+                                successRate: 0
+                              }
+                            }}
+                            isLoading={true}
+                            variant="default"
+                          />
+                        ))}
+                      </div>
+                    ) : projects.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {projects.map((project) => (
+                          <ProjectCard
+                            key={project.id}
+                            project={project}
+                            onView={handleProjectSelect}
+                            variant="default"
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <Layers className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No projects yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create your first project to organize your communication campaigns and messages
+                        </p>
+                        <Button className="rounded-lg" asChild>
+                          <Link href="/dashboard/projects">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Project
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="campaigns" className="m-0">
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="border rounded-lg p-4 animate-pulse">
+                            <div className="h-5 w-1/2 bg-muted rounded mb-3"></div>
+                            <div className="h-4 w-3/4 bg-muted rounded mb-4"></div>
+                            <div className="h-8 bg-muted rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : campaigns.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {campaigns.slice(0, 6).map((campaign) => (
+                          <CampaignCard key={campaign.id} campaign={campaign} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <MessageCircle className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No campaigns yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create and manage your communication campaigns across multiple channels
+                        </p>
+                        <Button asChild className="rounded-lg">
+                          <Link href="/dashboard/campaigns">Manage Campaigns</Link>
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="templates" className="m-0">
+                    {isLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="border rounded-lg p-4 animate-pulse">
+                            <div className="h-5 w-2/3 bg-muted rounded mb-3"></div>
+                            <div className="h-4 w-1/2 bg-muted rounded mb-2"></div>
+                            <div className="h-8 bg-muted rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : templates.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {templates.slice(0, 6).map((t) => (
+                          <Card key={t.id} className="dashboard-card">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-lg">{t.name}</CardTitle>
+                              <CardDescription className="line-clamp-1">{t.type} • {t.channel.toUpperCase()}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 text-sm">
+                              <div className="line-clamp-2 text-muted-foreground">{t.content}</div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button asChild variant="ghost" size="sm" className="w-full rounded-lg">
+                                <Link href="/dashboard/messaging/templates">Manage Templates</Link>
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                          <MessageCircle className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">No templates yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Create reusable message templates for consistent communication
+                        </p>
+                        <Button asChild className="rounded-lg">
+                          <Link href="/dashboard/messaging/templates">Manage Templates</Link>
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                </div>
+              </Tabs>
             </Card>
           </div>
+
+
 
 
 
@@ -960,7 +993,7 @@ export default function Dashboard() {
                   </CardContent>
                   <CardFooter className="border-t pt-3">
                     <Button variant="outline" size="sm" className="ml-auto" asChild>
-                      <Link href="/dashboard/campaigns/new">
+                      <Link href="/dashboard/campaigns">
                         Create Campaign
                         <ChevronRight className="ml-1 h-3 w-3" />
                       </Link>
@@ -970,108 +1003,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Projects & Resources Section */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-lg font-semibold">Projects & Resources</h2>
-                <p className="text-sm text-muted-foreground">Manage your communication projects and assets</p>
-              </div>
-              <Button size="sm" variant="outline" className="font-medium rounded-lg" asChild>
-                <Link href="/dashboard/projects/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Project
-                </Link>
-              </Button>
-            </div>
-            <Card variant="interactive" className="shadow-md">
-              <Tabs defaultValue="projects" className="w-full">
-                <div className="border-b">
-                  <TabsList className="p-0 h-12 bg-transparent border-b-0 rounded-none">
-                    <TabsTrigger value="projects" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
-                      Projects
-                    </TabsTrigger>
-                    <TabsTrigger value="campaigns" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
-                      Campaigns
-                    </TabsTrigger>
-                    <TabsTrigger value="templates" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-6">
-                      Templates
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-                <div className="p-6">
-                  <TabsContent value="projects" className="m-0">
-                    {isLoading ? (
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="border rounded-lg p-4 animate-pulse">
-                            <div className="h-5 w-1/2 bg-muted rounded mb-3"></div>
-                            <div className="h-4 w-3/4 bg-muted rounded mb-4"></div>
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                              <div className="h-12 bg-muted rounded"></div>
-                              <div className="h-12 bg-muted rounded"></div>
-                              <div className="h-12 bg-muted rounded"></div>
-                            </div>
-                            <div className="h-8 bg-muted rounded"></div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : projects.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {projects.map((project) => (
-                          <ProjectCard key={project.id} project={project} onSelect={handleProjectSelect} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                          <Layers className="h-8 w-8 text-primary" />
-                        </div>
-                        <h3 className="text-lg font-medium mb-2">No projects yet</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mb-6">
-                          Create your first project to organize your communication campaigns and messages
-                        </p>
-                        <Button className="rounded-lg" asChild>
-                          <Link href="/dashboard/projects/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Project
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
-                  </TabsContent>
-                  <TabsContent value="campaigns" className="m-0">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <MessageCircle className="h-8 w-8 text-primary" />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">Campaign Management</h3>
-                      <p className="text-sm text-muted-foreground max-w-md mb-6">
-                        Create and manage your communication campaigns across multiple channels
-                      </p>
-                      <Button asChild className="rounded-lg">
-                        <Link href="/dashboard/campaigns">Manage Campaigns</Link>
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="templates" className="m-0">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <MessageCircle className="h-8 w-8 text-primary" />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">Message Templates</h3>
-                      <p className="text-sm text-muted-foreground max-w-md mb-6">
-                        Create reusable message templates for consistent communication
-                      </p>
-                      <Button asChild className="rounded-lg">
-                        <Link href="/dashboard/messaging/templates">Manage Templates</Link>
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </div>
-              </Tabs>
-            </Card>
-          </div>
+          
         </div>
       </ErrorBoundary>
 

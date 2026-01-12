@@ -1,11 +1,11 @@
-import { ArrowRight, MessagesSquare, Phone, Webhook } from "lucide-react"
+import { ArrowRight, MessagesSquare, Phone, Webhook, Mail } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { ContextualNav } from "@/components/navigation/contextual-nav"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo, } from "@/components/channel-logos"
 
 export default function MessagingPage() {
   const channels = [
@@ -17,18 +17,18 @@ export default function MessagingPage() {
       href: "/dashboard/messaging/sms",
     },
     {
+      title: "Email",
+      description: "Send personalized email campaigns with advanced templates and automation",
+      icon: <Mail size={24} />,
+      color: "bg-purple-100 text-purple-700",
+      href: "/dashboard/messaging/email",
+    },
+    {
       title: "WhatsApp",
       description: "Engage customers through rich, interactive conversations on WhatsApp Business",
       icon: <WhatsAppLogo size={24} />,
       color: "bg-green-100 text-green-700",
       href: "/dashboard/messaging/whatsapp",
-    },
-    {
-      title: "Viber",
-      description: "Create immersive brand experiences with Viber's multimedia messaging capabilities",
-      icon: <ViberLogo size={24} />,
-      color: "bg-purple-100 text-purple-700",
-      href: "/dashboard/messaging/viber",
     },
     {
       title: "RCS",

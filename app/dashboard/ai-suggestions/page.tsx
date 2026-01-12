@@ -33,10 +33,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import DashboardLayout from "@/components/layout/dashboard-layout"
+import SuggestionCard from "@/components/dashboard/suggestion-card"
 
 interface AISuggestion {
   id: string
@@ -66,13 +66,14 @@ export default function AISuggestionsPage() {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
   const [filter, setFilter] = useState("all")
   const [implementedCount, setImplementedCount] = useState(0)
+  const [visibleCount, setVisibleCount] = useState(6)
 
   // Simulated AI suggestions data
   const mockSuggestions = useMemo<AISuggestion[]>(() => [
     {
       id: "sug-1",
-      title: "Optimize Send Time for Higher Engagement",
-      description: "Based on your audience's activity patterns, sending messages between 2-4 PM on weekdays could increase open rates by up to 23%. Your current campaigns are primarily sent in the morning when engagement is lower.",
+      title: "Send at 2–4 PM for better opens",
+      description: "Weekday sends at 2–4 PM can lift opens by ~23%. Most sends currently go out in the morning.",
       category: "timing",
       impact: "high",
       timeToImplement: "5 min",
@@ -106,8 +107,8 @@ export default function AISuggestionsPage() {
     },
     {
       id: "sug-2",
-      title: "Re-engage Dormant Customers",
-      description: "We've identified 1,247 customers who haven't engaged with your messages in the last 60 days. A targeted re-engagement campaign with a special offer could recover up to 15% of these customers.",
+      title: "Win back dormant customers",
+      description: "1,247 users are inactive (60+ days). A re‑engagement offer could recover ~15%.",
       category: "audience",
       impact: "high",
       timeToImplement: "15 min",
@@ -129,20 +130,20 @@ export default function AISuggestionsPage() {
       ],
       actions: [
         {
-          label: "Create Re-engagement Campaign",
+          label: "Create  Campaign",
           href: "/dashboard/campaigns/new?template=re-engagement",
           primary: true
         },
         {
-          label: "View Dormant Segment",
+          label: "View Segment",
           href: "/dashboard/contacts?segment=dormant"
         }
       ]
     },
     {
       id: "sug-3",
-      title: "Personalize Message Content",
-      description: "Messages with personalized content beyond just the recipient's name show 31% higher engagement. Adding purchase history, browsing behavior, or location-based content could significantly improve your campaign performance.",
+      title: "Deeper personalization boosts engagement",
+      description: "Go beyond {name}. Use purchase, browse, or location data to lift engagement by ~31%.",
       category: "content",
       impact: "medium",
       timeToImplement: "30 min",
@@ -176,8 +177,8 @@ export default function AISuggestionsPage() {
     },
     {
       id: "sug-4",
-      title: "Optimize Message Length",
-      description: "Your messages with 50-100 characters have 24% higher response rates than longer messages. Consider shortening your promotional messages to improve engagement.",
+      title: "Shorten messages for higher response",
+      description: "Keep promos ~50–100 chars. This range sees ~24% higher response.",
       category: "optimization",
       impact: "medium",
       timeToImplement: "10 min",
@@ -205,8 +206,8 @@ export default function AISuggestionsPage() {
     },
     {
       id: "sug-5",
-      title: "Implement Two-Way Messaging",
-      description: "Enabling two-way messaging could increase customer satisfaction by 42% and reduce support costs. Your current one-way messaging approach limits customer engagement opportunities.",
+      title: "Enable two‑way messaging",
+      description: "Two‑way threads can raise CSAT ~42% and lower support volume.",
       category: "engagement",
       impact: "high",
       timeToImplement: "1 hour",
@@ -240,8 +241,8 @@ export default function AISuggestionsPage() {
     },
     {
       id: "sug-6",
-      title: "Segment Audience by Engagement Level",
-      description: "Creating three distinct segments (highly engaged, moderately engaged, and low engagement) could improve overall campaign performance by tailoring message frequency and content to each group.",
+      title: "Segment by engagement level",
+      description: "Group users by high/medium/low engagement and tailor cadence + content.",
       category: "audience",
       impact: "medium",
       timeToImplement: "45 min",
@@ -445,8 +446,8 @@ export default function AISuggestionsPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Personalized Recommendations</h2>
             <Badge variant="outline" className="font-normal">
               {filteredSuggestions.length} suggestions
@@ -454,129 +455,34 @@ export default function AISuggestionsPage() {
           </div>
 
           {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-6 w-3/4 bg-muted rounded"></div>
-                    <div className="h-4 w-1/2 bg-muted rounded mt-2"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-20 bg-muted rounded"></div>
-                  </CardContent>
-                  <CardFooter>
-                    <div className="h-9 w-full bg-muted rounded"></div>
-                  </CardFooter>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="flex flex-col animate-pulse p-4">
+                  <div className="h-6 w-3/4 bg-muted rounded mb-3"></div>
+                  <div className="h-4 w-full bg-muted rounded mb-4"></div>
+                  <div className="mt-auto h-8 w-1/2 bg-muted rounded"></div>
                 </Card>
               ))}
             </div>
           ) : filteredSuggestions.length > 0 ? (
-            <div className="space-y-6">
-              {filteredSuggestions.map((suggestion) => (
-                <Card
-                  key={suggestion.id}
-                  className={`border-l-4 ${
-                    suggestion.implemented
-                      ? "border-l-green-500"
-                      : suggestion.impact === "high"
-                        ? "border-l-blue-500"
-                        : "border-l-orange-500"
-                  } transition-all hover:shadow-md`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Lightbulb className={`h-5 w-5 ${
-                            suggestion.implemented ? "text-green-500" : "text-primary"
-                          }`} />
-                          <CardTitle className="text-xl">{suggestion.title}</CardTitle>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="secondary" className="flex items-center gap-1">
-                            {getCategoryIcon(suggestion.category)}
-                            <span className="capitalize">{suggestion.category}</span>
-                          </Badge>
-                          <Badge className={getImpactColor(suggestion.impact)}>
-                            {suggestion.impact === "high" ? "High Impact" :
-                             suggestion.impact === "medium" ? "Medium Impact" : "Low Impact"}
-                          </Badge>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {suggestion.timeToImplement}
-                          </Badge>
-                          {suggestion.implemented && (
-                            <Badge className="bg-green-100 text-green-800">
-                              Implemented
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`implement-${suggestion.id}`} className="text-sm">
-                            {suggestion.implemented ? "Implemented" : "Mark as implemented"}
-                          </Label>
-                          <Switch
-                            id={`implement-${suggestion.id}`}
-                            checked={suggestion.implemented}
-                            onCheckedChange={() => toggleImplementation(suggestion.id)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pb-2">
-                    <p className="text-muted-foreground">{suggestion.description}</p>
-
-                    {suggestion.metrics && suggestion.metrics.length > 0 && (
-                      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {suggestion.metrics.map((metric, index) => (
-                          <div key={index} className="space-y-1">
-                            <p className="text-sm text-muted-foreground">{metric.label}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl font-bold">{metric.value}</span>
-                              <span className={`text-xs font-medium flex items-center ${
-                                metric.trend === "up" ? "text-green-500" : "text-red-500"
-                              }`}>
-                                {metric.trend === "up" ? (
-                                  <TrendingUp className="h-3 w-3 mr-1" />
-                                ) : (
-                                  <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />
-                                )}
-                                {metric.change}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-
-                  <CardFooter className="pt-4 border-t flex justify-between">
-                    <div className="text-xs text-muted-foreground">
-                      Generated on {formatShortDate(suggestion.createdAt)}
-                    </div>
-                    <div className="flex gap-2">
-                      {suggestion.actions.map((action, index) => (
-                        <Button
-                          key={index}
-                          variant={action.primary ? "default" : "outline"}
-                          size="sm"
-                          asChild
-                        >
-                          <Link href={action.href} className="flex items-center gap-1">
-                            {action.label}
-                            <ChevronRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ))}
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                {filteredSuggestions.slice(0, visibleCount).map((suggestion) => (
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onToggle={toggleImplementation}
+                  />
+                ))}
+              </div>
+              {filteredSuggestions.length > visibleCount && (
+                <div className="mt-6 flex justify-center">
+                  <Button variant="outline" onClick={() => setVisibleCount((c) => c + 6)}>
+                    Load more
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10">

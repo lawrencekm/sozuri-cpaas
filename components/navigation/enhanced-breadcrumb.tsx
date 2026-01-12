@@ -17,10 +17,9 @@ const routeTitles: Record<string, string> = {
   messaging: "Messaging",
   sms: "SMS",
   whatsapp: "WhatsApp",
-  viber: "Viber",
+
   rcs: "RCS",
   voice: "Voice",
-  chat: "Chat",
   projects: "Projects",
   campaigns: "Campaigns",
   templates: "Templates",

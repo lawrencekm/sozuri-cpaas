@@ -19,11 +19,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 
-import chatService, { ApiKey } from "@/lib/services/chat-service"
+import { ApiKeyService } from "@/lib/api-keys/service"
+import { ApiKeyV2Data } from "@/lib/api-keys/types"
 import { formatTime } from "@/lib/date-formatter"
 
 export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
+  const [apiKeys, setApiKeys] = useState<ApiKeyV2Data[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)

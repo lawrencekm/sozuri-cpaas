@@ -6,13 +6,10 @@ import { WalkthroughProvider } from "@/components/onboarding/tooltip-walkthrough
 import { MetricsProvider } from "@/components/metrics/metrics-context"
 import { ErrorProvider } from "@/components/error-handling/error-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { ClientSessionProvider } from "@/components/providers/client-session-provider";
+import { ProjectProvider } from "@/lib/contexts/project-context";
 
 const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "SOZURI CPaaS Dashboard",
-  description: "Communications Platform as a Service Dashboard for SOZURI",
-}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,8 +22,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WalkthroughProvider>
             <ReactQueryProvider>
               <MetricsProvider>
-                {children}
-                <Toaster position="top-right" />
+                <ClientSessionProvider>
+                  <ProjectProvider>
+                    {children}
+                    <Toaster position="top-right" />
+                  </ProjectProvider>
+                </ClientSessionProvider>
               </MetricsProvider>
             </ReactQueryProvider>
           </WalkthroughProvider>

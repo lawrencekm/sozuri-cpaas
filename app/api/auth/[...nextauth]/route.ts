@@ -65,23 +65,31 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid password');
         }
 
-        if (user.status !== 'active') {
+        if (!user.isActive) {
           throw new Error('Your account is not active. Please contact support.');
         }
 
         // Update last login
         await prisma.user.update({
           where: { id: user.id },
-          data: { lastLogin: new Date() }
+          data: { lastLoginAt: new Date() }
         });
+
+        // RBAC via Role/UserRole
+        const memberships = await prisma.userRole.findMany({
+          where: { userId: user.id },
+          include: { role: true },
+        })
+        // Honor legacy admin flags as well as RBAC role membership
+        const isAdmin = Boolean((user as any).isAdmin || (user as any).isGlobalAdmin || memberships.some(m => m.role.name === 'admin'))
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
-          status: user.status,
-          company: user.company
+          role: isAdmin ? 'admin' : 'user',
+          status: user.isActive ? 'active' : 'inactive',
+          company: undefined,
         };
       }
     }),

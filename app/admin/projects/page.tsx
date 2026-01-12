@@ -22,7 +22,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import DashboardLayout from "@/components/layout/dashboard-layout"
-import { adminAPI, type Project } from "@/lib/api"
+import { adminAPI, type Project as APIProject } from "@/lib/api"
+import { ProjectCard, toCardProject } from "@/components/dashboard/project-card"
 import {
   FolderOpen,
   Search,
@@ -35,10 +36,10 @@ import {
 import { toast } from "sonner"
 
 export default function AdminProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<APIProject[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedProject, setSelectedProject] = useState<APIProject | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const loadProjects = useCallback(async () => {
@@ -52,7 +53,7 @@ export default function AdminProjectsPage() {
       console.error('Failed to load projects:', error)
 
       // Mock projects data
-      const mockProjects: Project[] = [
+      const mockProjects: APIProject[] = [
         {
           id: 'proj_1',
           name: 'Marketing Campaign 2024',
@@ -232,11 +233,21 @@ export default function AdminProjectsPage() {
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        Loading projects...
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      {[1, 2, 3].map((i) => (
+                        <ProjectCard 
+                          key={i}
+                          project={{
+                            id: `loading-${i}`,
+                            name: '',
+                            description: ''
+                          }}
+                          isLoading={true}
+                          variant="admin"
+                          className="mb-4"
+                        />
+                      ))}
+                    </>
                   ) : filteredProjects.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
@@ -245,75 +256,14 @@ export default function AdminProjectsPage() {
                     </TableRow>
                   ) : (
                     filteredProjects.map((project) => (
-                      <TableRow key={project.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{project.name}</div>
-                            <div className="text-sm text-muted-foreground">{project.description}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(project.status)}>
-                            {project.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{project.campaigns || 0}</TableCell>
-                        <TableCell>{(project.messages || 0).toLocaleString()}</TableCell>
-                        <TableCell>{project.engagement?.toFixed(1) || 0}%</TableCell>
-                        <TableCell className="font-mono">
-                          ${(project.balance || 0).toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(project.created).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setSelectedProject(project)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Project Details</DialogTitle>
-                                  <DialogDescription>
-                                    Detailed information for {selectedProject?.name}
-                                  </DialogDescription>
-                                </DialogHeader>
-                                {selectedProject && (
-                                  <div className="space-y-4">
-                                    <div><strong>ID:</strong> {selectedProject.id}</div>
-                                    <div><strong>Name:</strong> {selectedProject.name}</div>
-                                    <div><strong>Description:</strong> {selectedProject.description}</div>
-                                    <div><strong>Status:</strong> {selectedProject.status}</div>
-                                    <div><strong>User ID:</strong> {selectedProject.user_id}</div>
-                                    <div><strong>Campaigns:</strong> {selectedProject.campaigns || 0}</div>
-                                    <div><strong>Messages:</strong> {(selectedProject.messages || 0).toLocaleString()}</div>
-                                    <div><strong>Engagement:</strong> {selectedProject.engagement?.toFixed(1) || 0}%</div>
-                                    <div><strong>Balance:</strong> ${(selectedProject.balance || 0).toFixed(2)}</div>
-                                    <div><strong>Created:</strong> {new Date(selectedProject.created).toLocaleString()}</div>
-                                    <div><strong>Updated:</strong> {new Date(selectedProject.updated).toLocaleString()}</div>
-                                  </div>
-                                )}
-                              </DialogContent>
-                            </Dialog>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteProject(project.id)}
-                              disabled={deleteLoading}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <ProjectCard 
+                        key={project.id}
+                        project={toCardProject(project)}
+                        variant="admin"
+                        onView={() => setSelectedProject(project)}
+                        onDelete={handleDeleteProject}
+                        className="mb-4"
+                      />
                     ))
                   )}
                 </TableBody>

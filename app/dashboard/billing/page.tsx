@@ -81,7 +81,7 @@ function TopUpDialog() {
             <div className="grid gap-2">
               <Label htmlFor="amount">Amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                <span className="absolute left-3 top-2.5 text-muted-foreground">KSh</span>
                 <Input
                   id="amount"
                   type="number"
@@ -103,7 +103,7 @@ function TopUpDialog() {
                     size="sm"
                     onClick={() => setAmount(quickAmount)}
                   >
-                    ${quickAmount}
+                    KSh {quickAmount}
                   </Button>
                 ))}
               </div>
@@ -197,7 +197,7 @@ export default function BillingPage() {
               {isLoading ? (
                 <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
               ) : (
-                <div className="text-2xl font-bold">${billingData?.balance || "0.00"}</div>
+                <div className="text-2xl font-bold">KSh {billingData?.balance || "0.00"}</div>
               )}
             </CardContent>
             <CardFooter>
@@ -217,7 +217,7 @@ export default function BillingPage() {
               {isLoading ? (
                 <div className="h-8 w-24 animate-pulse rounded bg-muted"></div>
               ) : (
-                <div className="text-2xl font-bold">${billingData?.currentUsage || "0.00"}</div>
+                <div className="text-2xl font-bold">KSh {billingData?.currentUsage || "0.00"}</div>
               )}
             </CardContent>
             <CardFooter>

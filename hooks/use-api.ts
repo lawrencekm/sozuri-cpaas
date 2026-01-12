@@ -90,10 +90,10 @@ export function useApi<T = any, P = any[]>(
 }
 
 // --- Campaigns Hooks ---
-export function useCampaigns() {
+export function useCampaigns(params?: { projectId?: string; page?: number; limit?: number; search?: string }) {
   return useQuery<Campaign[]>({
-    queryKey: ["campaigns"],
-    queryFn: async () => await campaignsAPI.getAll(),
+    queryKey: ["campaigns", params],
+    queryFn: async () => await campaignsAPI.getAll(params),
   });
 }
 

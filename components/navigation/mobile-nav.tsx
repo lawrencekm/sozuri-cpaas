@@ -2,23 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import {
-  Home,
-  LayoutDashboard,
-  MessagesSquare,
-  Phone,
-  MessageCircle,
-  BarChart3,
-  Users,
-  Webhook,
-  Settings,
-  HelpCircle,
-  Menu,
-  X,
-  Layers
-} from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo, RCSLogo, VoiceLogo, ChatLogo } from "@/components/channel-logos"
+import { useRouter, usePathname } from "next/navigation"
+import { MessagesSquare, Menu, X } from "lucide-react"
+import Image from "next/image"
+import { SMSLogo, WhatsAppLogo, RCSLogo, VoiceLogo } from "@/components/channel-logos"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -42,12 +29,12 @@ const navGroups: NavGroup[] = [
       {
         title: "Dashboard",
         href: "/dashboard",
-        icon: Home,
+  icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={20} height={20} {...props} />,
       },
       {
         title: "Projects",
         href: "/dashboard/projects",
-        icon: LayoutDashboard,
+  icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={20} height={20} {...props} />,
       },
       {
         title: "Messaging",
@@ -56,19 +43,13 @@ const navGroups: NavGroup[] = [
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms", icon: SMSLogo },
           { title: "WhatsApp", href: "/dashboard/messaging/whatsapp", icon: WhatsAppLogo },
-          { title: "Viber", href: "/dashboard/messaging/viber", icon: ViberLogo },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },
       {
         title: "Voice",
         href: "/dashboard/voice",
-        icon: VoiceLogo,
-      },
-      {
-        title: "Chat Apps",
-        href: "/dashboard/chat",
-        icon: ChatLogo,
+  icon: (props: any) => <Image src="/images/voice.svg" alt="Voice" width={20} height={20} {...props} />,
       },
     ],
   },
@@ -78,17 +59,22 @@ const navGroups: NavGroup[] = [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        icon: BarChart3,
+  icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={20} height={20} {...props} />,
       },
       {
         title: "Campaigns",
         href: "/dashboard/campaigns",
-        icon: Layers,
+  icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
       },
       {
         title: "Contacts",
         href: "/dashboard/contacts",
-        icon: Users,
+  icon: (props: any) => <Image src="/images/contacts.svg" alt="Contacts" width={20} height={20} {...props} />,
+      },
+      {
+        title: "Logs",
+        href: "/dashboard/logs",
+        icon: (props: any) => <Image src="/images/logs.svg" alt="Logs" width={20} height={20} {...props} />,
       },
     ],
   },
@@ -98,17 +84,27 @@ const navGroups: NavGroup[] = [
       {
         title: "Webhooks",
         href: "/dashboard/webhooks",
-        icon: Webhook,
+  icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={20} height={20} {...props} />,
       },
       {
         title: "Settings",
         href: "/dashboard/settings",
-        icon: Settings,
+  icon: (props: any) => <Image src="/images/settings.svg" alt="Settings" width={20} height={20} {...props} />,
       },
       {
         title: "Help",
         href: "/dashboard/support",
-        icon: HelpCircle,
+  icon: (props: any) => <Image src="/images/help.svg" alt="Help" width={20} height={20} {...props} />,
+      },
+      {
+        title: "Developers",
+        href: "/dashboard/developers",
+        icon: (props: any) => <Image src="/images/developers.svg" alt="Developers" width={20} height={20} {...props} />,
+      },
+      {
+        title: "Billing",
+        href: "/dashboard/billing",
+        icon: (props: any) => <Image src="/images/billing.svg" alt="Billing" width={20} height={20} {...props} />,
       },
     ],
   },
@@ -116,6 +112,7 @@ const navGroups: NavGroup[] = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
   const pathname = usePathname()
 
   const isActive = (href: string) => pathname === href
@@ -202,7 +199,17 @@ export function MobileNav() {
           <div className="border-t border-sidebar-muted p-4">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium text-sidebar-foreground">John Doe</div>
-              <Button variant="outline" size="sm" className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50">Logout</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-sidebar-muted/30 text-sidebar-foreground border-sidebar-muted hover:bg-sidebar-muted/50"
+                onClick={async () => {
+                  await fetch('/api/v1/auth/logout')
+                  router.push('/')
+                }}
+              >
+                Logout
+              </Button>
             </div>
           </div>
         </div>

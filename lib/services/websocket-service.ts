@@ -1,12 +1,66 @@
-import { ChatMessage, Conversation, Agent } from './chat-service';
+import { ConversationOrchestrator } from './conversation-orchestrator';
 
-// WebSocket event types
+// WebSocket event types for unified conversation system
 export type WebSocketEvent = 
-  | { type: 'message'; data: ChatMessage }
-  | { type: 'conversation_update'; data: Conversation }
+  | { type: 'unified_message'; data: UnifiedMessageEvent }
+  | { type: 'conversation_update'; data: ConversationUpdateEvent }
+  | { type: 'conversation_state_change'; data: ConversationStateEvent }
+  | { type: 'channel_route_update'; data: ChannelRouteEvent }
+  | { type: 'journey_progression'; data: JourneyProgressionEvent }
   | { type: 'agent_status'; data: { agent_id: string; status: 'online' | 'offline' | 'away' } }
   | { type: 'typing'; data: { conversation_id: string; user_id: string; is_typing: boolean } }
-  | { type: 'message_status'; data: { message_id: string; status: 'sent' | 'delivered' | 'read' } };
+  | { type: 'message_status'; data: { message_id: string; status: 'sent' | 'delivered' | 'read' | 'failed' } }
+  | { type: 'fallback_triggered'; data: { conversation_id: string; original_channel: string; fallback_channel: string; reason: string } };
+
+export interface UnifiedMessageEvent {
+  conversationId: string;
+  messageId: string;
+  channel: string;
+  fromType: string;
+  toType: string;
+  messageType: string;
+  content: any;
+  status: string;
+  timestamp: string;
+  routeId?: string;
+  fallbackLevel: number;
+}
+
+export interface ConversationUpdateEvent {
+  conversationId: string;
+  customerId: string;
+  status: string;
+  priority: string;
+  assignedAgent?: string;
+  activeChannels: string[];
+  lastActivity: string;
+}
+
+export interface ConversationStateEvent {
+  conversationId: string;
+  previousState: string;
+  newState: string;
+  reason?: string;
+  timestamp: string;
+}
+
+export interface ChannelRouteEvent {
+  routeId: string;
+  conversationId: string;
+  primaryChannel: string;
+  fallbackChannels: string[];
+  successfulChannel?: string;
+  totalAttempts: number;
+}
+
+export interface JourneyProgressionEvent {
+  customerId: string;
+  conversationId: string;
+  previousStage: string;
+  newStage: string;
+  trigger: string;
+  timestamp: string;
+}
 
 // WebSocket service
 class WebSocketService {

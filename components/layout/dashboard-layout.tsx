@@ -2,23 +2,21 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
-  BarChart3,
   Bell,
   ChevronDown,
   FileText,
   Globe,
   HelpCircle,
-  Home,
   KeyRound,
   Layers,
-  LayoutDashboard,
   Link as LinkIcon,
-  MessageCircle,
+
   MessagesSquare,
   Phone,
   Settings,
@@ -26,7 +24,7 @@ import {
   Users,
   Webhook,
 } from "lucide-react"
-import { SMSLogo, WhatsAppLogo, ViberLogo } from "@/components/channel-logos"
+import { SMSLogo, WhatsAppLogo, RCSLogo, EmailLogo } from "@/components/channel-logos"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -45,10 +43,8 @@ import {
 } from "@/components/ui/sidebar"
 import { ErrorBoundary } from "react-error-boundary"
 import { RefreshCw, AlertTriangle } from "lucide-react"
-import { EnterpriseGuidedTour } from "@/components/onboarding/enterprise-guided-tour"
 import { EnhancedBreadcrumb } from "@/components/navigation/enhanced-breadcrumb"
 import { MobileNav } from "@/components/navigation/mobile-nav"
-import { ProductTour } from "@/components/onboarding/product-tour"
 
 interface LucideProps extends React.SVGProps<SVGSVGElement> {
   className?: string
@@ -65,123 +61,114 @@ interface NavItem {
 
 interface NavGroup {
   title: string;
+  id: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    title: "COMMUNICATIONS",
+    title: "",
+    id: "main",
     items: [
       {
         title: "Dashboard",
         href: "/dashboard",
-        icon: Home,
-        badge: "New",
+        // use svg from public/images
+        icon: (props: any) => <Image src="/images/dashboard.svg" alt="Dashboard" width={18} height={18} {...props} />,
       },
       {
         title: "Projects",
         href: "/dashboard/projects",
-        icon: LayoutDashboard,
+        icon: (props: any) => <Image src="/images/projects.svg" alt="Projects" width={18} height={18} {...props} />,
       },
       {
         title: "Messaging",
         href: "/dashboard/messaging",
-        icon: MessagesSquare,
+  icon: (props: any) => <Image src="/images/messaging.svg" alt="Messaging" width={18} height={18} {...props} />,
         channels: [
           { name: "SMS", logo: SMSLogo },
           { name: "WhatsApp", logo: WhatsAppLogo },
-          { name: "Viber", logo: ViberLogo },
+          { name: "RCS", logo: RCSLogo },
+          { name: "Email", logo: EmailLogo },
         ],
         subItems: [
           { title: "SMS", href: "/dashboard/messaging/sms" },
           { title: "WhatsApp", href: "/dashboard/messaging/whatsapp" },
-          { title: "Viber", href: "/dashboard/messaging/viber" },
+          { title: "RCS", href: "/dashboard/messaging/rcs" },
+          { title: "Email", href: "/dashboard/messaging/email" },
           { title: "Templates", href: "/dashboard/messaging/templates" },
         ],
       },
       {
         title: "Voice",
         href: "/dashboard/voice",
-        icon: Phone,
+  icon: (props: any) => <Image src="/images/voice.svg" alt="Voice" width={18} height={18} {...props} />,
       },
-      {
-        title: "Chat Apps",
-        href: "/dashboard/chat",
-        icon: MessageCircle,
-      },
-    ],
-  },
-  {
-    title: "DATA & INSIGHTS",
-    items: [
+
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        icon: BarChart3,
-      },
-      {
-        title: "Campaigns",
-        href: "/dashboard/campaigns",
-        icon: Layers,
-      },
-      {
-        title: "AI Suggestions",
-        href: "/dashboard/ai-suggestions",
-        icon: Sparkles,
-        badge: "New",
-      },
-      {
-        title: "Contacts",
-        href: "/dashboard/contacts",
-        icon: Users,
+        icon: (props: any) => <Image src="/images/analytics.svg" alt="Analytics" width={18} height={18} {...props} />,
       },
       {
         title: "Logs",
         href: "/dashboard/logs",
-        icon: FileText,
+  icon: (props: any) => <Image src="/images/logs.svg" alt="Logs" width={18} height={18} {...props} />,
       },
-    ],
-  },
-  {
-    title: "INTEGRATIONS & API",
-    items: [
       {
         title: "Webhooks",
         href: "/dashboard/webhooks",
-        icon: Webhook,
+  icon: (props: any) => <Image src="/images/webhooks.svg" alt="Webhooks" width={18} height={18} {...props} />,
+      },
+      {
+        title: "Campaigns",
+        href: "/dashboard/campaigns",
+  icon: (props: any) => <Image src="/images/campaigns.svg" alt="Campaigns" width={20} height={20} {...props} />,
+      },
+      {
+        title: "AI Suggestions",
+        href: "/dashboard/ai-suggestions",
+  icon: (props: any) => <Image src="/images/ai%20suggestions.svg" alt="AI Suggestions" width={18} height={18} {...props} />,
+      },
+      {
+        title: "Contacts",
+        href: "/dashboard/contacts",
+  icon: (props: any) => <Image src="/images/contacts.svg" alt="Contacts" width={18} height={18} {...props} />,
       },
       {
         title: "API Keys",
         href: "/dashboard/api-keys",
-        icon: KeyRound,
+  icon: (props: any) => <Image src="/images/api-keys.svg" alt="API Keys" width={18} height={18} {...props} />,
       },
       {
         title: "Integrations",
         href: "/dashboard/integrations",
-        icon: LinkIcon,
+  icon: (props: any) => <Image src="/images/integrations.svg" alt="Integrations" width={18} height={18} {...props} />,
       },
     ],
-  },
+  }
 ]
 
 const bottomNavItems = [
   {
     title: "Settings",
     href: "/dashboard/settings",
-    icon: Settings,
+  icon: (props: any) => <Image src="/images/settings.svg" alt="Settings" width={18} height={18} {...props} />,
   },
   {
     title: "Help",
     href: "/dashboard/support",
-    icon: HelpCircle,
+  icon: (props: any) => <Image src="/images/help.svg" alt="Help" width={18} height={18} {...props} />,
   },
   {
     title: "Developers",
-    href: "/dashboard/developers",
+  href: "/dashboard/developers",
+  icon: (props: any) => <Image src="/images/developers.svg" alt="Developers" width={18} height={18} {...props} />,
   },
   {
-    title: "Billing",
-    href: "/dashboard/billing",
+  title: "Billing",
+  href: "/dashboard/billing",
+  icon: (props: any) => <Image src="/images/billing.svg" alt="Billing" width={18} height={18} {...props} />,
   },
 ]
 
@@ -222,9 +209,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const router = useRouter()
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const toggleMenu = (title: string) => {
-    setOpenMenus((prev) => ({
+    setOpenMenus((prev: Record<string, boolean>) => ({
       ...prev,
       [title]: !prev[title],
     }))
@@ -240,9 +229,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return false
   }
 
+  // Show breadcrumb on dashboard sub-pages but hide it on the dashboard root page
+  const showBreadcrumb = pathname && !["/dashboard", "/dashboard/"].includes(pathname)
+
   const handleLogout = async () => {
-    await fetch('/api/auth/logout')
-    router.push('/login')
+    await fetch('/api/v1/auth/logout')
+    router.push('/auth/signin')
   }
 
   return (
@@ -255,20 +247,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
           <Sidebar className="border-r bg-sidebar text-sidebar-foreground">
-            <SidebarHeader className="border-b border-gray-200 py-6 dark:border-gray-700">
+            <SidebarHeader className="border-b border-gray-200 py-6 dark:border-gray-700 bg-purple-500">
               <div className="flex items-center justify-center px-6">
                 <Image src="/images/logo.png" alt="SOZURI Logo" width={120} height={40} priority className="h-auto" />
               </div>
             </SidebarHeader>
-            <SidebarContent className="modern-scrollbar">
-              {navGroups.map((group) => (
-                <SidebarGroup key={group.title}>
-                  <div className="px-6 pt-6 pb-3 text-xs font-bold text-blue-500 tracking-widest uppercase">
-                    {group.title}
-                  </div>
-                  <SidebarMenu>
+            <SidebarContent className="modern-scrollbar py-1">
+              {navGroups.map((group, index) => (
+                <SidebarGroup key={group.id} className={index !== 0 ? "mt-1" : ""}>
+                  {group.title && (
+                    <div className="px-6 py-1 text-xs font-bold text-gray-500 tracking-widest uppercase">
+                      {group.title}
+                    </div>
+                  )}
+                  <SidebarMenu className="py-0.5">
                     {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title} className="my-1 px-4 transition-colors duration-200">
+                      <SidebarMenuItem key={item.title} className="px-4 transition-colors duration-200">
                         {item.subItems ? (
                           <div className="flex flex-col">
                             <SidebarMenuButton
@@ -322,7 +316,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           </div>
                         ) : (
                           <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                            <Link href={item.href} className="flex items-center gap-3 rounded-md py-2 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
+                            <Link href={item.href} className="flex items-center gap-3 rounded-md py-1.5 px-3 hover:bg-sidebar-muted/30 transition-colors focus:bg-transparent">
                               {item.icon && <item.icon className="h-4 w-4 text-sidebar-accent flex-shrink-0" />}
                               <span className="font-medium text-black">{item.title}</span>
                               {item.channels && (
@@ -380,13 +374,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <h1 className="hidden text-xl font-semibold sm:block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SOZURI Connect</h1>
               </div>
               <div className="flex items-center gap-4">
-                <div className="hidden md:flex items-center mr-2">
-                  <div className="status-dot active mr-2"></div>
-                  <span className="text-sm text-muted-foreground">System: Operational</span>
-                </div>
-                <Button variant="outline" size="sm" asChild className="hidden md:flex">
-                  <Link href="/admin">Admin Panel</Link>
-                </Button>
                 <Button variant="outline" size="icon" className="relative hover:bg-muted/80 transition-colors">
                   <Bell className="h-4 w-4" />
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse-subtle">
@@ -397,14 +384,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        JD
+                        {user?.name ? user.name.split(' ').map((n: string) => n?.[0] || '').join('').toUpperCase() : 'JD'}
                       </div>
-                      <span className="hidden md:block">John Doe</span>
+                      <span className="hidden md:block">
+                        {user?.name || 'John Doe'}
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/team">Team Management</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/billing">Billing</Link>
@@ -430,11 +422,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </header>
             {/* Enhanced Breadcrumbs */}
-<div className="border-b border-gray-200 bg-white shadow-sm z-10 dark:border-gray-700 dark:bg-gray-900">
-  <div className="container mx-auto px-8 py-4">
-    <EnhancedBreadcrumb />
-  </div>
-</div>
+            {showBreadcrumb && (
+              <div className="sticky top-16 z-10 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <div className="container mx-auto px-8 py-4">
+                  <EnhancedBreadcrumb />
+                </div>
+              </div>
+            )}
 <main className="flex-1 p-6 md:p-8 animate-fade-in">
   <div className="container mx-auto space-y-8">
     {children}
@@ -443,8 +437,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </SidebarProvider>
-      <EnterpriseGuidedTour />
-      <ProductTour />
+      {/* ProductTour removed per request */}
     </ErrorBoundary>
   )
 }

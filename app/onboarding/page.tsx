@@ -2,6 +2,9 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -22,28 +25,29 @@ export default function OnboardingPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedChannels, setSelectedChannels] = useState<string[]>([])
-  const [formData, setFormData] = useState({
-    businessName: "",
-    industry: "",
-    size: "small",
-    name: "",
-    email: "",
-    password: "",
+
+  const onboardingSchema = z.object({
+    businessName: z.string().min(2, "Business name must be at least 2 characters"),
+    industry: z.string().min(2, "Industry must be at least 2 characters"),
+    size: z.enum(["small", "medium", "large"]).default("small")
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+  type OnboardingForm = z.infer<typeof onboardingSchema>
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting: isFormSubmitting },
+    watch,
+    setValue
+  } = useForm<OnboardingForm>({
+    resolver: zodResolver(onboardingSchema),
+    mode: "onChange",
+    defaultValues: { businessName: "", industry: "", size: "small" }
+  })
 
   const handleSizeChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      size: value,
-    }))
+    setValue("size", value as OnboardingForm["size"], { shouldValidate: true })
   }
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -62,7 +66,11 @@ export default function OnboardingPage() {
       handleError(error, ErrorType.API, {
         toastMessage: "Failed to complete onboarding. Please try again.",
         context: {
-          formData,
+          formData: {
+            businessName: watch("businessName"),
+            industry: watch("industry"),
+            size: watch("size"),
+          },
           selectedChannels,
           source: 'OnboardingPage.handleComplete'
         }
@@ -71,9 +79,7 @@ export default function OnboardingPage() {
       setIsSubmitting(false)
     }
   }
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  }
+
 
   const toggleChannel = (channelName: string) => {
     setSelectedChannels(prev =>
@@ -126,11 +132,8 @@ export default function OnboardingPage() {
               <span className="ml-2 text-lg font-bold text-foreground tracking-tight hidden md:inline">SOZURI Connect</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-sm text-primary hover:text-primary/80 transition-colors font-medium">
-                Sign in
-              </Link>
               <Button size="sm" variant="outline" className="font-medium shadow-sm" asChild>
-                <Link href="/">
+                <Link href="/support">
                   Help
                 </Link>
               </Button>
@@ -140,18 +143,20 @@ export default function OnboardingPage() {
         
         <main className="container flex-1 py-10">
           {/* Progress indicator */}
-          <div className="mb-10 flex justify-center">
+          <nav className="mb-10 flex justify-center" aria-label="Onboarding progress">
             <div className="relative flex w-full max-w-xl items-center justify-between">
               {/* Progress bar connecting steps */}
               <div className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 bg-muted">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+                  className={cn(
+                    "h-full bg-primary transition-all duration-300",
+                    `progress-bar-width-step-${currentStep}`
+                  )}
                 />
               </div>
               
               {/* Step circles */}
-              {[1, 2, 3].map((step) => (
+              {[1, 2].map((step) => (
                 <div
                   key={step}
                   className={cn(
@@ -162,6 +167,8 @@ export default function OnboardingPage() {
                       ? "border-primary bg-background text-primary"
                       : "border-muted bg-background text-muted-foreground"
                   )}
+                  role="listitem"
+                  aria-current={step === currentStep ? "step" : undefined}
                 >
                   {step < currentStep ? (
                     <Check className="h-5 w-5" />
@@ -171,153 +178,100 @@ export default function OnboardingPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </nav>
           
           <div className="mx-auto w-full max-w-2xl">
             {currentStep === 1 && (
-              <Card className="onboarding-card w-full overflow-hidden">
+              <Card className="onboarding-card w-full overflow-hidden" role="region" aria-labelledby="onb-step-1-title">
                 <CardHeader className="space-y-2 pb-6">
-                  <CardTitle className="text-2xl">Welcome to SOZURI</CardTitle>
+                  <CardTitle id="onb-step-1-title" className="text-2xl">Welcome to SOZURI</CardTitle>
                   <CardDescription className="text-base">
                     Let's set up your business on our platform
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="businessName">Business Name</Label>
-                      <Input
-                        id="businessName"
-                        name="businessName"
-                        placeholder="Enter your business name"
-                        value={formData.businessName}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="industry">Industry</Label>
-                      <Input
-                        id="industry"
-                        name="industry"
-                        placeholder="E.g. Retail, Healthcare, Technology"
-                        value={formData.industry}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-3">
-                      <Label>Business Size</Label>
-                      <RadioGroup
-                        value={formData.size}
-                        onValueChange={handleSizeChange}
-                        className="flex flex-col space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="small" id="small" />
-                          <Label htmlFor="small" className="font-normal">
-                            Small (1-50 employees)
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="medium" id="medium" />
-                          <Label htmlFor="medium" className="font-normal">
-                            Medium (51-500 employees)
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="large" id="large" />
-                          <Label htmlFor="large" className="font-normal">
-                            Large (500+ employees)
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-4">
-                  <Button 
-                    className="w-full" 
-                    onClick={() => setCurrentStep(2)}
-                    disabled={!formData.businessName || !formData.industry}
+                  <form
+                    onSubmit={handleSubmit(() => setCurrentStep(2))}
+                    noValidate
+                    aria-describedby="onb-step-1-desc"
                   >
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
+                    <div className="grid gap-5">
+                      <div className="grid gap-2">
+                        <Label htmlFor="businessName">Business Name</Label>
+                        <Input
+                          id="businessName"
+                          placeholder="Enter your business name"
+                          aria-invalid={!!errors.businessName}
+                          aria-describedby={errors.businessName ? "businessName-error" : undefined}
+                          {...register("businessName")}
+                        />
+                        {errors.businessName && (
+                          <p id="businessName-error" className="text-sm text-destructive">
+                            {errors.businessName.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="industry">Industry</Label>
+                        <Input
+                          id="industry"
+                          placeholder="E.g. Retail, Healthcare, Technology"
+                          aria-invalid={!!errors.industry}
+                          aria-describedby={errors.industry ? "industry-error" : undefined}
+                          {...register("industry")}
+                        />
+                        {errors.industry && (
+                          <p id="industry-error" className="text-sm text-destructive">
+                            {errors.industry.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid gap-3">
+                        <Label>Business Size</Label>
+                        <RadioGroup
+                          value={watch("size")}
+                          onValueChange={handleSizeChange}
+                          className="flex flex-col space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="small" id="small" />
+                            <Label htmlFor="small" className="font-normal">
+                              Small (1-50 employees)
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="medium" id="medium" />
+                            <Label htmlFor="medium" className="font-normal">
+                              Medium (51-500 employees)
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="large" id="large" />
+                            <Label htmlFor="large" className="font-normal">
+                              Large (500+ employees)
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                    <CardFooter className="pt-4 px-0">
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={!isValid || isFormSubmitting}
+                      >
+                        Continue <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </CardContent>
               </Card>
             )}
 
             {currentStep === 2 && (
-              <Card className="onboarding-card">
+              <Card className="onboarding-card" role="region" aria-labelledby="onb-step-2-title">
                 <CardHeader className="space-y-2 pb-6">
-                  <CardTitle className="text-2xl">Create your account</CardTitle>
-                  <CardDescription className="text-base">
-                    You'll use these credentials to access the platform
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Full name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Work email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="your.name@company.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className={cn(
-                          formData.email && !isValidEmail(formData.email) && "border-destructive"
-                        )}
-                        required
-                      />
-                      {formData.email && !isValidEmail(formData.email) && (
-                        <p className="text-xs text-destructive mt-1">Please enter a valid email address</p>
-                      )}
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="password">Create password</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Create a secure password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(3)}
-                    disabled={!formData.name || !formData.email || !formData.password}
-                  >
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-
-            {currentStep === 3 && (
-              <Card className="onboarding-card">
-                <CardHeader className="space-y-2 pb-6">
-                  <CardTitle className="text-2xl">Select communication channels</CardTitle>
+                  <CardTitle id="onb-step-2-title" className="text-2xl">Select communication channels</CardTitle>
                   <CardDescription className="text-base">Choose which platforms best reach your audience</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -445,7 +399,7 @@ export default function OnboardingPage() {
                   </Tabs>
                 </CardContent>
                 <CardFooter className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting}>
+                  <Button variant="outline" onClick={() => setCurrentStep(1)} disabled={isSubmitting}>
                     Back
                   </Button>
                   <Button
@@ -453,7 +407,7 @@ export default function OnboardingPage() {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      <>Processing <RefreshCw className="ml-2 h-4 w-4 animate-spin" /></>
+                      <>Processing <RefreshCw className="ml-2 h-4 w-4 motion-safe:animate-spin" /></>
                     ) : (
                       <>Complete Setup <ArrowRight className="ml-2 h-4 w-4" /></>
                     )}

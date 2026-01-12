@@ -20,15 +20,33 @@ import {
 } from "recharts"
 import { Users, Clock, TrendingUp, MessagesSquare } from "lucide-react"
 
+// Map metrics API response to engagementData shape
+function mapMetricsToEngagementData(metrics: any, channel: string) {
+  return {
+    activeUsers: metrics.timeSeries?.reduce((max: number, point: any) => Math.max(max, point.value), 0) || 0,
+    responseRate: metrics.deliveryRate || 0,
+    messagesSent: metrics.timeSeries?.reduce((sum: number, point: any) => sum + point.value, 0) || 0,
+    averageResponseTime: metrics.latency || 0,
+    channelPreferences: { [metrics.channel || channel]: metrics.throughput || 0 },
+    userSegments: [
+      { segment: "Highly Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.5) },
+      { segment: "Moderately Engaged", count: Math.round((metrics.deliveryRate || 0) * 0.3) },
+      { segment: "Low Engagement", count: Math.round((metrics.deliveryRate || 0) * 0.2) },
+    ],
+  }
+}
+
 export function EngagementAnalytics() {
   const [engagementData, setEngagementData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [timeframe, setTimeframe] = useState("1d")
+  const [channel] = useState("sms") // Default channel, can be made dynamic if needed
+  const [metric] = useState("engagement") // Placeholder metric, can be customized
 
   const fetchEngagementData = async () => {
     try {
-      const data = await analyticsAPI.getEngagement(timeframe)
-      setEngagementData(data)
+      const metrics = await analyticsAPI.getMetrics(channel, metric, timeframe)
+      setEngagementData(mapMetricsToEngagementData(metrics, channel))
     } catch (error) {
       console.error("Error fetching engagement data:", error)
     } finally {
@@ -39,11 +57,10 @@ export function EngagementAnalytics() {
   useEffect(() => {
     let isMounted = true;
     const fetchEngagementDataAsync = async () => {
-      // setIsLoading(true); // Consider setting loading true only if mounted, or right at the start
       try {
-        const data = await analyticsAPI.getEngagement(timeframe);
+        const metrics = await analyticsAPI.getMetrics(channel, metric, timeframe);
         if (isMounted) {
-          setEngagementData(data);
+          setEngagementData(mapMetricsToEngagementData(metrics, channel));
         }
       } catch (error) {
         if (isMounted) {
@@ -55,17 +72,12 @@ export function EngagementAnalytics() {
         }
       }
     };
-    
-    // To prevent calling setIsLoading(true) if already unmounted before fetch starts
-    if (isMounted) {
-      setIsLoading(true); // Set loading true here
-      fetchEngagementDataAsync();
-    }
-    
+    setIsLoading(true);
+    fetchEngagementDataAsync();
     return () => {
       isMounted = false;
     };
-  }, [timeframe]) // Keep existing dependencies
+  }, [timeframe, channel, metric]);
 
   if (isLoading || !engagementData) {
     return (

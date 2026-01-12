@@ -2,75 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+@import '../styles/dashboard-patterns.css';
+
 @layer base {
   :root {
-    /* Base colors */
-    --background: 220 33% 99%;
-    --foreground: 224 71% 4%;
+    /* Base colors - Light and airy feel */
+    --background: 0 0% 99%;
+    --foreground: 258 33% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 258 33% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 258 33% 25%;
 
-    /* Primary brand color */
-    --primary: 226 64% 40%;
+    /* Primary brand color - Using 624CAB */
+    --primary: 256 48% 49%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary colors */
-    --secondary: 226 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary colors - Using C1CEFE */
+    --secondary: 226 100% 97%;
+    --secondary-foreground: 256 48% 35%;
 
-    /* Muted elements - Enhanced hierarchy */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 46%;
+    /* Muted elements - Softer grays for better hierarchy */
+    --muted: 220 14% 98%;
+    --muted-foreground: 256 10% 60%;
 
-    /* Enhanced gray scale for better hierarchy */
-    --gray-50: 220 14% 98%;
-    --gray-100: 220 14% 96%;
-    --gray-200: 220 13% 91%;
-    --gray-300: 220 9% 84%;
-    --gray-400: 220 8% 64%;
-    --gray-500: 220 8% 46%;
-    --gray-600: 220 9% 34%;
-    --gray-700: 220 13% 26%;
-    --gray-800: 220 27% 18%;
-    --gray-900: 220 39% 11%;
+    /* Enhanced gray scale for better hierarchy - Softer and more neutral */
+    --gray-50: 0 0% 99%;
+    --gray-100: 240 20% 98%;
+    --gray-200: 240 10% 95%;
+    --gray-300: 240 5% 88%;
+    --gray-400: 240 4% 75%;
+    --gray-500: 240 3% 60%;
+    --gray-600: 240 3% 45%;
+    --gray-700: 240 4% 35%;
+    --gray-800: 240 8% 25%;
+    --gray-900: 240 10% 15%;
 
-    /* Accent elements */
-    --accent: 199 89% 48%;
+    /* Accent elements - Using F39237 as accent */
+    --accent: 27 88% 55%;
     --accent-foreground: 0 0% 100%;
 
-    /* Feedback colors */
+    /* Feedback colors - Harmonized with new palette */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 27 88% 55%;
     --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
+    --info: 226 100% 80%;
+    --info-foreground: 256 48% 35%;
 
-    /* Borders and form elements */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 226 64% 40%;
+    /* Borders and form elements - Softer and more subtle */
+    --border: 240 5% 88%;
+    --input: 240 5% 95%;
+    --ring: 256 48% 49%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors */
-    --sidebar: 224 71% 4%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 225 14% 20%;
-    --sidebar-muted-foreground: 220 8% 85%;
-    --sidebar-accent: 199 89% 48%;
+    /* Sidebar specific colors and dimensions - Using blue color scheme */
+    --sidebar: 226 100% 97%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-muted: 226 100% 60%;
+    --sidebar-muted-foreground: 0 0% 0%;
+    --sidebar-accent: 226 100% 90%;
+    --sidebar-active: 226 100% 60%;
+    --sidebar-hover: 226 100% 95%;
+    --sidebar-dropdown: 0 0% 0%;
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
 
-    /* Chart colors - Professional palette */
-    --chart-1: 226 64% 40%;
-    --chart-2: 199 89% 48%;
+    /* Chart colors - Harmonized with new palette */
+    --chart-1: 256 48% 49%;
+    --chart-2: 27 88% 55%;
     --chart-3: 142 76% 36%;
-    --chart-4: 262 83% 58%;
-    --chart-5: 326 100% 45%;
-    --chart-6: 38 92% 50%;
-    --chart-7: 187 100% 42%;
+    --chart-4: 226 100% 80%;
+    --chart-5: 256 48% 35%;
+    --chart-6: 27 88% 45%;
+    --chart-7: 226 100% 90%;
 
     /* Animation durations */
     --transition-fast: 150ms;
@@ -101,13 +108,13 @@
     --popover: 224 71% 6%;
     --popover-foreground: 220 14% 96%;
 
-    /* Primary brand color */
-    --primary: 199 89% 48%;
+    /* Primary brand color - Updated to purple */
+    --primary: 271 91% 65%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary colors */
-    --secondary: 225 14% 20%;
-    --secondary-foreground: 220 14% 96%;
+    /* Secondary colors - Updated to darker purple */
+    --secondary: 271 32% 32%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted elements - Enhanced hierarchy */
     --muted: 225 14% 10%;
@@ -125,8 +132,8 @@
     --gray-800: 220 14% 96%;
     --gray-900: 220 14% 98%;
 
-    /* Accent elements */
-    --accent: 199 89% 48%;
+    /* Accent elements - Updated to purple accent */
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
 
     /* Feedback colors */
@@ -136,20 +143,20 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
+    --info: 271 91% 65%;
     --info-foreground: 0 0% 100%;
 
     /* Borders and form elements */
     --border: 225 14% 20%;
     --input: 225 14% 20%;
-    --ring: 199 89% 48%;
+    --ring: 271 91% 65%;
 
-    /* Sidebar specific colors */
-    --sidebar: 224 71% 6%;
+    /* Sidebar specific colors - Dark mode */
+    --sidebar: 226 20% 10%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-muted: 225 14% 20%;
-    --sidebar-muted-foreground: 220 8% 85%;
-    --sidebar-accent: 199 89% 48%;
+    --sidebar-muted: 226 100% 60%;
+    --sidebar-muted-foreground: 0 0% 100%;
+    --sidebar-accent: 226 100% 20%;
   }
 }
 
@@ -255,6 +262,50 @@
   .loose-spacing {
     @apply space-y-12;
   }
+}
+
+/* Sidebar hover and active states */
+[data-sidebar="menu-button"]:not([data-active="true"]):hover {
+  background-color: hsl(var(--sidebar-hover)) !important;
+  color: hsl(var(--sidebar-muted));
+  transition: all 0.2s ease;
+}
+
+[data-sidebar="menu-button"][data-active="true"] {
+  background-color: transparent !important;
+  color: hsl(var(--sidebar-muted));
+  /* Remove pointer-events: none to keep dropdown functional */
+}
+
+/* Keep active state when dropdown is open */
+[data-sidebar="menu-button"][data-active="true"]:has(+ [data-state="open"]) {
+  background-color: hsl(var(--sidebar-hover)) !important;
+}
+
+/* Dropdown icon color */
+[data-sidebar="menu-button"] svg {
+  color: hsl(var(--sidebar-foreground));
+  transition: all 0.2s ease;
+}
+
+[data-sidebar="menu-button"]:not([data-active="true"]):hover svg {
+  color: hsl(var(--sidebar-muted));
+}
+
+[data-sidebar="menu-button"][data-active="true"] svg {
+  color: hsl(var(--sidebar-muted));
+}
+
+/* General sidebar item styles */
+[data-sidebar="menu-item"]:not([data-active="true"]):hover {
+  background-color: hsl(var(--sidebar-hover));
+  color: hsl(var(--sidebar-muted));
+}
+
+[data-sidebar="menu-item"][data-active="true"] {
+  background-color: transparent;
+  color: hsl(var(--sidebar-muted));
+  /* Remove pointer-events: none to keep dropdown functional */
 }
 
 /* Status indicators */

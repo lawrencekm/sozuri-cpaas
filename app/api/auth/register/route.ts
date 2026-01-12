@@ -38,10 +38,7 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        company: company || null,
         emailVerified: null,
-        role: 'user',
-        status: 'active',
       },
     });
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -44,15 +44,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { useCampaignTemplates, useCreateCampaignTemplate, useDeleteCampaignTemplate, useUpdateCampaignTemplate, useCampaignAutomations, useCreateCampaignAutomation, useDeleteCampaignAutomation, useUpdateCampaignAutomation } from "@/hooks/use-api"
+import { projectsAPI, campaignsAPI, Project as ApiProject, Campaign as ApiCampaign } from "@/lib/api"
 
 // New Campaign Dialog
 function NewCampaignDialog() {
+  const router = useRouter()
+  const { id: projectId } = useParams()
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     channel: "",
   })
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -63,10 +67,32 @@ function NewCampaignDialog() {
     setFormData((prev) => ({ ...prev, channel: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Creating campaign:", formData)
-    setOpen(false)
+    if (!projectId) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/v1/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          name: formData.name,
+          description: formData.description,
+          channel: formData.channel, // will be mapped to `type` on the server
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create campaign')
+      }
+      setOpen(false)
+      router.refresh()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -213,7 +239,15 @@ function NewTemplateDialog({ onCreate }: { onCreate: (template: any) => void }) 
             </div>
             <div className="grid gap-2">
               <Label htmlFor="content">Content</Label>
-              <textarea id="content" name="content" value={formData.content} onChange={handleChange} className="border rounded p-2 min-h-[80px]" required />
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                placeholder="Enter content"
+                className="border rounded p-2 min-h-[80px]"
+                required
+              />
             </div>
           </div>
           <DialogFooter>
@@ -225,75 +259,7 @@ function NewTemplateDialog({ onCreate }: { onCreate: (template: any) => void }) 
   )
 }
 
-// Campaign Card Component
-function CampaignCard({ campaign }: { campaign: any }) {
-  const router = useRouter()
-  const { id } = useParams()
-
-  return (
-    <Card className="hover:border-primary/50 hover:shadow-sm transition-all">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{campaign.name}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}`)}>
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}/edit`)}>
-                Edit Campaign
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Campaign
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription>{campaign.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-muted-foreground">Channel</p>
-            <div className="flex items-center font-medium">
-              {campaign.channel === "SMS" && <MessageCircle className="mr-1 h-3 w-3" />}
-              {campaign.channel === "Voice" && <Phone className="mr-1 h-3 w-3" />}
-              {campaign.channel}
-            </div>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Messages</p>
-            <p className="font-medium">{campaign.messages}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Engagement</p>
-            <p className="font-medium">{campaign.engagement}%</p>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center text-xs text-muted-foreground">
-          <Calendar className="mr-1 h-3 w-3" /> Last sent {campaign.lastSent}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full"
-          onClick={() => router.push(`/dashboard/projects/${id}/campaigns/${campaign.id}`)}
-        >
-          View Campaign
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
+import { CampaignCard } from "@/components/dashboard/campaign-card"
 
 // --- Templates Tab Section ---
 function TemplatesTab() {
@@ -365,27 +331,33 @@ function AutomationsTab() {
   const updateAutomation = useUpdateCampaignAutomation();
   const [form, setForm] = useState({
     name: "",
-    trigger_event: "",
-    campaign_template_id: "",
+    description: "",
+    trigger_type: "webhook",
+    trigger_config: {},
+    action_type: "send_sms",
+    action_config: {},
     is_active: true,
   });
   const [open, setOpen] = useState(false);
 
-  // Fetch templates for the select dropdown
-  const { data: templates } = useCampaignTemplates(projectId as string);
+  // No need for templates since we're using the new automation schema
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-  const handleTemplateChange = (value: string) => {
-    setForm((prev) => ({ ...prev, campaign_template_id: value }));
+  const handleTriggerTypeChange = (value: string) => {
+    setForm((prev) => ({ ...prev, trigger_type: value }));
+  };
+
+  const handleActionTypeChange = (value: string) => {
+    setForm((prev) => ({ ...prev, action_type: value }));
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createAutomation.mutate({ ...form, project_id: projectId as string });
+    createAutomation.mutate({ ...form, projectId: projectId as string });
     setOpen(false);
-    setForm({ name: "", trigger_event: "", campaign_template_id: "", is_active: true });
+    setForm({ name: "", description: "", trigger_type: "webhook", trigger_config: {}, action_type: "send_sms", action_config: {}, is_active: true });
   };
 
   const handleDelete = (id: string) => {
@@ -416,25 +388,38 @@ function AutomationsTab() {
                   <Input id="name" name="name" value={form.name} onChange={handleChange} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="trigger_event">Trigger Event</Label>
-                  <Input id="trigger_event" name="trigger_event" value={form.trigger_event} onChange={handleChange} placeholder="e.g. user_signup, order_placed" required />
+                  <Label htmlFor="description">Description</Label>
+                  <Input id="description" name="description" value={form.description} onChange={handleChange} placeholder="What does this automation do?" />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="campaign_template_id">Campaign Template</Label>
-                  <Select value={form.campaign_template_id} onValueChange={handleTemplateChange}>
+                  <Label htmlFor="trigger_type">Trigger Type</Label>
+                  <Select value={form.trigger_type} onValueChange={handleTriggerTypeChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select template" />
+                      <SelectValue placeholder="Select trigger type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {templates && templates.map((tpl: any) => (
-                        <SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>
-                      ))}
+                      <SelectItem value="webhook">Webhook</SelectItem>
+                      <SelectItem value="schedule">Schedule</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="action_type">Action Type</Label>
+                  <Select value={form.action_type} onValueChange={handleActionTypeChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select action type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="send_sms">Send SMS</SelectItem>
+                      <SelectItem value="send_whatsapp">Send WhatsApp</SelectItem>
+                      <SelectItem value="update_contact">Update Contact</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={!form.name || !form.trigger_event || !form.campaign_template_id}>Save Automation</Button>
+                <Button type="submit" disabled={!form.name || !form.trigger_type || !form.action_type}>Save Automation</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -453,15 +438,20 @@ function AutomationsTab() {
               <Card key={auto.id}>
                 <CardHeader>
                   <CardTitle>{auto.name}</CardTitle>
-                  <CardDescription>On <span className="font-semibold">{auto.trigger_event}</span> trigger, launch <span className="font-semibold">{templates?.find((t: any) => t.id === auto.campaign_template_id)?.name || 'Template'}</span></CardDescription>
+                  <CardDescription>
+                    {auto.description || `${auto.triggerType} trigger → ${auto.actionType} action`}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className={auto.is_active ? "text-green-600" : "text-red-600"}>{auto.is_active ? "Active" : "Inactive"}</span>
+                    <span className={auto.isActive ? "text-green-600" : "text-red-600"}>{auto.isActive ? "Active" : "Inactive"}</span>
+                    {auto.executionCount > 0 && (
+                      <span className="text-muted-foreground">• {auto.executionCount} executions</span>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between text-xs text-muted-foreground">
-                  <span>Last updated {auto.updated_at}</span>
+                  <span>Updated {new Date(auto.updatedAt).toLocaleDateString()}</span>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => handleUpdate(auto.id, { name: auto.name + " (Updated)" })}>Edit</Button>
                     <Button size="sm" variant="destructive" onClick={() => handleDelete(auto.id)}>Delete</Button>
@@ -505,50 +495,61 @@ export default function ProjectDetailPage() {
   const { id } = useParams()
   const router = useRouter()
 
-  // Sample project data
-  const project = {
-    id: Number(id),
-    name: "Customer Onboarding",
-    description: "Welcome messages and setup guides for new customers",
-    campaigns: 3,
-    messages: "2,451",
-    engagement: 76,
-    updated: "2 days ago",
-    type: "Transactional",
-    created: "June 15, 2023",
-    audience: "1,245",
+  const [project, setProject] = useState<ApiProject | null>(null)
+  const [campaigns, setCampaigns] = useState<ApiCampaign[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      if (!id) return
+      setIsLoading(true)
+      setError(null)
+      try {
+        const [p, cs] = await Promise.all([
+          projectsAPI.getById(id as string),
+          campaignsAPI.getAll({ projectId: id as string })
+        ])
+        setProject(p)
+        setCampaigns(cs || [])
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load project')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <Card><CardContent className="p-6">Loading project...</CardContent></Card>
+      </DashboardLayout>
+    )
   }
 
-  // Sample campaigns data
-  const campaigns = [
-    {
-      id: 1,
-      name: "Welcome Message",
-      description: "Initial welcome message sent to new customers",
-      channel: "SMS",
-      messages: "1,245",
-      engagement: 82,
-      lastSent: "Today",
-    },
-    {
-      id: 2,
-      name: "Setup Guide",
-      description: "Step-by-step guide for account setup",
-      channel: "WhatsApp",
-      messages: "856",
-      engagement: 68,
-      lastSent: "Yesterday",
-    },
-    {
-      id: 3,
-      name: "Verification Call",
-      description: "Automated verification call for new accounts",
-      channel: "Voice",
-      messages: "350",
-      engagement: 95,
-      lastSent: "3 days ago",
-    },
-  ]
+  if (error || !project) {
+    return (
+      <DashboardLayout>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="text-red-600 text-sm">{error || 'Project not found'}</div>
+              <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/projects")}>Back to Projects</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    )
+  }
+
+  const projectStats = {
+    campaigns: project?._count?.campaigns ?? 0,
+    messages: project?._count?.messageLogs ?? 0,
+    engagement: project?.successRate ?? 0,
+    audience: project?.balance ? project.balance.toString() : "-",
+  }
 
   return (
     <DashboardLayout>
@@ -593,16 +594,16 @@ export default function ProjectDetailPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Campaigns"
-            value={project.campaigns.toString()}
+            value={projectStats.campaigns.toString()}
             icon={<Layers className="h-5 w-5" />}
           />
-          <MetricCard title="Total Messages" value={project.messages} icon={<MessageCircle className="h-5 w-5" />} />
+          <MetricCard title="Total Messages" value={projectStats.messages.toString()} icon={<MessageCircle className="h-5 w-5" />} />
           <MetricCard
             title="Engagement Rate"
-            value={`${project.engagement}%`}
+            value={`${projectStats.engagement || 0}%`}
             icon={<BarChart3 className="h-5 w-5" />}
           />
-          <MetricCard title="Audience Size" value={project.audience} icon={<Users className="h-5 w-5" />} />
+          <MetricCard title="Audience Size" value={projectStats.audience} icon={<Users className="h-5 w-5" />} />
         </div>
 
         <Tabs defaultValue="campaigns" className="w-full">

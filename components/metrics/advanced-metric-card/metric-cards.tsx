@@ -349,7 +349,7 @@ export function CostMetricCard({
   return (
     <AdvancedMetricCard
       title="Avg. Cost per Message"
-      value={typeof value === 'number' ? `$${value.toFixed(4)}` : value}
+      value={typeof value === 'number' ? `KSh ${value.toFixed(4)}` : value}
       change={change}
       trend={trend === "up" ? "down" : "up"} // Invert trend for cost (lower is better)
       status={trend === "up" ? "warning" : "good"}

@@ -66,15 +66,7 @@ export default function AdminDashboardPage() {
       setCurrentUser(user)
     } catch (error) {
       console.error('Failed to load current user:', error)
-      setCurrentUser({
-        id: 'admin_demo',
-        name: 'Demo Admin',
-        email: 'admin@demo.com',
-        role: 'admin',
-        status: 'active',
-        created_at: new Date().toISOString(),
-        permissions: ['read', 'write', 'admin', 'impersonate']
-      })
+      setCurrentUser(null)
     }
   }, [])
 
@@ -348,7 +340,22 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Monitoring</CardTitle>
+              <CardDescription>Infrastructure health and performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" asChild>
+                <a href="/admin/monitoring">
+                  <Shield className="mr-2 h-4 w-4" />
+                  System Monitoring
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>System Logs</CardTitle>

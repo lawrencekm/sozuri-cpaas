@@ -87,7 +87,6 @@ export function MessagingAnalytics() {
             <SelectContent>
               <SelectItem value="sms">SMS</SelectItem>
               <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              <SelectItem value="viber">Viber</SelectItem>
               <SelectItem value="rcs">RCS</SelectItem>
             </SelectContent>
           </Select>

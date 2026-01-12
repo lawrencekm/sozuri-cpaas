@@ -46,6 +46,57 @@ const CostAnalytics = dynamic(
   }
 )
 
+const MessagingAnalytics = dynamic(
+  () => import('@/components/metrics/messaging-analytics').then(mod => ({ default: mod.MessagingAnalytics })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+        <div className="h-[300px] animate-pulse bg-muted rounded-lg" />
+      </div>
+    ),
+    ssr: false
+  }
+)
+
+const VoiceAnalytics = dynamic(
+  () => import('@/components/metrics/voice-analytics').then(mod => ({ default: mod.VoiceAnalytics })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+        <div className="h-[300px] animate-pulse bg-muted rounded-lg" />
+      </div>
+    ),
+    ssr: false
+  }
+)
+
+const EngagementAnalytics = dynamic(
+  () => import('@/components/metrics/engagement-analytics').then(mod => ({ default: mod.EngagementAnalytics })),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[100px] animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+        <div className="h-[300px] animate-pulse bg-muted rounded-lg" />
+      </div>
+    ),
+    ssr: false
+  }
+)
+
 // Client component that uses the searchParams hook
 function AnalyticsContent() {
   const searchParams = useSearchParams()
@@ -91,56 +142,18 @@ function AnalyticsContent() {
             </TabsContent>
 
             {/* Messaging Analytics */}
-            <TabsContent value="messaging" className="space-y-4 pt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Messaging Analytics</CardTitle>
-                  <CardDescription>Performance metrics for SMS, WhatsApp, Viber, and RCS</CardDescription>
-                </CardHeader>
-                <CardContent className="h-[400px] flex items-center justify-center">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-lg font-medium">Messaging Performance</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">Detailed analytics for your messaging campaigns</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="messaging" className="pt-6">
+              <MessagingAnalytics />
             </TabsContent>
 
             {/* Voice Analytics */}
-            <TabsContent value="voice" className="space-y-4 pt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Voice Analytics</CardTitle>
-                  <CardDescription>Performance metrics for voice calls and IVR</CardDescription>
-                </CardHeader>
-                <CardContent className="h-[400px] flex items-center justify-center">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-lg font-medium">Voice Performance</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">Detailed analytics for your voice campaigns</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="voice" className="pt-6">
+              <VoiceAnalytics />
             </TabsContent>
 
             {/* Engagement Analytics */}
-            <TabsContent value="engagement" className="space-y-4 pt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Engagement Analytics</CardTitle>
-                  <CardDescription>User engagement metrics across all channels</CardDescription>
-                </CardHeader>
-                <CardContent className="h-[400px] flex items-center justify-center">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-lg font-medium">Engagement Metrics</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Detailed analytics for user engagement with your communications
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="engagement" className="pt-6">
+              <EngagementAnalytics />
             </TabsContent>
           </Tabs>
         </div>

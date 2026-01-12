@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Resend } from 'resend';
 
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(request: Request) {
   try {
@@ -49,9 +49,9 @@ export async function POST(request: Request) {
 
     // In a real app, you would send an email with the reset link
     // Using Resend as an example email service
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && resend) {
       await resend.emails.send({
-        from: 'no-reply@yourdomain.com',
+        from: process.env.EMAIL_FROM || 'no-reply@yourdomain.com',
         to: email,
         subject: 'Reset your password',
         html: `
